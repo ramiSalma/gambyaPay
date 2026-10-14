@@ -66,12 +66,12 @@ struct FileComplaintView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Déposer une Plainte", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -87,10 +87,7 @@ struct FileComplaintView: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        VStack(spacing: 16) {
-                            // Title Card
-                            titleCard
-                            
+                        VStack(spacing: 14) {
                             // Instruction
                             instructionCard
                             
@@ -123,11 +120,14 @@ struct FileComplaintView: View {
                             // Submit Button
                             submitButton
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 16)
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -178,20 +178,20 @@ struct FileComplaintView: View {
     // MARK: - Title Card
     private var titleCard: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(hex: "174EA6"))
+                .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
             
             VStack(spacing: 8) {
                 Text("Déposer une Plainte")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                 
                 Rectangle()
                     .fill(.white)
-                    .frame(width: 80, height: 3)
+                    .frame(width: 64, height: 2)
             }
-            .padding(.vertical, 16)
+            .padding(.vertical, 14)
         }
     }
     
@@ -201,10 +201,10 @@ struct FileComplaintView: View {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundColor(.orange)
-                    .font(.system(size: 18))
+                    .font(.system(size: 16))
                 
                 Text("Signaler un problème")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.primary)
             }
             
@@ -212,22 +212,22 @@ struct FileComplaintView: View {
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
-        .padding(16)
-        .background(Color.orange.opacity(0.05))
-        .cornerRadius(12)
+        .padding(14)
+        .background(Color(hex: "FFF8ED"))
+        .cornerRadius(16)
     }
     
     // MARK: - Complaint Type Card
     private var complaintTypeCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Type de Plainte")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             Menu {
@@ -246,7 +246,7 @@ struct FileComplaintView: View {
             } label: {
                 HStack {
                     Text(complaintTypes[selectedComplaintType])
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
                     Spacer()
@@ -255,29 +255,31 @@ struct FileComplaintView: View {
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
             }
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Priority Card
     private var priorityCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Priorité")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             Menu {
@@ -296,7 +298,7 @@ struct FileComplaintView: View {
             } label: {
                 HStack {
                     Text(priorities[selectedPriority])
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
                     Spacer()
@@ -305,64 +307,69 @@ struct FileComplaintView: View {
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
             }
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Title Input Card
     private var titleInputCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Titre")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             TextField("Entrer le titre", text: $title)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Description Card
     private var descriptionCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Description")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             VStack(alignment: .leading, spacing: 8) {
                 TextEditor(text: $description)
-                    .font(.system(size: 12, weight: .medium))
-                    .frame(height: 120)
+                    .font(.system(size: 14, weight: .medium))
+                    .frame(height: 160)
                     .padding(8)
-                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                    .cornerRadius(8)
+                    .background(Color.white)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                    .cornerRadius(12)
                     .onChange(of: description) {
                         if description.count > maxDescriptionLength {
                             description = String(description.prefix(maxDescriptionLength))
@@ -372,81 +379,86 @@ struct FileComplaintView: View {
                 HStack {
                     Spacer()
                     Text("\(description.count)/\(maxDescriptionLength) caractères")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
                         .foregroundColor(characterCountColor)
                 }
             }
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Incident Date Card
     private var incidentDateCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Date de l'incident")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             TextField("JJ/MM/AAAA", text: $incidentDate)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
                 .disabled(true)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Transaction Reference Card
     private var transactionRefCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Référence Transaction (optionnel)")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             TextField("Entrer la référence", text: $transactionRef)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Contact Method Card
     private var contactMethodCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Méthode de Contact")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             Menu {
@@ -465,7 +477,7 @@ struct FileComplaintView: View {
             } label: {
                 HStack {
                     Text(contactMethods[selectedContactMethod])
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
                     Spacer()
@@ -474,44 +486,48 @@ struct FileComplaintView: View {
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
             }
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Alternate Contact Card
     private var alternateContactCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Email Alternatif")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             TextField("Entrer votre email", text: $alternateContact)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
                 .keyboardType(.emailAddress)
                 .autocapitalization(.none)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Submit Button
@@ -524,9 +540,9 @@ struct FileComplaintView: View {
             Text("Soumettre")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
-                .frame(width: 150, height: 48)
-                .background(Color.greenH)
-                .cornerRadius(8)
+                .frame(width: 180, height: 50)
+                .background(Color(hex: "174EA6"))
+                .cornerRadius(12)
         }
         .disabled(isLoading)
         .padding(.bottom, 20)

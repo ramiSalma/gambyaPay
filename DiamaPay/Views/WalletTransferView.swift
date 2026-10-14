@@ -113,6 +113,14 @@ struct WalletTransferView: View {
                 }
             }
         }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(
+                onSponsors: {},
+                onQR: {},
+                onLimits: {},
+                onSettings: {}
+            )
+        }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK", role: .cancel) { }

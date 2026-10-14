@@ -31,7 +31,6 @@ struct DiamaPayHomeView: View {
                     balance: viewModel.balance,
                     currency: viewModel.currency,
                     isBalanceVisible: $viewModel.isBalanceVisible,
-                    onMenuTap: { withAnimation { showDrawer.toggle() } },
                     onTransactionsTap: { viewModel.navigate(to: .transactions) }
                 )
                 
@@ -45,15 +44,18 @@ struct DiamaPayHomeView: View {
                 .padding(.top, 28)
             }
         }
+        .background(Color.white)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            HomeHeaderBar(onMenuTap: { withAnimation { showDrawer.toggle() } })
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            HomeBottomBar(
+            AppBottomBar(
                 onSponsors: { viewModel.navigateToSponsoring = true },
                 onQR: { viewModel.navigate(to: .qr) },
                 onLimits: { viewModel.navigate(to: .limits) },
                 onSettings: { withAnimation { showDrawer = true } }
             )
         }
-        .background(Color.white)
         .onAppear(perform: viewModel.onAppear)
         .disabled(showDrawer || isFloatingMenuExpanded || viewModel.showAdPopup)
         .blur(radius: blurRadius)
@@ -351,15 +353,12 @@ struct HeaderSection: View {
     let balance: String
     let currency: String
     @Binding var isBalanceVisible: Bool
-    let onMenuTap: () -> Void
     let onTransactionsTap: () -> Void
     
     var body: some View {
         VStack(spacing: 0) {
-            headerBar
-                .padding(.top, 8)
-                .padding(.bottom, 24)
             userGreeting
+                .padding(.top, 32)
                 .padding(.bottom, 26)
             BalanceCard(balance: balance, currency: currency,
                         isBalanceVisible: $isBalanceVisible,
@@ -369,26 +368,7 @@ struct HeaderSection: View {
         }
         .background(Color.white)
     }
-    
-    private var headerBar: some View {
-        HStack {
-            Button(action: onMenuTap) {
-                Image(systemName: "line.horizontal.3")
-                    .foregroundColor(.white)
-                    .font(.title2)
-            }
-            Spacer()
-            Text("EWALLET")
-                .font(.system(size: 23, weight: .bold))
-                .foregroundColor(.white)
-            Spacer()
-            Color.clear.frame(width: 24, height: 24)
-        }
-        .padding(.horizontal, 22)
-        .frame(height: 64)
-        .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
-    }
-    
+
     private var userGreeting: some View {
         HStack {
             HStack(spacing: 5) {
@@ -399,6 +379,30 @@ struct HeaderSection: View {
             Spacer()
         }
         .padding(.horizontal, 22)
+    }
+}
+
+private struct HomeHeaderBar: View {
+    let onMenuTap: () -> Void
+
+    var body: some View {
+        HStack {
+            Button(action: onMenuTap) {
+                Image(systemName: "line.horizontal.3")
+                    .foregroundColor(.white)
+                    .font(.system(size: 25, weight: .medium))
+                    .frame(width: 44, height: 48)
+            }
+            Spacer()
+            Text("EWALLET")
+                .font(.system(size: 23, weight: .bold))
+                .foregroundColor(.white)
+            Spacer()
+            Color.clear.frame(width: 44, height: 48)
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 56)
+        .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
     }
 }
 
@@ -597,7 +601,7 @@ struct PromotionsSection: View {
     }
 }
 
-private struct HomeBottomBar: View {
+struct AppBottomBar: View {
     let onSponsors: () -> Void
     let onQR: () -> Void
     let onLimits: () -> Void
@@ -609,40 +613,76 @@ private struct HomeBottomBar: View {
                 item("house.fill", "Home", selected: true) {}
                 Spacer()
                 item("hand.thumbsup", "Sponsors", selected: false, action: onSponsors)
-                Spacer(minLength: 54)
+                Spacer(minLength: 76)
                 item("speedometer", "Limits", selected: false, action: onLimits)
                 Spacer()
                 item("gearshape.fill", "Settings", selected: false, action: onSettings)
             }
-            .padding(.horizontal, 22)
-            .padding(.top, 25)
-            .padding(.bottom, 8)
-            .background(Color(hex: "174EA6").ignoresSafeArea(edges: .bottom))
+            .padding(.horizontal, 20)
+            .padding(.top, 22)
 
             Button(action: onQR) {
                 Image(systemName: "qrcode")
-                    .font(.system(size: 29, weight: .semibold))
+                    .font(.system(size: 26, weight: .semibold))
                     .foregroundColor(.white)
-                    .frame(width: 78, height: 78)
+                    .frame(width: 64, height: 64)
                     .background(Color(hex: "0788B9"))
                     .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.white, lineWidth: 6))
-                    .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white, lineWidth: 10)
+                    )
+                    .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
             }
-            .offset(y: -31)
+            .buttonStyle(.plain)
+            .offset(y: -20)
         }
-        .frame(height: 82)
+        .frame(height: 50)
+        .background {
+            AppBottomBarShape(cornerRadius: 28)
+                .fill(Color(hex: "174EA6"))
+                .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: -4)
+                .ignoresSafeArea(edges: .bottom)
+        }
     }
 
     private func item(_ icon: String, _ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 5) {
+            VStack(spacing: 3) {
                 Image(systemName: icon).font(.system(size: 22, weight: .semibold))
-                Text(title).font(.system(size: 12, weight: .semibold))
+                Text(title).font(.system(size: 11, weight: .semibold))
             }
-            .foregroundColor(selected ? .white : Color.white.opacity(0.48))
-            .frame(minWidth: 52)
+            .foregroundColor(selected ? .white : Color.white.opacity(0.4))
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+    }
+}
+
+struct AppBottomBarShape: Shape {
+    var cornerRadius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let mid = rect.midX
+        let cutoutHalfWidth: CGFloat = 46
+        let cutoutDepth: CGFloat = 30
+        var path = Path()
+        
+        path.move(to: CGPoint(x: 0, y: cornerRadius))
+        path.addQuadCurve(to: CGPoint(x: cornerRadius, y: 0), control: CGPoint(x: 0, y: 0))
+        path.addLine(to: CGPoint(x: mid - cutoutHalfWidth, y: 0))
+        path.addCurve(
+            to: CGPoint(x: mid + cutoutHalfWidth, y: 0),
+            control1: CGPoint(x: mid - cutoutHalfWidth * 0.4, y: cutoutDepth),
+            control2: CGPoint(x: mid + cutoutHalfWidth * 0.4, y: cutoutDepth)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX - cornerRadius, y: 0))
+        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: cornerRadius), control: CGPoint(x: rect.maxX, y: 0))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: 0, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 

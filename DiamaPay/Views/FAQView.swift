@@ -5,67 +5,67 @@ struct FAQView: View {
     @State private var searchText = ""
     @State private var expandedIndex: Int? = nil
     
-    // 🧠 Full FAQ list from the Android version
+    // Frequently asked questions
     let faqs: [(question: String, answer: String)] = [
-        // --- Général ---
-        ("Qu'est-ce que DIAMACASH ?", "DIAMACASH est votre portefeuille digital sécurisé permettant de gérer vos paiements, transferts et recharges facilement."),
-        ("Comment m'inscrire à DIAMACASH ?", "Téléchargez l'application DIAMACASH sur l'Apple Store (iOS) ou Google Play (Android), ouvrez l'application, cliquez sur \"S'inscrire\" et suivez les étapes."),
-        ("Comment me connecter à DIAMACASH ?", "Ouvrez l'application DIAMACASH, saisissez votre numéro de téléphone et votre code PIN puis cliquez sur 'Se connecter'."),
-        ("J'ai oublié mon code PIN. Que dois-je faire ?", "Contactez le service client muni de votre pièce d'identité pour répondre aux questions de sécurité et initier la réinitialisation du mot de passe."),
+        // General
+        ("What is GambiaPay?", "GambiaPay is your secure digital wallet for managing payments, transfers, and top-ups."),
+        ("How do I register for GambiaPay?", "Download the GambiaPay app from the Apple App Store or Google Play, open it, tap Sign Up, and follow the instructions."),
+        ("How do I log in to GambiaPay?", "Open the GambiaPay app, enter your phone number and PIN, then tap Log In."),
+        ("I forgot my PIN code. What should I do?", "Contact customer support with a valid form of identification to answer the security questions and begin resetting your PIN."),
         
-        // --- Solde & compte ---
-        ("Comment consulter le solde de mon portefeuille DIAMACASH ?", "Votre solde s'affiche dès votre connexion. S'il est masqué par des astérisques (*), appuyez sur l'œil pour l'afficher."),
-        ("Pourquoi mon solde s'affiche-t-il sous forme d'astérisques (*) ?", "Par mesure de sécurité, le solde est masqué. Appuyez sur l'œil pour l'afficher."),
-        ("Comment consulter l'historique de mes transactions ?", "Une fois connecté, cliquez sur \"Voir plus\" sous votre solde pour consulter la liste de vos transactions des 30 derniers jours."),
+        // Balance and account
+        ("How do I check my GambiaPay wallet balance?", "Your balance appears when you log in. If it is hidden by asterisks (*), tap the eye icon to show it."),
+        ("Why does my balance show as asterisks (*)?", "Your balance is hidden for security. Tap the eye icon to show it."),
+        ("How do I check my transaction history?", "After logging in, tap See More below your balance to view your transactions from the last 30 days."),
         
-        // --- Transferts ---
-        ("Comment envoyer de l'argent ?", "Cliquez sur \"Transfert interne\", puis suivez ces étapes :\n1. Sélectionnez la source des fonds\n2. Saisissez le numéro du bénéficiaire (9 chiffres)\n3. Vérifiez le destinataire\n4. Entrez le montant\n5. Cochez 'Ajouter les frais' si souhaité\n6. Ajoutez un commentaire (facultatif)\n7. Validez\n8. Entrez votre code PIN\n9. Confirmez le transfert."),
-        ("Comment lier mon portefeuille DIAMACASH à mon compte bancaire DIAMA BANK SA ?", "Rendez-vous dans une agence DIAMA BANK SA muni de votre pièce d'identité pour initier la demande de liaison gratuitement."),
-        ("Comment alimenter mon portefeuille DIAMACASH avec mon compte bancaire ?", "Cliquez sur \"Recharger mon wallet\" puis :\n1. Sélectionnez votre compte\n2. Saisissez le montant\n3. Ajoutez une référence (facultatif)\n4. Validez\n5. Entrez votre code PIN\n6. Confirmez le transfert."),
-        ("Comment alimenter mon compte bancaire DIAMA BANK avec mon portefeuille DIAMACASH ?", "Cliquez sur \"Vers ma Banque\" puis :\n1. Sélectionnez votre compte\n2. Entrez le montant\n3. Ajoutez une référence (facultatif)\n4. Validez\n5. Entrez votre code PIN\n6. Confirmez."),
-        ("À quelle fréquence mon solde est-il mis à jour ?", "Votre solde est mis à jour en temps réel à chaque ouverture ou actualisation manuelle de l'application."),
+        // Transfers
+        ("How do I send money?", "Tap Internal Transfer, then follow these steps:\n1. Choose the funding source\n2. Enter the recipient's 9-digit phone number\n3. Verify the recipient\n4. Enter the amount\n5. Select Add Fees if needed\n6. Add an optional comment\n7. Review the transfer\n8. Enter your PIN\n9. Confirm the transfer."),
+        ("How do I link my GambiaPay wallet to my bank account?", "Visit a branch of your bank with valid identification to request a wallet link."),
+        ("How do I add money to my GambiaPay wallet from my bank account?", "Tap Top Up My Wallet, then select your account, enter the amount, add an optional reference, review the transfer, enter your PIN, and confirm."),
+        ("How do I transfer money from my GambiaPay wallet to my bank account?", "Tap To My Bank, select your account, enter the amount, add an optional reference, review the transfer, enter your PIN, and confirm."),
+        ("How often is my balance updated?", "Your balance updates in real time whenever you open or manually refresh the app."),
         
-        // --- Types de transferts ---
-        ("Quels types de transferts puis-je effectuer ?", "• Portefeuille vers Portefeuille\n• Portefeuille vers Compte Bancaire\n• Compte Bancaire vers Portefeuille\n• Mobile Money (via services partenaires)"),
-        ("Y a-t-il des limites sur le montant que je peux transférer ?", "Oui, selon votre type de compte et votre niveau de vérification. Contactez le support pour plus d'informations."),
-        ("Combien de temps prennent les transferts ?", "La plupart des transferts portefeuille à portefeuille sont instantanés."),
+        // Transfer types
+        ("What types of transfers can I make?", "• Wallet to wallet\n• Wallet to bank account\n• Bank account to wallet\n• Mobile money through partner services"),
+        ("Are there limits on how much I can transfer?", "Yes. Limits depend on your account type and verification level. Contact support for details."),
+        ("How long do transfers take?", "Most wallet-to-wallet transfers are instant."),
         
-        // --- Paiements & services ---
-        ("Puis-je acheter du crédit téléphonique via l'application ?", "Oui, vous pouvez acheter du crédit pour vous ou pour d'autres depuis l'application."),
-        ("Qu'en est-il des forfaits données ?", "L'application permet l'achat de forfaits Internet pour plusieurs réseaux mobiles."),
-        ("Puis-je payer des factures via DIAMACASH ?", "Oui, l'application permet le paiement de factures de services publics et autres."),
-        ("Qu'est-ce qu'une Mise à disposition ?", "Les mises à disposition vous permettent de créer des bons que d'autres peuvent échanger contre de l'argent."),
+        // Payments and services
+        ("Can I buy phone credit in the app?", "Yes. You can buy phone credit for yourself or someone else in the app."),
+        ("Can I buy data bundles?", "The app lets you buy internet bundles for several mobile networks."),
+        ("Can I pay bills with GambiaPay?", "Yes. You can use the app to pay utility and other bills."),
+        ("What is a cash voucher?", "Cash vouchers let you create a code that someone else can redeem for money."),
         
-        // --- Fonctionnalités avancées ---
-        ("Que sont les Virements Permanents ?", "Ils permettent de planifier des transferts récurrents automatiques (ex: paiements mensuels)."),
-        ("Que sont les Portefeuilles Sponsorisés ?", "Ils permettent de parrainer ou d'être parrainé par d'autres utilisateurs pour partager des fonds."),
-        ("Qu'est-ce qu'un Portefeuille d'Épargne ?", "C'est une fonctionnalité qui vous aide à économiser séparément de votre solde principal."),
-        ("Comment consulter mon historique de transactions ?", "Accédez à votre Mini Relevé depuis le menu pour voir vos transactions récentes."),
+        // More features
+        ("What are standing instructions?", "They let you schedule recurring automatic transfers, such as monthly payments."),
+        ("What are sponsored wallets?", "They let users sponsor another user or be sponsored to share funds."),
+        ("What is a savings wallet?", "It helps you set money aside separately from your main balance."),
+        ("How do I view recent transactions?", "Open Mini Statement from the menu to see your recent transactions."),
         
-        // --- Sécurité ---
-        ("Mon argent est-il en sécurité dans l'application ?", "Oui, DIAMACASH utilise le chiffrement et des protocoles sécurisés."),
-        ("Puis-je changer mon code PIN ?", "Oui, allez dans le menu et sélectionnez \"Changer le PIN\"."),
-        ("Que faire en cas d'accès non autorisé ?", "Changez immédiatement votre code PIN, vérifiez vos transactions et contactez le support."),
-        ("Comment désactiver mon portefeuille ?", "Utilisez l'option \"Désactiver le Portefeuille\" dans le menu. Cette action peut être irréversible."),
+        // Security
+        ("Is my money safe in the app?", "Yes. GambiaPay uses encryption and security protocols to help protect your account."),
+        ("Can I change my PIN?", "Yes. Open the menu and select Change PIN."),
+        ("What should I do if someone accesses my account without permission?", "Change your PIN immediately, review your transactions, and contact support."),
+        ("How do I deactivate my wallet?", "Select Deactivate Wallet from the menu. This action may be irreversible."),
         
-        // --- Support client ---
-        ("Comment contacter le support client ?", "• Appelez le 0612 00 86 99\n• Utilisez \"Nous Contacter\" dans l'application\n• Envoyez des commentaires via \"Envoyer des Commentaires\"."),
-        ("Comment déclarer un incident ?", "Utilisez l'option \"Déclarer un incident\" dans le menu de navigation."),
-        ("Puis-je envoyer des commentaires sur l'application ?", "Oui, utilisez l'option \"Envoyer des Commentaires\" dans le menu."),
+        // Customer support
+        ("How do I contact customer support?", "• Call 0612 00 86 99\n• Use Contact Us in the app\n• Send feedback from the app menu."),
+        ("How do I report a problem?", "Select Report a Problem from the navigation menu."),
+        ("Can I send feedback about the app?", "Yes. Select Send Feedback from the menu."),
         
-        // --- Problèmes techniques ---
-        ("L'application ne charge pas mon solde. Que faire ?", "1. Vérifiez votre connexion Internet\n2. Redémarrez l'application\n3. Appuyez sur l'œil pour actualiser\n4. Contactez le support si nécessaire."),
-        ("J'ai des problèmes avec les transferts.", "Vérifiez :\n• Votre solde\n• Votre connexion Internet\n• Le numéro du destinataire\n• Vos limites de transfert."),
-        ("Comment mettre à jour l'application ?", "Vérifiez sur le Play Store ou App Store pour installer la dernière version."),
-        ("L'application plante souvent. Que faire ?", "1. Redémarrez l'appareil\n2. Videz le cache\n3. Mettez à jour l'application\n4. Contactez le support si le problème persiste."),
+        // Troubleshooting
+        ("The app won't load my balance. What should I do?", "1. Check your internet connection\n2. Restart the app\n3. Tap the eye icon to refresh\n4. Contact support if the problem continues."),
+        ("I'm having problems with transfers. What could be wrong?", "Check your balance, internet connection, recipient's number, and transfer limits."),
+        ("How do I update the app?", "Check the App Store or Google Play for the latest version."),
+        ("The app crashes frequently. What should I do?", "1. Restart your device\n2. Clear the app cache\n3. Update the app\n4. Contact support if the problem continues."),
         
-        // --- Compte utilisateur ---
-        ("Comment me déconnecter ?", "Allez dans le menu et sélectionnez \"Déconnexion\"."),
-        ("Puis-je utiliser l'application sur plusieurs appareils ?", "Oui, mais vous devrez valider avec un OTP lors d'une nouvelle connexion."),
-        ("Que se passe-t-il si je désinstalle l'application ?", "Vos fonds restent en sécurité. Réinstallez l'application pour y accéder."),
+        // Account
+        ("How do I log out of the app?", "Open the menu and select Log Out."),
+        ("Can I use the app on multiple devices?", "Yes, but you will need to verify with a one-time password when logging in on a new device."),
+        ("What happens if I uninstall the app?", "Your funds remain safe. Reinstall the app to access your wallet again."),
         
-        // --- Frais ---
-        ("Y a-t-il des frais pour utiliser l'application ?", "Certaines transactions peuvent comporter des frais. Contactez le service client pour plus de détails.")
+        // Fees
+        ("Are there fees for using the app?", "Some transactions may have fees. Contact customer support for details.")
     ]
     
     // --- Filtrage FAQ ---
@@ -82,25 +82,45 @@ struct FAQView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            Color(UIColor.systemGray6)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // --- Modern Header ---
-                DiamaPayHeader()
+                ZStack {
+                    Color(hex: "174EA6")
+                    HStack(spacing: 12) {
+                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                            Image(systemName: "arrow.left")
+                            .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(width: 40, height: 44, alignment: .leading)
+                        }
+                        Spacer(minLength: 0)
+                        Text("Frequently Asked Questions")
+                            .font(.system(size: 19, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                        Spacer(minLength: 0)
+                        Color.clear.frame(width: 40, height: 44)
+                    }
+                    .padding(.horizontal, 20)
+                }
+                .frame(height: 64)
+                .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
 
                 
                 ScrollView {
                     VStack(spacing: 20) {
                         
-                        // --- Barre de recherche moderne ---
+                        // Search
                         HStack(spacing: 12) {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
-                                .font(.system(size: 16))
+                                .font(.system(size: 19))
                             
-                            TextField("Rechercher...", text: $searchText)
-                                .font(.system(size: 15))
+                            TextField("Search...", text: $searchText)
+                                .font(.system(size: 16))
                             
                             if !searchText.isEmpty {
                                 Button(action: { searchText = "" }) {
@@ -110,18 +130,19 @@ struct FAQView: View {
                                 }
                             }
                         }
-                        .padding(12)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 15)
                         .background(Color.white)
-                        .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .cornerRadius(18)
+                        .shadow(color: Color.black.opacity(0.14), radius: 6, x: 0, y: 3)
                         .padding(.horizontal, 20)
-                        .padding(.top, 20)
+                        .padding(.top, 18)
                         
-                        // --- Cartes d'accès rapide modernes ---
+                        // Quick help cards
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Besoin d'aide ?")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(Color(UIColor.darkGray))
+                            Text("Need help?")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(.black)
                                 .padding(.horizontal, 20)
                             
                             HStack(spacing: 12) {
@@ -129,78 +150,80 @@ struct FAQView: View {
                                 VStack(spacing: 12) {
                                     ZStack {
                                         Circle()
-                                            .fill(Color.blueH.opacity(0.1))
-                                            .frame(width: 50, height: 50)
+                                            .fill(Color(hex: "F1F8F2"))
+                                            .frame(width: 64, height: 64)
                                         
                                         Image(systemName: "phone.fill")
-                                            .font(.system(size: 22))
-                                            .foregroundColor(.blueH)
+                                            .font(.system(size: 21))
+                                            .foregroundColor(Color(hex: "0788B9"))
                                     }
                                     
-                                    VStack(spacing: 4) {
-                                        Text("Nous Contacter")
-                                            .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(UIColor.darkGray))
+                                    VStack(spacing: 3) {
+                                        Text("Contact Us")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.black)
                                         
                                         Text("+224 612 00 86 99")
-                                            .font(.system(size: 12, weight: .medium))
-                                            .foregroundColor(.greenH)
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(Color(hex: "0788B9"))
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 20)
+                                .padding(.vertical, 16)
                                 .background(Color.white)
-                                .cornerRadius(16)
-                                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+                                .cornerRadius(22)
+                                .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.black.opacity(0.07), lineWidth: 1))
+                                .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
                                 
                                 // Commentaires Card
                                 VStack(spacing: 12) {
                                     ZStack {
                                         Circle()
-                                            .fill(Color.greenH.opacity(0.1))
-                                            .frame(width: 50, height: 50)
+                                            .fill(Color(hex: "F1F8F2"))
+                                            .frame(width: 64, height: 64)
                                         
                                         Image(systemName: "bubble.left.fill")
-                                            .font(.system(size: 22))
-                                            .foregroundColor(.greenH)
+                                            .font(.system(size: 21))
+                                            .foregroundColor(Color(hex: "174EA6"))
                                     }
                                     
-                                    VStack(spacing: 4) {
-                                        Text("Commentaires")
-                                            .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(UIColor.darkGray))
+                                    VStack(spacing: 3) {
+                                        Text("Feedback")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.black)
                                         
-                                        Text("Donnez votre avis")
-                                            .font(.system(size: 12, weight: .medium))
-                                            .foregroundColor(.blueH)
+                                        Text("Give your opinion")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(Color(hex: "174EA6"))
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 20)
+                                .padding(.vertical, 16)
                                 .background(Color.white)
-                                .cornerRadius(16)
-                                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+                                .cornerRadius(22)
+                                .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.black.opacity(0.07), lineWidth: 1))
+                                .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
                             }
                             .padding(.horizontal, 20)
                         }
                         
-                        // --- Liste FAQ moderne ---
+                        // Questions and answers
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
-                                Text("Questions & Réponses")
-                                    .font(.system(size: 20, weight: .bold))
-            .foregroundColor(Color(UIColor.darkGray))
+                                Text("Questions & Answers")
+                                    .font(.system(size: 22, weight: .bold))
+                                    .foregroundColor(.black)
                                 
                                 Spacer()
                                 
                                 if !filteredFaqs.isEmpty {
                                     Text("\(filteredFaqs.count)")
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(.system(size: 16, weight: .bold))
                                         .foregroundColor(.white)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 4)
                                         .background(Color.greenH)
-                                        .cornerRadius(12)
+                                        .cornerRadius(18)
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -211,11 +234,11 @@ struct FAQView: View {
                                         .font(.system(size: 40))
                                         .foregroundColor(.gray.opacity(0.5))
                                     
-                                    Text("Aucun résultat trouvé")
+                                    Text("No results found")
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(.gray)
                                     
-                                    Text("Essayez avec d'autres mots-clés")
+                                    Text("Try another search")
                                         .font(.system(size: 13))
                                         .foregroundColor(.gray.opacity(0.7))
                                 }
@@ -231,7 +254,7 @@ struct FAQView: View {
                                             )
                                         ) {
                                             Text(filteredFaqs[index].answer)
-                                                .font(.system(size: 14))
+                                                .font(.system(size: 13))
                                                 .foregroundColor(.secondary)
                                                 .padding(.top, 8)
                                                 .padding(.bottom, 12)
@@ -239,46 +262,51 @@ struct FAQView: View {
                                         } label: {
                                             HStack {
                                                 Text(filteredFaqs[index].question)
-                                                    .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color(UIColor.darkGray))
+                                                    .font(.system(size: 17, weight: .medium))
+                                                    .foregroundColor(Color(UIColor.darkGray))
                                                     .multilineTextAlignment(.leading)
                                                     .fixedSize(horizontal: false, vertical: true)
                                                 
                                                 Spacer()
                                             }
                                         }
-                                        .padding(16)
+                                        .padding(.horizontal, 18)
+                                        .padding(.vertical, 18)
                                         .background(Color.white)
-                                        .cornerRadius(12)
-                                        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+                                        .cornerRadius(20)
+                                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.black.opacity(0.06), lineWidth: 1))
+                                        .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
                                     }
                                 }
                                 .padding(.horizontal, 20)
                             }
                         }
                         
-                        // --- Footer moderne ---
+                        // Help footer
                         VStack(spacing: 12) {
                             Image(systemName: "questionmark.circle.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(.greenH)
+                                .font(.system(size: 34))
+                                .foregroundColor(Color(hex: "174EA6"))
                             
-                            Text("Besoin d'aide supplémentaire ?")
-                                .font(.system(size: 16, weight: .semibold))
+                            Text("Need additional help?")
+                                .font(.system(size: 19, weight: .semibold))
                                 .foregroundColor(.primary)
                             
-                            Text("Notre équipe est disponible 24/7 pour vous aider")
-                                .font(.system(size: 13))
+                            Text("Our team is available 24/7 to help you")
+                                .font(.system(size: 15))
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 40)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 30)
-                        .padding(.bottom, 20)
+                        .padding(.vertical, 24)
+                        .padding(.bottom, 16)
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
     }

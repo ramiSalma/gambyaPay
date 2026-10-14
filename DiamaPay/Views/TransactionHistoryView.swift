@@ -26,13 +26,12 @@ struct TransactionHistoryView: View {
         NavigationStack {
 
         ZStack {
-            // Background color
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Historique des transactions", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -49,17 +48,14 @@ struct TransactionHistoryView: View {
                 } else {
                     // Content
                     ScrollView {
-                        VStack(spacing: 20) {
-                            // Blue title card
-                            titleCard
-                            
+                        VStack(spacing: 14) {
                             // Filter section
                             filterSection
                             
                             // Transactions section
+                            transactionsSection
+
                             if !transactions.isEmpty {
-                                transactionsSection
-                                
                                 // Pagination
                                 if totalPages > 1 {
                                     paginationSection
@@ -68,12 +64,15 @@ struct TransactionHistoryView: View {
                                 emptyStateView
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 16)
                     }
                 }
             }
         }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -103,42 +102,20 @@ struct TransactionHistoryView: View {
     
    
     
-    // MARK: - Title Card
-    private var titleCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-            
-            VStack {
-                Text("Dernières transactions")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
-                
-                // Underline
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 60, height: 2)
-                    .padding(.top, 4)
-            }
-            .padding(.vertical, 20)
-        }
-    }
-    
     // MARK: - Filter Section
     private var filterSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Filtrer par date")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(red: 0.1, green: 0.4, blue: 0.1))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
         
             }
             HStack {
                 Rectangle()
-                    .fill(.blueH)
-                    .frame(width: 60, height: 3)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
                     .clipShape(RoundedRectangle(cornerRadius: 2))
                 
                 Spacer()
@@ -148,7 +125,7 @@ struct TransactionHistoryView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Date de début")
-                        .font(.system(size: 14))
+                            .font(.system(size: 13))
                         .foregroundColor(.secondary)
                     
                     Button(action: {
@@ -156,28 +133,29 @@ struct TransactionHistoryView: View {
                     }) {
                         HStack {
                             Text(startDate)
-                                .font(.system(size: 16))
+                                .font(.system(size: 14))
                                 .foregroundColor(.primary)
                             
                             Spacer()
                             
                             Image(systemName: "calendar")
-                                .foregroundColor(.blueH)
+                                .foregroundColor(Color(hex: "0788B9"))
                                 .font(.system(size: 16))
                         }
-                        .padding(12)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
                         .background(Color.white)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(hex: "596273"), lineWidth: 1.2)
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Date de fin")
-                        .font(.system(size: 14))
+                            .font(.system(size: 13))
                         .foregroundColor(.secondary)
                     
                     Button(action: {
@@ -185,22 +163,23 @@ struct TransactionHistoryView: View {
                     }) {
                         HStack {
                             Text(endDate)
-                                .font(.system(size: 16))
+                                .font(.system(size: 14))
                                 .foregroundColor(.primary)
                             
                             Spacer()
                             
                             Image(systemName: "calendar")
-                                .foregroundColor(.blueH)
+                                .foregroundColor(Color(hex: "0788B9"))
                                 .font(.system(size: 16))
                         }
-                        .padding(12)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
                         .background(Color.white)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(hex: "596273"), lineWidth: 1.2)
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
             }
@@ -211,41 +190,42 @@ struct TransactionHistoryView: View {
                     resetFilters()
                 }) {
                     Text("Réinitialiser")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color.greenH)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .background(Color(hex: "174EA6"))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 
                 Button(action: {
                     filterTransactions()
                 }) {
                     Text("Filtrer")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color.greenH)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .background(Color(hex: "174EA6"))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
         }
         .padding(16)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Transactions Section
     private var transactionsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("30 derniers jours")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(red: 0.1, green: 0.4, blue: 0.1))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(hex: "174EA6"))
                     
                     if totalPages > 1 {
                         Text("Page \(currentPage) sur \(totalPages) (\(filteredTransactions.count) transactions)")
@@ -264,8 +244,8 @@ struct TransactionHistoryView: View {
             // Blue underline
             HStack {
                 Rectangle()
-                    .fill(.blueH)
-                    .frame(width: 40, height: 3)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
                     .clipShape(RoundedRectangle(cornerRadius: 2))
                 
                 Spacer()
@@ -280,8 +260,9 @@ struct TransactionHistoryView: View {
         }
         .padding(16)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
  
     private func transactionRow(_ transaction: Transaction) -> some View {
@@ -337,16 +318,16 @@ struct TransactionHistoryView: View {
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Image(systemName: "doc.text")
-                .font(.system(size: 48))
+        .font(.system(size: 38))
                 .foregroundColor(.gray)
             
             Text("Aucune transaction trouvée")
-                .font(.title2)
+                .font(.system(size: 18))
                 .fontWeight(.medium)
                 .foregroundColor(.primary)
             
             Text("Il n'y a pas de transactions pour la période sélectionnée")
-                .font(.body)
+                .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
@@ -357,13 +338,14 @@ struct TransactionHistoryView: View {
             .foregroundColor(.white)
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
-            .background(Color.blueH)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .background(Color(hex: "174EA6"))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .padding(40)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Pagination Section

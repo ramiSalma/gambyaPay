@@ -112,7 +112,12 @@ struct WalletToAccountTransferView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            WalletTransferBottomBar()
+            AppBottomBar(
+                onSponsors: {},
+                onQR: {},
+                onLimits: {},
+                onSettings: {}
+            )
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -707,61 +712,6 @@ struct WalletToAccountTransferView: View {
         alertTitle = "Succès"
         alertMessage = message
         showAlert = true
-    }
-}
-
-private struct WalletTransferBottomBar: View {
-    var body: some View {
-        ZStack(alignment: .top) {
-            HStack {
-                item("house.fill", "Home", selected: true)
-                Spacer()
-                item("hand.thumbsup", "Sponsors", selected: false)
-                Spacer(minLength: 54)
-                item("speedometer", "Limits", selected: false)
-                Spacer()
-                item("gearshape.fill", "Settings", selected: false)
-            }
-            .padding(.horizontal, 22)
-            .padding(.top, 25)
-            .padding(.bottom, 8)
-            .background(WalletBottomBarShape().fill(Color(hex: "174EA6")).ignoresSafeArea(edges: .bottom))
-
-            Image(systemName: "qrcode")
-                .font(.system(size: 29, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(width: 78, height: 78)
-                .background(Color(hex: "0788B9"))
-                .clipShape(Circle())
-                .overlay(Circle().stroke(Color.white, lineWidth: 6))
-                .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
-                .offset(y: -31)
-        }
-        .frame(height: 82)
-    }
-
-    private func item(_ icon: String, _ title: String, selected: Bool) -> some View {
-        VStack(spacing: 5) {
-            Image(systemName: icon).font(.system(size: 22, weight: .semibold))
-            Text(title).font(.system(size: 12, weight: .semibold))
-        }
-        .foregroundColor(selected ? .white : Color.white.opacity(0.48))
-        .frame(minWidth: 52)
-    }
-}
-
-private struct WalletBottomBarShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        let radius: CGFloat = 30
-        var path = Path()
-        path.move(to: CGPoint(x: 0, y: rect.maxY))
-        path.addLine(to: CGPoint(x: 0, y: radius))
-        path.addQuadCurve(to: CGPoint(x: radius, y: 0), control: .zero)
-        path.addLine(to: CGPoint(x: rect.maxX - radius, y: 0))
-        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: radius), control: CGPoint(x: rect.maxX, y: 0))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.closeSubpath()
-        return path
     }
 }
 

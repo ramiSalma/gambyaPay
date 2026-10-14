@@ -21,18 +21,18 @@ struct CheckLimitView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Vérifier les limites", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
                     VStack(spacing: 16) {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: Color(red: 0.20, green: 0.40, blue: 0.80)))
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
                             .scaleEffect(1.5)
                         
                         Text("Chargement des limites...")
@@ -42,7 +42,7 @@ struct CheckLimitView: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        VStack(spacing: 16) {
+                        VStack(spacing: 14) {
                             // Combined Summary Card
                             if let summary = limitSummary {
                                 combinedSummaryCard(summary: summary)
@@ -58,7 +58,7 @@ struct CheckLimitView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 18)
                         .padding(.top, 16)
                         .padding(.bottom, 80)
                     }
@@ -75,16 +75,19 @@ struct CheckLimitView: View {
                     }) {
                         Image(systemName: "arrow.clockwise")
                             .foregroundColor(.white)
-                            .font(.system(size: 20, weight: .semibold))
-                            .frame(width: 56, height: 56)
-                            .background(Color(red: 0.20, green: 0.40, blue: 0.80))
+                            .font(.system(size: 18, weight: .semibold))
+                            .frame(width: 48, height: 48)
+                            .background(Color(hex: "174EA6"))
                             .clipShape(Circle())
                             .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
                     }
                     .padding(.trailing, 16)
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 86)
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -112,15 +115,15 @@ struct CheckLimitView: View {
         
         return VStack(alignment: .leading, spacing: 0) {
             ZStack {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 18)
                     .fill(cardColor)
                     .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 4)
                 
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     // Title
                     VStack(spacing: 8) {
                         Text("Limite Journalière Globale")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 17, weight: .bold))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                         
@@ -178,7 +181,7 @@ struct CheckLimitView: View {
                             subtitle: "GNF"
                         )
                     }
-                    .padding(16)
+                    .padding(14)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color.white.opacity(0.15))
@@ -211,7 +214,7 @@ struct CheckLimitView: View {
                         }
                     }
                 }
-                .padding(20)
+                .padding(16)
             }
         }
     }
@@ -240,18 +243,18 @@ struct CheckLimitView: View {
     private var sectionTitle: some View {
         HStack(spacing: 12) {
             Rectangle()
-                .fill(Color(red: 0.20, green: 0.40, blue: 0.80))
-                .frame(width: 4, height: 24)
+                .fill(Color(hex: "0788B9"))
+                .frame(width: 3, height: 22)
             
             Text("Détails par Opération")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(Color(red: 0.13, green: 0.13, blue: 0.13))
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color(hex: "174EA6"))
                 .kerning(0.2)
             
             Spacer()
         }
-        .padding(.top, 24)
-        .padding(.bottom, 12)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
     }
     
     // MARK: - Limit Detail Card (UPDATED TO MATCH ANDROID)
@@ -268,18 +271,19 @@ struct CheckLimitView: View {
             cardMainContent(limit: limit, percentage: percentage, consumed: consumed, remaining: remaining, isExpanded: isExpanded)
         }
         .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     private func cardHeader(displayName: String) -> some View {
         HStack(spacing: 12) {
             Text(displayName)
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(Color.black.opacity(0.5))
+                .foregroundColor(Color(hex: "174EA6"))
             Spacer()
         }
-        .padding(20)
+        .padding(16)
         .background(Color.white)
     }
     
@@ -288,8 +292,8 @@ struct CheckLimitView: View {
             .fill(
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color.blueH,
-                        Color.blueH.opacity(0.3)
+                        Color(hex: "0788B9"),
+                        Color(hex: "0788B9").opacity(0.3)
                     ]),
                     startPoint: .leading,
                     endPoint: .trailing
@@ -316,7 +320,7 @@ struct CheckLimitView: View {
                 expandableSection(limit: limit)
             }
         }
-        .padding(10)
+        .padding(12)
         .background(Color.white)
     }
     
@@ -336,7 +340,7 @@ struct CheckLimitView: View {
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color(red: 0.91, green: 0.96, blue: 0.91))
+                    .fill(Color(hex: "EAF1FB"))
                     
                     RoundedRectangle(cornerRadius: 4)
                         .fill(getProgressColor(percentage: percentage))
@@ -346,7 +350,7 @@ struct CheckLimitView: View {
             .frame(height: 8)
         }
         .padding(5)
-        .padding(.bottom, 16)
+        .padding(.bottom, 10)
     }
     
     private func statsGrid(limit: LimitDetail, consumed: Double, remaining: Double) -> some View {
@@ -355,8 +359,8 @@ struct CheckLimitView: View {
             statsColumn(title: "CONSOMMÉ", value: consumed > 0 ? formatAmountShort(consumed) : "0", color: consumed > 0 ? Color(red: 0.957, green: 0.263, blue: 0.212) : Color(red: 0.13, green: 0.13, blue: 0.13))
             statsColumn(title: "DISPONIBLE", value: formatAmountShort(remaining), color: remaining > 0 ? Color(red: 0.298, green: 0.686, blue: 0.314) : Color(red: 0.957, green: 0.263, blue: 0.212))
         }
-        .padding(16)
-        .background(RoundedRectangle(cornerRadius: 4).fill(Color(red: 0.976, green: 0.976, blue: 0.976)))
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "F3F6FA")))
     }
     
     private func statsColumn(title: String, value: String, color: Color) -> some View {
@@ -407,9 +411,9 @@ struct CheckLimitView: View {
                 Spacer()
                 Text("Voir plus de détails")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(Color.black.opacity(0.5))
+                    .foregroundColor(Color(hex: "174EA6"))
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                    .foregroundColor(Color.black.opacity(0.5))
+                    .foregroundColor(Color(hex: "174EA6"))
                     .font(.system(size: 12, weight: .semibold))
                 Spacer()
             }
@@ -569,7 +573,7 @@ struct CheckLimitView: View {
         } else if percentage >= 50 {
             return Color(red: 0.961, green: 0.620, blue: 0.302) // #F59E4D
         } else {
-            return Color(red: 0.20, green: 0.40, blue: 0.80) // Default blue
+            return Color(hex: "174EA6") // Default blue
         }
     }
     
@@ -589,7 +593,7 @@ struct CheckLimitView: View {
         } else if percentage >= 50 {
             return Color(red: 1.0, green: 0.596, blue: 0.0) // #FF9800
         } else {
-            return Color(red: 0.298, green: 0.686, blue: 0.314) // #4CAF50
+            return Color(hex: "0788B9")
         }
     }
     

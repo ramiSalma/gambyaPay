@@ -6,31 +6,54 @@ struct TermsAndConditionsView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground).ignoresSafeArea()
+            Color.white.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Keep original header
-                DiamaPayHeader()
+                ZStack {
+                    Color(hex: "174EA6")
+                    HStack(spacing: 14) {
+                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                            Image(systemName: "arrow.left")
+                                .font(.system(size: 21, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(width: 42, height: 48, alignment: .leading)
+                        }
+                        Spacer(minLength: 0)
+                        Text("Conditions Générales")
+                            .font(.system(size: 19, weight: .medium))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Spacer(minLength: 0)
+                        Color.clear.frame(width: 42, height: 48)
+                    }
+                    .padding(.horizontal, 22)
+                }
+                .frame(height: 58)
+                .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
 
                 // Header
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Conditions Générales d'Utilisation")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.black)
+                        .font(.system(size: 27, weight: .bold))
+                        .foregroundColor(.gray)
                     
                     Text("DIAMACASH - DIAMA BANK SA")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.blueH)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(hex: "0788B9"))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
-                .padding(.top, 24)
-                .padding(.bottom, 16)
+                .padding(.top, 26)
+                .padding(.bottom, 30)
                 .background(Color.white)
+                .overlay(alignment: .bottom) {
+                    Rectangle().fill(Color.orange.opacity(0.25)).frame(height: 2)
+                }
                 
                 // Modern Terms Content ScrollView
                 ScrollView {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 14) {
                         // Definitions Section
                         modernSection(
                             icon: "book.fill",
@@ -66,10 +89,13 @@ struct TermsAndConditionsView: View {
                         // Footer
                         footerView
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 16)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 18)
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
     }
@@ -95,22 +121,23 @@ struct TermsAndConditionsView: View {
             }) {
                 HStack {
                     Image(systemName: icon)
-                        .foregroundColor(.greenH)
-                        .font(.system(size: 18))
-                        .frame(width: 30)
+                        .foregroundColor(Color(hex: "174EA6"))
+                        .font(.system(size: 24, weight: .semibold))
+                        .frame(width: 46, height: 46)
                     
                     Text(title)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color(UIColor.darkGray))
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.gray)
 
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.greenH)
-                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color(hex: "174EA6"))
+                        .font(.system(size: 18, weight: .semibold))
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
-                .padding(16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 20)
                 .background(Color.white)
             }
             
@@ -118,14 +145,15 @@ struct TermsAndConditionsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     content()
                 }
-                .padding(16)
+                .padding(20)
                 .background(Color.white)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .cornerRadius(23)
+        .overlay(RoundedRectangle(cornerRadius: 23).stroke(Color.black.opacity(0.06), lineWidth: 1))
+        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 3)
     }
     
     // MARK: - Definitions Content
@@ -206,27 +234,28 @@ struct TermsAndConditionsView: View {
                 HStack {
                     ZStack {
                         Circle()
-                            .fill(Color.greenH.opacity(0.1))
-                            .frame(width: 40, height: 40)
+                            .fill(Color(hex: "F1F8F2"))
+                            .frame(width: 52, height: 52)
                         
                         Text("\(article.number)")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.greenH)
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color(hex: "174EA6"))
                     }
                     
                     Text(article.title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(Color(UIColor.darkGray))
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.gray)
                         .multilineTextAlignment(.leading)
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.greenH)
-                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color(hex: "174EA6"))
+                        .font(.system(size: 18, weight: .semibold))
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
-                .padding(16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 20)
                 .background(Color.white)
             }
             
@@ -234,14 +263,15 @@ struct TermsAndConditionsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     article.content()
                 }
-                .padding(16)
+                .padding(20)
                 .background(Color.white)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .cornerRadius(23)
+        .overlay(RoundedRectangle(cornerRadius: 23).stroke(Color.black.opacity(0.06), lineWidth: 1))
+        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 3)
     }
     
     // MARK: - Helper Views
@@ -296,11 +326,11 @@ struct TermsAndConditionsView: View {
                 .foregroundColor(.gray)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .padding(.vertical, 24)
         .padding(.horizontal, 16)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .overlay(alignment: .top) {
+            Rectangle().fill(Color.orange.opacity(0.25)).frame(height: 2)
+        }
     }
     
     // MARK: - Articles Data

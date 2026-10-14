@@ -27,12 +27,12 @@ struct SponsoredWalletsListView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Portefeuilles parrainés", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -40,6 +40,9 @@ struct SponsoredWalletsListView: View {
                     contentView
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -99,8 +102,7 @@ struct SponsoredWalletsListView: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
-                .scaleEffect(1.5)
+                .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
             
             Text("Chargement...")
                 .font(.system(size: 16, weight: .medium))
@@ -112,10 +114,7 @@ struct SponsoredWalletsListView: View {
     // MARK: - Content View
     private var contentView: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                // Title Card
-                titleCard
-                
+            VStack(spacing: 14) {
                 if sponsoredWallets.isEmpty {
                     emptyStateView
                 } else {
@@ -147,34 +146,14 @@ struct SponsoredWalletsListView: View {
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.blueH)
-                    .cornerRadius(12)
+                    .padding(.vertical, 13)
+                    .background(Color(hex: "174EA6"))
+                    .cornerRadius(14)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 20)
-            .padding(.bottom, 30)
-        }
-    }
-    
-    // MARK: - Title Card
-    private var titleCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-            
-            VStack(spacing: 8) {
-                Text("Portefeuilles parrainés")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 80, height: 3)
-            }
-            .padding(.vertical, 16)
+            .padding(.horizontal, 18)
+            .padding(.top, 16)
+            .padding(.bottom, 88)
         }
     }
     
@@ -182,25 +161,26 @@ struct SponsoredWalletsListView: View {
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Image(systemName: "wallet.pass")
-                .font(.system(size: 60))
-                .foregroundColor(.secondary)
-                .padding(.top, 40)
+                .font(.system(size: 42))
+                .foregroundColor(Color(hex: "174EA6").opacity(0.75))
+                .padding(.top, 24)
             
             Text("Aucun portefeuille parrainé")
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
             Text("Vous n'avez sponsorisé aucun portefeuille pour le moment")
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+                .padding(.horizontal, 24)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 60)
+        .padding(.vertical, 28)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.black.opacity(0.06), lineWidth: 1))
+        .shadow(color: .black.opacity(0.07), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Load Sponsored Wallets
@@ -391,13 +371,13 @@ struct SponsoredWalletCard: View {
     @State private var showMenu = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             // Header with name, phone and menu
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Bénéficiaire: \(wallet.userNameSponsored)")
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color.blueH)
+                        .foregroundColor(Color(hex: "174EA6"))
                     
                     if !wallet.phoneNumberSponsored.isEmpty {
                         Text(wallet.phoneNumberSponsored)
@@ -412,8 +392,8 @@ struct SponsoredWalletCard: View {
                     showMenu = true
                 }) {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 20))
-                        .foregroundColor(.primary)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(Color(hex: "174EA6"))
                         .frame(width: 32, height: 32)
                 }
             }
@@ -421,7 +401,7 @@ struct SponsoredWalletCard: View {
             Divider()
             
             // Limits
-            HStack(spacing: 20) {
+            HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Limite journalière")
                         .font(.system(size: 12))
@@ -471,10 +451,11 @@ struct SponsoredWalletCard: View {
                 }
             }
         }
-        .padding(16)
+        .padding(14)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.black.opacity(0.06), lineWidth: 1))
+        .shadow(color: .black.opacity(0.07), radius: 5, x: 0, y: 2)
         .actionSheet(isPresented: $showMenu) {
             ActionSheet(
                 title: Text("Options"),

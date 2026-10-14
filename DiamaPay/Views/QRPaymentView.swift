@@ -485,29 +485,54 @@ struct QRPaymentView: View {
             Color(UIColor.systemGroupedBackground).ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Merchant Payment", headerColor: Color(hex: "174EA6"))
                 
                 if vm.isProcessing {
                     Spacer()
                     ProgressView().scaleEffect(1.5)
-                    Text("Traitement...").padding(.top)
+                    Text("Processing...").padding(.top)
                     Spacer()
                 } else {
                     ScrollView {
-                        VStack(spacing: 16) {
-                            headerCard
-                            actionsCard
+                        VStack(spacing: 22) {
+                            Text("Choose Scan Method")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(Color(hex: "245C2A"))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 16)
+                            HStack(spacing: 14) {
+                                scanMethodCard(
+                                    icon: "qrcode.viewfinder",
+                                    title: "Camera",
+                                    subtitle: "Scan now",
+                                    color: Color(hex: "2368B8"),
+                                    tint: Color(hex: "E7F3FC"),
+                                    action: checkCamera
+                                )
+                                scanMethodCard(
+                                    icon: "photo.badge.magnifyingglass",
+                                    title: "Gallery",
+                                    subtitle: "From photos",
+                                    color: Color(hex: "378C4A"),
+                                    tint: Color(hex: "E9F5E9"),
+                                    action: { showPicker = true }
+                                )
+                            }
                             tipsCard
                         }
-                        .padding(16)
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, 24)
                     }
                 }
             }
-            
-            VStack {
-                Spacer()
-                myQRButton
-            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(
+                onSponsors: {},
+                onQR: { showMyQR = true },
+                onLimits: {},
+                onSettings: {}
+            )
         }
         .navigationBarHidden(true)
         .alert("Erreur", isPresented: $vm.showAlert) {
@@ -553,102 +578,58 @@ struct QRPaymentView: View {
         }
     }
     
-    private var headerCard: some View {
-        VStack(spacing: 8) {
-            Text("Paiement QR")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.white)
-            Rectangle().fill(.white).frame(width: 80, height: 3)
-        }
-        .padding(.vertical, 16)
-        .frame(maxWidth: .infinity)
-        .background(Color.blueH)
-        .cornerRadius(12)
-    }
-    
-    private var actionsCard: some View {
-        VStack(spacing: 16) {
-            Text("Choisissez une option")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.greenH)
-            
-            Text("Sélectionnez votre méthode de paiement")
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-            
-            Button(action: checkCamera) {
-                actionRow(icon: "qrcode.viewfinder", title: "Code QR", color: .red, text: "Scanner un code QR pour effectuer un paiement")
-            }
-            
-            Button(action: { showPicker = true }) {
-                actionRow(icon: "photo", title: "Depuis Galerie", color: .greenH, text: "Sélectionner une image QR depuis la gallerie")
-            }
-        }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(12)
-    }
-    
-    private func actionRow(icon: String, title: String, color: Color, text: String) -> some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(Color.white)
-                .frame(width: 50, height: 50)
-                .background(color)
-                .cornerRadius(10)
-            VStack(alignment: .leading, spacing: 5) {
+    private func scanMethodCard(
+        icon: String,
+        title: String,
+        subtitle: String,
+        color: Color,
+        tint: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 34, weight: .semibold))
+                    .foregroundColor(color)
+                    .frame(width: 58, height: 58)
+                    .background(tint)
+                    .clipShape(Circle())
+
                 Text(title)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.primary)
-                
-                Text(text)
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(color)
+                Text(subtitle)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color(hex: "7A8D99"))
             }
-            
-            Image(systemName: "chevron.right")
-                .foregroundColor(.secondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 158)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.22), lineWidth: 1.5))
         }
-        .padding(16)
-        .background(color.opacity(0.1))
-        .cornerRadius(10)
+        .buttonStyle(.plain)
     }
     
     private var tipsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
+            HStack(spacing: 14) {
                 Image(systemName: "info.circle.fill")
-                Text("Conseils rapides")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 22))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Quick Tip")
+                        .font(.system(size: 16, weight: .bold))
+                    Text("Scan the QR code displayed at the merchant location to complete your payment")
+                        .font(.system(size: 13, weight: .medium))
+                }
             }
-            .foregroundColor(.blueH)
-            
-            Text("• Assurez vous d'avoir une connexion Internet stable requise\n\n• Vérifiez le montant avant de confirmer le paiement")
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
+            .foregroundColor(Color(hex: "E87800"))
         }
-        .padding(16)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
-        .cornerRadius(12)
-    }
-    
-    private var myQRButton: some View {
-        Button(action: { showMyQR = true }) {
-            HStack {
-                Image(systemName: "qrcode")
-                Text("MON QR CODE")
-                    .font(.system(size: 16, weight: .bold))
-            }
-            .foregroundColor(.white)
-            .padding(.horizontal, 32)
-            .padding(.vertical, 16)
-            .background(Color.blueH)
-            .cornerRadius(30)
-            .shadow(radius: 10)
-        }
-        .padding(.bottom, 30)
+        .background(Color(hex: "FFF8DF"))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 3)
     }
 
     @ViewBuilder
@@ -736,3 +717,4 @@ struct QRPaymentView: View {
         vm.process(qr: qr)
     }
 }
+

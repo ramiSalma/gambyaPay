@@ -48,12 +48,12 @@ struct SendCommentsView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Commentaires & Suggestions", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -69,10 +69,7 @@ struct SendCommentsView: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        VStack(spacing: 16) {
-                            // Title Card
-                            titleCard
-                            
+                        VStack(spacing: 14) {
                             // Instruction
                             instructionCard
                             
@@ -91,11 +88,14 @@ struct SendCommentsView: View {
                             // Submit Button
                             submitButton
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 16)
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -139,20 +139,20 @@ struct SendCommentsView: View {
     // MARK: - Title Card
     private var titleCard: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(hex: "174EA6"))
+                .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
             
             VStack(spacing: 8) {
                 Text("Commentaires & Suggestions")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                 
                 Rectangle()
                     .fill(.white)
-                    .frame(width: 80, height: 3)
+                    .frame(width: 64, height: 2)
             }
-            .padding(.vertical, 16)
+            .padding(.vertical, 14)
         }
     }
     
@@ -162,10 +162,10 @@ struct SendCommentsView: View {
             HStack(spacing: 8) {
                 Image(systemName: "info.circle.fill")
                     .foregroundColor(.blueH)
-                    .font(.system(size: 18))
+                    .font(.system(size: 16))
                 
                 Text("Nous valorisons vos retours")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.primary)
             }
             
@@ -173,22 +173,22 @@ struct SendCommentsView: View {
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
-        .padding(16)
-        .background(Color.blueH.opacity(0.05))
-        .cornerRadius(12)
+        .padding(14)
+        .background(Color(hex: "F3F6FA"))
+        .cornerRadius(16)
     }
     
     // MARK: - Category Card
     private var categoryCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Catégorie")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             Menu {
@@ -207,7 +207,7 @@ struct SendCommentsView: View {
             } label: {
                 HStack {
                     Text(categories[selectedCategory])
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
                     Spacer()
@@ -216,64 +216,69 @@ struct SendCommentsView: View {
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
             }
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Subject Card
     private var subjectCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Sujet")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             TextField("Entrer le sujet", text: $subject)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Comment Card
     private var commentCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Commentaire")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             VStack(alignment: .leading, spacing: 8) {
                 TextEditor(text: $comment)
-                    .font(.system(size: 12, weight: .medium))
-                    .frame(height: 120)
+                    .font(.system(size: 14, weight: .medium))
+                    .frame(height: 140)
                     .padding(8)
-                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                    .cornerRadius(8)
+                    .background(Color.white)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                    .cornerRadius(12)
                     .onChange(of: comment) {
                         if comment.count > maxCommentLength {
                             comment = String(comment.prefix(maxCommentLength))
@@ -283,43 +288,46 @@ struct SendCommentsView: View {
                 HStack {
                     Spacer()
                     Text("\(comment.count)/\(maxCommentLength) caractères")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
                         .foregroundColor(characterCountColor)
                 }
             }
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Email Card
     private var emailCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Email (optionnel)")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+                    .fill(Color(hex: "0788B9"))
+                    .frame(width: 64, height: 2)
             }
             
             TextField("Entrer votre email", text: $email)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 14)
+                .frame(height: 50)
+                .background(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "596273"), lineWidth: 1.2))
+                .cornerRadius(12)
                 .keyboardType(.emailAddress)
                 .autocapitalization(.none)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(18)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.black.opacity(0.05), lineWidth: 1))
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     // MARK: - Submit Button
@@ -332,9 +340,9 @@ struct SendCommentsView: View {
             Text("Envoyer")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
-                .frame(width: 150, height: 48)
-                .background(Color.greenH)
-                .cornerRadius(8)
+                .frame(width: 180, height: 50)
+                .background(Color(hex: "174EA6"))
+                .cornerRadius(12)
         }
         .disabled(isLoading)
         .padding(.bottom, 20)
