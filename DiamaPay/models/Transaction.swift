@@ -1,0 +1,159 @@
+//
+//  Transaction.swift
+//  DiamaPay
+//
+//  Created by Bits on 24/9/2025.
+//
+
+import Foundation
+
+struct Transaction: Identifiable, Codable {
+    let id: String
+    let date: String
+    let title: String
+    let reference: String
+    let amount: String
+    let balance: String
+    let isPositive: Bool
+    let transactionReference: String?
+    let transactionDate: String?
+    let currency: String?
+    let sign: String?
+    let status: String?
+    let details: String?
+    let openingBalance: String?
+    let closingBalance: String?
+    let isDebit: Bool
+    
+    // Updated to work with [String: Any] from API response
+    init(from result: Any) {
+        if let dict = result as? [String: Any] {
+            let transactionResult = TransactionResult(from: dict)
+            self = Transaction(from: transactionResult)
+        } else if let transactionResult = result as? TransactionResult {
+            self = Transaction(from: transactionResult)
+        } else {
+            // Fallback with empty values
+            self.id = UUID().uuidString
+            self.date = "Date unavailable"
+            self.title = "Transaction"
+            self.reference = "Ref: N/A"
+            self.amount = "0 GNF"
+            self.balance = "Solde : 0 GNF"
+            self.isPositive = false
+            self.transactionReference = nil
+            self.transactionDate = nil
+            self.currency = "GNF"
+            self.sign = nil
+            self.status = nil
+            self.details = nil
+            self.openingBalance = nil
+            self.closingBalance = nil
+            self.isDebit = false
+        }
+    }
+    
+    init(from result: TransactionResult) {
+        self.id = result.trxRef ?? UUID().uuidString
+        self.transactionReference = result.trxRef
+        self.transactionDate = result.authDate
+        self.currency = result.currency
+        self.sign = result.sign
+        self.status = result.status
+        self.details = result.details
+        self.openingBalance = result.openBal
+        self.closingBalance = result.closeBal
+        
+        // Format date
+        if let dateStr = result.authDate, !dateStr.isEmpty {
+            self.date = Transaction.formatDate(dateStr)
+        } else {
+            self.date = "Date unavailable"
+        }
+        
+        self.title = Transaction.getDisplayTitle(type: result.type, details: result.details)
+        self.reference = "Ref: \(result.trxRef ?? "N/A")"
+        
+        // Determine if debit or credit based on sign
+        let signValue = result.sign ?? ""
+        self.isDebit = signValue.uppercased() == "D"
+        
+        // Format amount safely
+        let rawAmount = result.amount?.isEmpty == false ? result.amount! : "0"
+        let formattedAmount = Transaction.formatAmount(rawAmount)
+        let currencyCode = result.currency ?? "GNF"
+        
+        if self.isDebit {
+            self.amount = "-\(formattedAmount) \(currencyCode)"
+            self.isPositive = false
+        } else {
+            self.amount = "+\(formattedAmount) \(currencyCode)"
+            self.isPositive = true
+        }
+        
+        // Format balance
+        let balanceValue = result.closeBal?.isEmpty == false ? result.closeBal! : "0"
+        self.balance = "Solde : \(Transaction.formatAmount(balanceValue)) \(currencyCode)"
+    }
+    
+    var fees: String {
+        return Transaction.extractFeesFromDetails(details ?? "")
+    }
+
+    // MARK: - Helpers
+    
+    static func formatDate(_ dateString: String) -> String {
+        let inputFormats = [
+            "dd/MM/yyyy",
+            "yyyy-MM-dd",
+            "dd-MM-yyyy",
+            "yyyy-MM-dd HH:mm:ss",
+            "dd/MM/yyyy HH:mm:ss"
+        ]
+        
+        for format in inputFormats {
+            let formatter = DateFormatter()
+            formatter.dateFormat = format
+            if let date = formatter.date(from: dateString) {
+                let outputFormatter = DateFormatter()
+                outputFormatter.dateFormat = "dd MMM yyyy"
+                outputFormatter.locale = Locale(identifier: "fr_FR")
+                return outputFormatter.string(from: date)
+            }
+        }
+        return dateString
+    }
+    
+    private static func extractFeesFromDetails(_ details: String) -> String {
+        // Updated to detect French "frais" instead of English "fees"
+        if let feesRange = details.range(of: "frais:") {
+            let substring = details[feesRange.upperBound...]
+            let components = substring.components(separatedBy: ",")
+            if let feesComponent = components.first {
+                let feesValue = feesComponent.trimmingCharacters(in: .whitespaces)
+                return "\(feesValue) GNF"
+            }
+        }
+        return "0 GNF"
+    }
+
+    private static func getDisplayTitle(type: String?, details: String?) -> String {
+        if let type = type, !type.isEmpty {
+            return type
+        } else if let details = details, !details.isEmpty {
+            return details
+        }
+        return "Transaction"
+    }
+    
+    private static func formatAmount(_ value: String) -> String {
+        if let number = Double(value) {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.groupingSeparator = " "
+            return formatter.string(from: NSNumber(value: number)) ?? value
+        }
+        return value
+    }
+}
+
