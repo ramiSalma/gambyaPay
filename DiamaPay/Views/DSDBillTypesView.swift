@@ -21,12 +21,12 @@ struct DSDBillTypesView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                headerView
+                DiamaPayHeader(title: "DSD Bills", headerColor: Color(hex: "174EA6"))
                 
                 ScrollView {
                     VStack(spacing: 16) {
@@ -47,6 +47,9 @@ struct DSDBillTypesView: View {
                     .padding(.top, 20)
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .background(

@@ -20,27 +20,28 @@ struct DrawerItem: View {
                     Image(systemName: BiometricHelper.getBiometricType().icon)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 28, height: 28)
-                        .foregroundColor(Color(hex: "0756A7"))
+                        .frame(width: 22, height: 22)
+                        .foregroundColor(Color(hex: "174EA6"))
                 }
                 // Try to load system icon first, otherwise fallback to asset
                 else if UIImage(systemName: icon) != nil {
                     Image(systemName: icon)
-                        .font(.system(size: 25, weight: .regular))
-                        .frame(width: 28, height: 28)
-                        .foregroundColor(Color(hex: "0756A7"))
+                        .font(.system(size: 20, weight: .regular))
+                        .frame(width: 22, height: 22)
+                        .foregroundColor(Color(hex: "174EA6"))
                 } else {
-                    Image(icon) // Loads from Assets
+                    Image(icon)
+                        .renderingMode(.template)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 28, height: 28)
-                        .foregroundColor(Color(hex: "0756A7"))
+                        .frame(width: 22, height: 22)
+                        .foregroundColor(Color(hex: "174EA6"))
                 }
                 
                 Text(title)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color(hex: "394353"))
-                    .padding(.leading, 14)
+                    .padding(.leading, 12)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
@@ -48,9 +49,9 @@ struct DrawerItem: View {
                 Spacer()
                 
             }
-            .frame(minHeight: 70)
-            .padding(.vertical, 4)
-            .padding(.horizontal, 26)
+            .frame(minHeight: 54)
+            .padding(.vertical, 3)
+            .padding(.horizontal, 22)
         }
         .buttonStyle(.plain)
     }

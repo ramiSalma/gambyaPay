@@ -115,12 +115,12 @@ struct SourceOfFundsView: View {
             }) {
                 Text(walletTransferStyle ? "Wallet" : "Mon Portefeuille")
                     .font(.system(size: walletTransferStyle ? 17 : 14, weight: .semibold))
-                    .foregroundColor(selectedSource == .wallet ? .white : (walletTransferStyle ? Color.gray : Color.greenH))
+                    .foregroundColor(selectedSource == .wallet ? .white : (walletTransferStyle ? Color.gray : Color.blueH))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedSource == .wallet ? Color.greenH : Color.clear) // primary_green
+                    .fill(selectedSource == .wallet ? Color.blueH : Color.clear) // primary_green
                     .shadow(color: selectedSource == .wallet ? Color(red: 0.2, green: 0.7, blue: 0.4).opacity(0.3) : Color.clear, radius: 3)
             )
             
@@ -141,7 +141,7 @@ struct SourceOfFundsView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedSource == .sponsor ? Color.greenH: Color.clear)
+                    .fill(selectedSource == .sponsor ? Color.blueH: Color.clear)
                     .shadow(color: selectedSource == .sponsor ? Color(red: 0.2, green: 0.7, blue: 0.4).opacity(0.3) : Color.clear, radius: 3)
             )
             .disabled(sponsors.isEmpty || sponsors.count <= 1)

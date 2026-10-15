@@ -15,12 +15,12 @@ struct MyQRCodeView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "My QR Code", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -28,6 +28,9 @@ struct MyQRCodeView: View {
                     contentScrollView
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -52,7 +55,7 @@ struct MyQRCodeView: View {
             Spacer()
             VStack(spacing: 16) {
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .greenH))
+                    .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                     .scaleEffect(1.5)
                 
                 Text("Génération du code QR...")
@@ -122,7 +125,7 @@ struct MyQRCodeView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
-                    .background(qrCodeImage == nil ? Color.gray.opacity(0.5) : Color.greenH)
+                    .background(qrCodeImage == nil ? Color.gray.opacity(0.5) : Color.blueH)
                     .cornerRadius(8)
             }
             .disabled(qrCodeImage == nil)
@@ -148,7 +151,7 @@ struct MyQRCodeView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.greenH)
+                        .fill(Color.blueH)
                         .frame(width: 40, height: 40)
                     
                     Text("?")
@@ -158,7 +161,7 @@ struct MyQRCodeView: View {
                 
                 Text("Comment ça marche?")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
             }
             
             // Instructions

@@ -22,11 +22,11 @@ struct LinkedAccountsListView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Linked Bank Accounts", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -44,6 +44,9 @@ struct LinkedAccountsListView: View {
                     accountsContent
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -96,7 +99,6 @@ struct LinkedAccountsListView: View {
     
     private var accountsContent: some View {
         VStack(spacing: 0) {
-            titleCard
             
             ScrollView {
                 VStack(spacing: 12) {
@@ -120,7 +122,6 @@ struct LinkedAccountsListView: View {
     
     private var emptyStateView: some View {
         VStack(spacing: 0) {
-            titleCard
             
             Spacer()
             
@@ -287,7 +288,7 @@ struct AccountCard: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(formatBalance())
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.greenH)
+                        .foregroundColor(.blueH)
                     
                     Text("Solde")
                         .font(.system(size: 11))
@@ -335,7 +336,7 @@ struct PinDialogViewA: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(UIColor.systemGroupedBackground)
+                Color.white
                     .ignoresSafeArea()
                 
                 VStack(spacing: 24) {

@@ -13,11 +13,11 @@ struct BillPayProvidersView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Bill Payments", headerColor: Color(hex: "174EA6"))
                 
                 ScrollView {
                     VStack(spacing: 16) {
@@ -38,6 +38,9 @@ struct BillPayProvidersView: View {
                     .padding(.top, 20)
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .background(

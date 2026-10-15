@@ -222,7 +222,7 @@ struct FAQView: View {
                                         .foregroundColor(.white)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 4)
-                                        .background(Color.greenH)
+                                        .background(Color.blueH)
                                         .cornerRadius(18)
                                 }
                             }

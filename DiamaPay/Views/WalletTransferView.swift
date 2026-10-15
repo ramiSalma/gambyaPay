@@ -222,7 +222,7 @@ struct WalletTransferView: View {
                     } else if !recipientName.isEmpty && destinationPhone.count == 9 {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 20))
-                            .foregroundColor(.greenH)
+                            .foregroundColor(.blueH)
                             .padding(.trailing, 12)
                     }
                 }

@@ -18,7 +18,7 @@ struct ModernSideMenuView: View {
                 // Modern gradient header
                 ZStack(alignment: .bottomLeading) {
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.greenH, Color.greenH.opacity(0.8)]),
+                        gradient: Gradient(colors: [Color.blueH, Color.blueH.opacity(0.8)]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -403,7 +403,7 @@ struct ModernDrawerItem: View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.greenH.opacity(0.08) : Color.clear)
+                    .fill(isSelected ? Color.blueH.opacity(0.08) : Color.clear)
                     .padding(.horizontal, 16)
             )
         }

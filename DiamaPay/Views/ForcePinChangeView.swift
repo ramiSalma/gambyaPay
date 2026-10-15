@@ -96,7 +96,7 @@ struct ForcePinChangeView: View {
     private var headerView: some View {
         ZStack {
             LinearGradient(
-                colors: [Color.greenH],
+                colors: [Color.blueH],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -160,7 +160,7 @@ struct ForcePinChangeView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Modifier votre code PIN")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -267,7 +267,7 @@ struct ForcePinChangeView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(Color.greenH)
+                    .background(Color.blueH)
                     .cornerRadius(8)
             }
             .disabled(isLoading || !isFormValid())
@@ -329,7 +329,7 @@ struct ForcePinChangeView: View {
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
-                                    .background(Color.greenH)
+                                    .background(Color.blueH)
                                     .cornerRadius(8)
                             }
                         }

@@ -24,12 +24,12 @@ struct DSDPaymentView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Custom Header
-                headerView
+                DiamaPayHeader(title: "Primo Arrivant", headerColor: Color(hex: "174EA6"))
                 
                 if isLoading {
                     loadingView
@@ -42,6 +42,9 @@ struct DSDPaymentView: View {
                 // Refresh Button
                 refreshButton
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -427,7 +430,7 @@ struct DSDOperationCard: View {
                 Spacer()
                 
                 Circle()
-                    .fill(Color.green)
+                    .fill(Color(hex: "0788B9"))
                     .frame(width: 8, height: 8)
             }
             
@@ -444,7 +447,7 @@ struct DSDOperationCard: View {
                     
                     Text(operation.formattedAmount)
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.green)
+                        .foregroundColor(Color(hex: "174EA6"))
                 }
                 
                 Spacer()
@@ -506,7 +509,7 @@ struct DSDOperationCard: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(Color.green)
+                        .background(Color(hex: "174EA6"))
                         .cornerRadius(16)
                 }
             }

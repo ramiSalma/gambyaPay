@@ -66,11 +66,11 @@ struct WalletDeactivationView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Deactivate Wallet", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -104,6 +104,9 @@ struct WalletDeactivationView: View {
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .overlay(confirmationDialogOverlay)
@@ -150,7 +153,7 @@ struct WalletDeactivationView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Raison de la Désactivation")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -211,7 +214,7 @@ struct WalletDeactivationView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Méthode de Transfert du Solde")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -270,7 +273,7 @@ struct WalletDeactivationView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Détails du Destinataire")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -326,7 +329,7 @@ struct WalletDeactivationView: View {
                 } else if isRecipientVerified && !walletHolderName.isEmpty && receiverPhone.count == 9 {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(.greenH)
+                        .foregroundColor(.blueH)
                         .padding(.trailing, 12)
                 }
             }
@@ -342,7 +345,7 @@ struct WalletDeactivationView: View {
                     
                     HStack(spacing: 8) {
                         Image(systemName: "person.fill")
-                            .foregroundColor(.greenH)
+                            .foregroundColor(.blueH)
                             .font(.system(size: 14))
                         
                         Text(walletHolderName)
@@ -353,7 +356,7 @@ struct WalletDeactivationView: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
-                    .background(Color.greenH.opacity(0.1))
+                    .background(Color.blueH.opacity(0.1))
                     .cornerRadius(8)
                 }
             }
@@ -1174,7 +1177,7 @@ struct OtpVerificationDialog: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 44)
-                            .background(Color.greenH)
+                            .background(Color.blueH)
                             .cornerRadius(8)
                     }
                 }
@@ -1227,7 +1230,7 @@ struct DeactivationSuccessDialog: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
-                        .background(Color.greenH)
+                        .background(Color.blueH)
                         .cornerRadius(8)
                 }
                 .padding(.horizontal)

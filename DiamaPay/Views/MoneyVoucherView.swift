@@ -55,12 +55,12 @@ struct MoneyVoucherView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Money Voucher", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -78,7 +78,6 @@ struct MoneyVoucherView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             // Title Card
-                            titleCard
                             
                             // Source of Funds View
                             SourceOfFundsView(
@@ -113,6 +112,9 @@ struct MoneyVoucherView: View {
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onDisappear {
@@ -180,7 +182,7 @@ struct MoneyVoucherView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Détails du Destinataire")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -255,7 +257,7 @@ struct MoneyVoucherView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Montant")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -341,7 +343,7 @@ struct MoneyVoucherView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Commentaire (optionnel)")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -376,7 +378,7 @@ struct MoneyVoucherView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 150, height: 48)
-                    .background(Color.greenH)
+                    .background(Color.blueH)
                     .cornerRadius(8)
             }
             .disabled(isLoading)

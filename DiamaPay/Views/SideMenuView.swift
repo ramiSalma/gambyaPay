@@ -8,10 +8,10 @@ struct SideMenuView: View {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("EWALLET")
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
                     Text("Your Secure Digital Wallet")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.white.opacity(0.95))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -21,8 +21,8 @@ struct SideMenuView: View {
                 .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
                 
                 Text("TRANSFERS")
-                    .font(.system(size: 14, weight: .medium))
-                    .tracking(2)
+                    .font(.system(size: 12, weight: .semibold))
+                    .tracking(1.5)
                     .foregroundColor(Color(hex: "174EA6"))
                     .padding(.horizontal, 28)
                     .padding(.top, 28)
@@ -51,8 +51,8 @@ struct SideMenuView: View {
                 sectionDivider
                 
                 Text("BILL PAYMENTS")
-                    .font(.system(size: 14, weight: .medium))
-                    .tracking(2)
+                    .font(.system(size: 12, weight: .semibold))
+                    .tracking(1.5)
                     .foregroundColor(Color(hex: "174EA6"))
                     .padding(.horizontal, 28)
                     .padding(.top, 24)
@@ -65,8 +65,8 @@ struct SideMenuView: View {
                 sectionDivider
                 // Support group
                 Text("SPONSORSHIPS")
-                    .font(.system(size: 14, weight: .medium))
-                    .tracking(2)
+                    .font(.system(size: 12, weight: .semibold))
+                    .tracking(1.5)
                     .foregroundColor(Color(hex: "174EA6"))
                     .padding(.horizontal, 28)
                     .padding(.top, 24)
@@ -82,8 +82,8 @@ struct SideMenuView: View {
                 
                 sectionDivider
                 Text("WALLET MANAGEMENT")
-                    .font(.system(size: 14, weight: .medium))
-                    .tracking(2)
+                    .font(.system(size: 12, weight: .semibold))
+                    .tracking(1.5)
                     .foregroundColor(Color(hex: "174EA6"))
                     .padding(.horizontal, 28)
                     .padding(.top, 24)
@@ -110,8 +110,8 @@ struct SideMenuView: View {
                 }
                 sectionDivider
                 Text("SETTINGS")
-                    .font(.system(size: 14, weight: .medium))
-                    .tracking(2)
+                    .font(.system(size: 12, weight: .semibold))
+                    .tracking(1.5)
                     .foregroundColor(Color(hex: "174EA6"))
                     .padding(.horizontal, 28)
                     .padding(.top, 24)
@@ -128,8 +128,8 @@ struct SideMenuView: View {
                         Spacer()
                         if UserDataManager.shared.isBiometricEnabled() {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(Color(hex: "0756A7"))
-                                .font(.system(size: 16))
+                                .foregroundColor(Color(hex: "174EA6"))
+                                .font(.system(size: 14))
                                 .padding(.trailing, 16)
                         }
                     }
@@ -163,7 +163,6 @@ struct SideMenuView: View {
                 DrawerItem(icon: "rectangle.portrait.and.arrow.right", title: "Log Out") {
                     onSelect("logout")
                 }
-                .foregroundColor(.red)
                 
                 Spacer()
             }

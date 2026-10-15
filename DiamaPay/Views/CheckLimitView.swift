@@ -11,7 +11,7 @@ struct CheckLimitView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = "Error"
     
     @State private var limitSummary: LimitSummary?
     @State private var limitDetails: [LimitDetail] = []
@@ -26,7 +26,7 @@ struct CheckLimitView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Vérifier les limites", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: "Check Limits", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -35,7 +35,7 @@ struct CheckLimitView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
                             .scaleEffect(1.5)
                         
-                        Text("Chargement des limites...")
+                        Text("Loading limits...")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -122,7 +122,7 @@ struct CheckLimitView: View {
                 VStack(spacing: 16) {
                     // Title
                     VStack(spacing: 8) {
-                        Text("Limite Journalière Globale")
+                        Text("Overall Daily Limit")
                             .font(.system(size: 17, weight: .bold))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
@@ -162,21 +162,21 @@ struct CheckLimitView: View {
                     HStack(spacing: 0) {
                         // Limit
                         statColumn(
-                            title: "LIMITE",
+                            title: "LIMIT",
                             value: formatAmountShort(prfidLimit),
                             subtitle: "GNF"
                         )
                         
                         // Consumed
                         statColumn(
-                            title: "CONSOMMÉ",
+                            title: "USED",
                             value: formatAmountShort(prfidConsumed),
                             subtitle: "GNF"
                         )
                         
                         // Remaining
                         statColumn(
-                            title: "DISPONIBLE",
+                            title: "REMAINING",
                             value: formatAmountShort(prfidRemaining),
                             subtitle: "GNF"
                         )
@@ -204,7 +204,7 @@ struct CheckLimitView: View {
                         
                         // Period
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text("Période")
+                            Text("Period")
                                 .font(.system(size: 9))
                                 .foregroundColor(.white.opacity(0.7))
                             
@@ -246,7 +246,7 @@ struct CheckLimitView: View {
                 .fill(Color(hex: "0788B9"))
                 .frame(width: 3, height: 22)
             
-            Text("Détails par Opération")
+            Text("Limits by Transaction")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(Color(hex: "174EA6"))
                 .kerning(0.2)
@@ -263,7 +263,7 @@ struct CheckLimitView: View {
         let consumed = limit.consommeAujourdhui ?? 0.0
         let remaining = limit.restantAujourdhui ?? 0.0
         let isExpanded = expandedCards.contains(limit.processingCode ?? "")
-        let displayName = ProcessingCodeMapper.getOperationInfo(limit.processingCode ?? "").name
+        let displayName = englishOperationName(limit.processingCode ?? "")
         
         return VStack(alignment: .leading, spacing: 0) {
             cardHeader(displayName: displayName)
@@ -327,7 +327,7 @@ struct CheckLimitView: View {
     private func usageProgressSection(percentage: Double) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Utilisation")
+                Text("Usage")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(Color(red: 0.46, green: 0.46, blue: 0.46))
                 Spacer()
@@ -355,9 +355,9 @@ struct CheckLimitView: View {
     
     private func statsGrid(limit: LimitDetail, consumed: Double, remaining: Double) -> some View {
         HStack(spacing: 0) {
-            statsColumn(title: "LIMITE", value: formatAmountShort(limit.limiteJournaliere), color: Color(red: 0.13, green: 0.13, blue: 0.13))
-            statsColumn(title: "CONSOMMÉ", value: consumed > 0 ? formatAmountShort(consumed) : "0", color: consumed > 0 ? Color(red: 0.957, green: 0.263, blue: 0.212) : Color(red: 0.13, green: 0.13, blue: 0.13))
-            statsColumn(title: "DISPONIBLE", value: formatAmountShort(remaining), color: remaining > 0 ? Color(red: 0.298, green: 0.686, blue: 0.314) : Color(red: 0.957, green: 0.263, blue: 0.212))
+            statsColumn(title: "LIMIT", value: formatAmountShort(limit.limiteJournaliere), color: Color(hex: "174EA6"))
+            statsColumn(title: "USED", value: consumed > 0 ? formatAmountShort(consumed) : "0", color: consumed > 0 ? Color(red: 0.957, green: 0.263, blue: 0.212) : Color(hex: "174EA6"))
+            statsColumn(title: "REMAINING", value: formatAmountShort(remaining), color: remaining > 0 ? Color(hex: "0788B9") : Color(red: 0.957, green: 0.263, blue: 0.212))
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: "F3F6FA")))
@@ -409,7 +409,7 @@ struct CheckLimitView: View {
         }) {
             HStack {
                 Spacer()
-                Text("Voir plus de détails")
+                Text(isExpanded ? "Hide details" : "View details")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(Color(hex: "174EA6"))
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
@@ -429,7 +429,7 @@ struct CheckLimitView: View {
                 .frame(height: 1)
                 .padding(.bottom, 12)
             
-            Text("INFORMATIONS DÉTAILLÉES")
+            Text("MORE INFORMATION")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundColor(Color(red: 0.62, green: 0.62, blue: 0.62))
                 .kerning(0.1)
@@ -445,7 +445,7 @@ struct CheckLimitView: View {
     private func expandableDetails(limit: LimitDetail) -> some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Montant par transaction")
+                Text("Amount per transaction")
                     .font(.system(size: 11))
                     .foregroundColor(Color(red: 0.62, green: 0.62, blue: 0.62))
                 
@@ -458,13 +458,13 @@ struct CheckLimitView: View {
             .padding(.bottom, 8)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Limite mensuelle")
+                Text("Monthly limit")
                     .font(.system(size: 11))
                     .foregroundColor(Color(red: 0.62, green: 0.62, blue: 0.62))
                 
                 let consumedPeriod = limit.consommePeriode ?? 0.0
                 Text(consumedPeriod > 0 ?
-                    "\(formatAmount(consumedPeriod)) utilisé sur \(formatAmount(limit.limitePeriode))" :
+                    "\(formatAmount(consumedPeriod)) used of \(formatAmount(limit.limitePeriode))" :
                     formatAmount(limit.limitePeriode))
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color(red: 0.13, green: 0.13, blue: 0.13))
@@ -484,7 +484,7 @@ struct CheckLimitView: View {
         
         guard !walletNumber.isEmpty else {
             isLoading = false
-            showErrorAlert("Numéro de wallet non trouvé")
+            showErrorAlert("Wallet number not found")
             return
         }
         
@@ -508,14 +508,14 @@ struct CheckLimitView: View {
                       
                         }
                     } else {
-                        self.showErrorAlert(response.message ?? "Erreur lors du chargement des limites")
+                        self.showErrorAlert(response.message ?? "Unable to load limits")
                     }
                     
                 case .failure(let error):
                     if let apiError = error as? APIError {
                         self.showErrorAlert(apiError.message)
                     } else {
-                        self.showErrorAlert("Erreur de connexion: \(error.localizedDescription)")
+                        self.showErrorAlert("Connection error: \(error.localizedDescription)")
                     }
                 }
                 
@@ -579,12 +579,25 @@ struct CheckLimitView: View {
     
     private func getAlertMessage(percentage: Double) -> String {
         if percentage >= 95 {
-            return "Limite journalière atteinte. Aucune transaction supplémentaire possible jusqu'à demain."
+            return "Your daily limit has been reached. No more transactions are available until tomorrow."
         } else if percentage >= 80 {
-            return "Attention: Vous approchez de votre limite journalière globale."
+            return "Warning: You are approaching your overall daily limit."
         } else {
-            return "Toutes vos opérations partagent cette limite quotidienne commune."
+            return "All your transactions share this daily limit."
         }
+    }
+
+    private func englishOperationName(_ code: String) -> String {
+        let names: [String: String] = [
+            "01": "Cash Withdrawal", "02": "Agent Deposit", "05": "Branch Withdrawal",
+            "10": "Sponsored Transaction", "11": "Branch Deposit", "21": "Cash Deposit",
+            "22": "Agent Withdrawal", "26": "Voucher Cash-in", "30": "Merchant Payment",
+            "31": "Balance Inquiry", "32": "Wallet Inquiry", "40": "Bank Transfer",
+            "41": "Money Transfer", "42": "Transfer to My Bank", "43": "Cash Disbursement",
+            "44": "QR Payment", "45": "Wallet Top-up", "46": "GIP Credit", "47": "GIP Debit",
+            "48": "GIP QR Credit", "50": "Airtime Purchase", "60": "ATM Withdrawal"
+        ]
+        return names[code] ?? "Transaction \(code)"
     }
     
     private func getProgressColor(percentage: Double) -> Color {
@@ -616,7 +629,7 @@ struct CheckLimitView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = "Error"
         alertMessage = message
         showAlert = true
     }

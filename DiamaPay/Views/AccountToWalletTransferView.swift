@@ -51,12 +51,12 @@ struct AccountToWalletTransferView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Account to Wallet", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -74,7 +74,6 @@ struct AccountToWalletTransferView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             // Title Card
-                            titleCard
                             
                           
                             
@@ -96,6 +95,9 @@ struct AccountToWalletTransferView: View {
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -184,7 +186,7 @@ struct AccountToWalletTransferView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Compte Source")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -256,7 +258,7 @@ struct AccountToWalletTransferView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Montant")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -408,7 +410,7 @@ struct AccountToWalletTransferView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Référence (optionnel)")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -438,7 +440,7 @@ struct AccountToWalletTransferView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 150, height: 48)
-                    .background(Color.greenH)
+                    .background(Color.blueH)
                     .cornerRadius(8)
             }
             .disabled(isLoading)
@@ -927,7 +929,7 @@ struct AccountToWalletConfirmationDialog: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.greenH)
+                        .background(Color.blueH)
                         .cornerRadius(8)
                     }
                     .disabled(isVerifyingPin)

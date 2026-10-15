@@ -45,12 +45,12 @@ struct MiniStatementView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Mini Statement", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -68,7 +68,6 @@ struct MiniStatementView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             // Title Card
-                            titleCard
                             
                             // Date Filter Card (Hidden by default like Android)
                             // dateFilterCard
@@ -109,6 +108,9 @@ struct MiniStatementView: View {
                     }
                 )
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {

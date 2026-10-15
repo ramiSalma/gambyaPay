@@ -523,7 +523,7 @@ struct CommentConfirmationDialog: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
-                            .background(Color.greenH)
+                            .background(Color.blueH)
                             .cornerRadius(8)
                     }
                 }

@@ -40,7 +40,7 @@ struct ForgotPinView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.95, green: 0.97, blue: 0.91)
+            Color(hex: "F3F6FA")
                 .ignoresSafeArea()
             
             ScrollView {
@@ -52,7 +52,7 @@ struct ForgotPinView: View {
                         .padding(.top, 10)
                         .padding(.bottom, 40)
                     
-                    DiamaPayHeader()
+                    DiamaPayHeader(title: "Forgot PIN", headerColor: Color(hex: "174EA6"))
                         .padding(.bottom, 32)
                     
                     mainCard
@@ -104,7 +104,7 @@ struct ForgotPinView: View {
                 
                 if isLoading {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .greenH))
+                        .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                         .scaleEffect(1.2)
                         .padding(.bottom, 16)
                 }
@@ -143,7 +143,7 @@ struct ForgotPinView: View {
         VStack(spacing: 0) {
             HStack {
                 Image(systemName: "phone.fill")
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
                     .frame(width: 20)
                 
                 TextField("N° de téléphone", text: $phoneNumber)
@@ -152,7 +152,7 @@ struct ForgotPinView: View {
             }
             .padding()
             .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.greenH, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.blueH, lineWidth: 1))
         }
     }
     
@@ -160,7 +160,7 @@ struct ForgotPinView: View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
                 Image(systemName: "questionmark.circle.fill")
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
                 
                 Text(displayedQuestionText)
                     .font(.system(size: 16))
@@ -174,7 +174,7 @@ struct ForgotPinView: View {
             
             HStack {
                 Image(systemName: "pencil")
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
                     .frame(width: 20)
                 
                 TextField("Votre réponse", text: $answer)
@@ -183,7 +183,7 @@ struct ForgotPinView: View {
             }
             .padding()
             .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.greenH, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.blueH, lineWidth: 1))
         }
     }
     
@@ -191,7 +191,7 @@ struct ForgotPinView: View {
         VStack(spacing: 16) {
             HStack {
                 Image(systemName: "lock")
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
                     .frame(width: 20)
                 
                 SecureField("Nouveau PIN", text: $newPin)
@@ -200,11 +200,11 @@ struct ForgotPinView: View {
             }
             .padding()
             .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.greenH, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.blueH, lineWidth: 1))
             
             HStack {
                 Image(systemName: "lock")
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
                     .frame(width: 20)
                 
                 SecureField("Confirmer PIN", text: $confirmPin)
@@ -213,7 +213,7 @@ struct ForgotPinView: View {
             }
             .padding()
             .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.greenH, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.blueH, lineWidth: 1))
         }
     }
     
@@ -221,7 +221,7 @@ struct ForgotPinView: View {
         VStack(spacing: 0) {
             HStack {
                 Image(systemName: "envelope.fill")
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
                     .frame(width: 20)
                 
                 TextField("Entrer OTP", text: $finalOtp)
@@ -230,7 +230,7 @@ struct ForgotPinView: View {
             }
             .padding()
             .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.greenH, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.blueH, lineWidth: 1))
         }
     }
     
@@ -240,7 +240,7 @@ struct ForgotPinView: View {
             Button(action: handleBackButton) {
                 Text(currentStep == 1 ? "Retour à la connexion" : "Retour")
                     .font(.system(size: 16))
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
             }
@@ -251,7 +251,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(Color.greenH)
+                    .background(Color.blueH)
                     .cornerRadius(4)
             }
             .disabled(isLoading)

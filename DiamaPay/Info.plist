@@ -27,18 +27,15 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>129.151.250.184</key>
-			<string></string>
-		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Nous avons besoin d'accéder à votre caméra pour scanner les codes QR</string>
+	<string>Nous avons besoin d&apos;accéder à votre caméra pour scanner les codes QR</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Nous utilisons Face ID pour sécuriser votre accès à DIAMACASH</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>DIAMACASH se connecte au serveur bancaire sur le réseau local pour authentifier votre compte et traiter vos opérations.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Nous avons besoin d'accéder à votre galerie pour lire les images de codes QR</string>
+	<string>Nous avons besoin d&apos;accéder à votre galerie pour lire les images de codes QR</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

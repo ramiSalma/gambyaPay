@@ -55,12 +55,12 @@ struct StandingInstructionUpdateView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(onBackToHome: {
+                DiamaPayHeader(title: "Edit Standing Instruction", headerColor: Color(hex: "174EA6"), onBackToHome: {
                     presentationMode.wrappedValue.dismiss()
                 })
 
@@ -79,7 +79,6 @@ struct StandingInstructionUpdateView: View {
                 } else {
                     ScrollView {
                         VStack(spacing: 16) {
-                            titleCard
                             
                             beneficiaryCard
                             
@@ -96,6 +95,9 @@ struct StandingInstructionUpdateView: View {
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -134,7 +136,7 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Détails du Bénéficiaire")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -165,7 +167,7 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Détails de Paiement")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -240,7 +242,7 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Planification")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -314,7 +316,7 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Sécurité")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -354,7 +356,7 @@ struct StandingInstructionUpdateView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 150, height: 48)
-                    .background(Color.greenH)
+                    .background(Color.blueH)
                     .cornerRadius(8)
             }
             .disabled(isLoading)

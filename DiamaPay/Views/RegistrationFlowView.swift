@@ -137,7 +137,7 @@ struct RegistrationFlowView: View {
             }
             .padding(20)
         }
-        .background(Color.greenH)
+        .background(Color.blueH)
     }
     
     // MARK: - Step Content View
@@ -578,7 +578,7 @@ struct RegistrationFlowView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("LA BANQUE")
                                 .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.greenH)
+                                .foregroundColor(.blueH)
                             
                             termsParagraph("La DIAMA BANK SA s'engage à fournir le service selon les modalités définies au présent Contrat.")
                             termsParagraph("La Banque décline toute responsabilité en cas de dysfonctionnement dû à un défaut de compatibilité de l'équipement personnel du client ou de la configuration de son matériel.")
@@ -586,7 +586,7 @@ struct RegistrationFlowView: View {
                             
                             Text("LE CLIENT")
                                 .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.greenH)
+                                .foregroundColor(.blueH)
                                 .padding(.top, 8)
                             
                             termsParagraph("Le Client doit prendre toute mesure pour conserver à tout moment en sa possession son smartphone et préserver la confidentialité de ses codes.")
@@ -684,7 +684,7 @@ struct RegistrationFlowView: View {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: registrationData.acceptTerms ? "checkmark.square.fill" : "square")
                             .font(.system(size: 22))
-                            .foregroundColor(registrationData.acceptTerms ? .greenH : .gray)
+                            .foregroundColor(registrationData.acceptTerms ? .blueH : .gray)
                         
                         Text("J'ai lu et j'accepte les Conditions Générales d'Utilisation")
                             .font(.system(size: 14))
@@ -701,7 +701,7 @@ struct RegistrationFlowView: View {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: registrationData.acceptPrivacy ? "checkmark.square.fill" : "square")
                             .font(.system(size: 22))
-                            .foregroundColor(registrationData.acceptPrivacy ? .greenH : .gray)
+                            .foregroundColor(registrationData.acceptPrivacy ? .blueH : .gray)
                         
                         Text("J'accepte le traitement de mes données personnelles conformément à la politique de confidentialité")
                             .font(.system(size: 14))
@@ -740,7 +740,7 @@ struct RegistrationFlowView: View {
             }) {
                 HStack {
                     Image(systemName: icon)
-                        .foregroundColor(.greenH)
+                        .foregroundColor(.blueH)
                         .font(.system(size: 16))
                         .frame(width: 24)
                     
@@ -751,7 +751,7 @@ struct RegistrationFlowView: View {
                     Spacer()
                     
                     Image(systemName: isExpanded ? "checkmark.circle.fill" : "chevron.right")
-                        .foregroundColor(isExpanded ? .green : .greenH)
+                        .foregroundColor(isExpanded ? .green : .blueH)
                         .font(.system(size: 14, weight: .semibold))
                         .rotationEffect(.degrees(isExpanded ? 0 : 0))
                 }
@@ -795,12 +795,12 @@ struct RegistrationFlowView: View {
                 HStack {
                     ZStack {
                         Circle()
-                            .fill(Color.greenH.opacity(0.1))
+                            .fill(Color.blueH.opacity(0.1))
                             .frame(width: 36, height: 36)
                         
                         Text("\(number)")
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.greenH)
+                            .foregroundColor(.blueH)
                     }
                     
                     Text(title)
@@ -811,7 +811,7 @@ struct RegistrationFlowView: View {
                     Spacer()
                     
                     Image(systemName: isExpanded ? "checkmark.circle.fill" : "chevron.right")
-                        .foregroundColor(isExpanded ? .green : .greenH)
+                        .foregroundColor(isExpanded ? .green : .blueH)
                         .font(.system(size: 14, weight: .semibold))
                         .rotationEffect(.degrees(isExpanded ? 0 : 0))
                 }
@@ -1574,10 +1574,10 @@ struct GenderButton: View {
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(isSelected ? Color.greenH : Color.clear)
-                        .stroke(Color.greenH, lineWidth: 1)
+                        .fill(isSelected ? Color.blueH : Color.clear)
+                        .stroke(Color.blueH, lineWidth: 1)
                 )
-                .foregroundColor(isSelected ? .white : .greenH)
+                .foregroundColor(isSelected ? .white : .blueH)
         }
     }
 }
@@ -1620,7 +1620,7 @@ class RegistrationData: ObservableObject {
 private func sectionHeader(_ title: String) -> some View {
     HStack {
         Rectangle()
-            .fill(Color.greenH)
+            .fill(Color.blueH)
             .frame(width: 4, height: 20)
             .cornerRadius(2)
         
@@ -1668,7 +1668,7 @@ private func identificationCard(
             .frame(maxWidth: .infinity)
             .background(
                 isEnabled ?
-                (isCompleted ? Color.greenH : Color.blueH) :
+                (isCompleted ? Color.blueH : Color.blueH) :
                 Color.gray
             )
             .cornerRadius(8)

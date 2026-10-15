@@ -32,15 +32,14 @@ struct StandingInstructionListView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Standing Instructions", headerColor: Color(hex: "174EA6"))
 
                 // Title Card
-                titleCard
                     .padding(.horizontal, 16)
                     .padding(.top, 20)
                 
@@ -63,6 +62,9 @@ struct StandingInstructionListView: View {
                     instructionsList
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {

@@ -26,12 +26,12 @@ struct BiometricSettingsView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Biometric Settings", headerColor: Color(hex: "174EA6"))
 
                 
                 ScrollView {
@@ -52,6 +52,9 @@ struct BiometricSettingsView: View {
                     .padding()
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showPINPrompt) {
@@ -315,7 +318,7 @@ struct PINPromptView: View {
                 VStack(spacing: 16) {
                     HStack {
                         Image(systemName: "lock.fill")
-                            .foregroundColor(.greenH)
+                            .foregroundColor(.blueH)
                             .frame(width: 20)
                         
                         if showPassword {
@@ -361,7 +364,7 @@ struct PINPromptView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(pin.count == 4 ? Color.greenH : Color.gray)
+                    .background(pin.count == 4 ? Color.blueH : Color.gray)
                     .cornerRadius(8)
                     .disabled(pin.count != 4 || isVerifying)
                 }
@@ -369,10 +372,10 @@ struct PINPromptView: View {
                 
                 Spacer()
             }
-            .background(Color(UIColor.systemGroupedBackground))
+            .background(Color.white)
             .navigationBarItems(
                 leading: Button("Annuler") { presentationMode.wrappedValue.dismiss() }
-                    .foregroundColor(.greenH)
+                    .foregroundColor(.blueH)
             )
         }
     }

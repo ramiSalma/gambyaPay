@@ -24,11 +24,11 @@ struct PendingTransactionsView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Pending Transactions", headerColor: Color(hex: "174EA6"))
                 
                 if isLoading && pendingTransactions.isEmpty {
                     loadingView
@@ -38,6 +38,9 @@ struct PendingTransactionsView: View {
                     transactionsList
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear(perform: loadPendingTransactions)
@@ -431,7 +434,7 @@ struct PendingTransactionCard_Previews: PreviewProvider {
             )
             .padding()
         }
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color.white)
     }
 }
 

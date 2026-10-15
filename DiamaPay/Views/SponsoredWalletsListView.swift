@@ -32,7 +32,7 @@ struct SponsoredWalletsListView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Portefeuilles parrainés", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: "Sponsored Wallets", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -53,15 +53,15 @@ struct SponsoredWalletsListView: View {
         } message: {
             Text(alertMessage)
         }
-        .alert("Dissocier le portefeuille", isPresented: $showUnlinkAlert) {
-            Button("Annuler", role: .cancel) { }
-            Button("Dissocier", role: .destructive) {
+        .alert("Unlink Wallet", isPresented: $showUnlinkAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Unlink", role: .destructive) {
                 pinDialogAction = .unlink
                 showPinDialog = true
             }
         } message: {
             if let wallet = selectedWallet {
-                Text("Voulez-vous vraiment dissocier le portefeuille de \(wallet.userNameSponsored)?\n\nCette action est irréversible.")
+                Text("Are you sure you want to unlink the wallet for \(wallet.userNameSponsored)?\n\nThis action cannot be undone.")
             }
         }
         .sheet(isPresented: $showUpdateDialog) {
@@ -84,8 +84,8 @@ struct SponsoredWalletsListView: View {
             if showPinDialog, let wallet = selectedWallet {
                 PinDialogView(
                     isPresented: $showPinDialog,
-                    title: pinDialogAction == .unlink ? "Dissocier le portefeuille" : "",
-                    message: pinDialogAction == .unlink ? "Entrez votre code PIN pour confirmer" : "",
+                    title: pinDialogAction == .unlink ? "Unlink Wallet" : "",
+                    message: pinDialogAction == .unlink ? "Enter your PIN to confirm" : "",
                     onConfirm: { pin in
                         showPinDialog = false
                         if pinDialogAction == .unlink {
@@ -104,7 +104,7 @@ struct SponsoredWalletsListView: View {
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
             
-            Text("Chargement...")
+            Text("Loading...")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.secondary)
         }
@@ -141,7 +141,7 @@ struct SponsoredWalletsListView: View {
                     HStack {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 20))
-                        Text("Sponsoriser un portefeuille")
+                        Text("Sponsor a wallet")
                             .font(.system(size: 16, weight: .semibold))
                     }
                     .foregroundColor(.white)
@@ -165,11 +165,11 @@ struct SponsoredWalletsListView: View {
                 .foregroundColor(Color(hex: "174EA6").opacity(0.75))
                 .padding(.top, 24)
             
-            Text("Aucun portefeuille parrainé")
+            Text("No sponsored wallets")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            Text("Vous n'avez sponsorisé aucun portefeuille pour le moment")
+            Text("You have not sponsored any wallets yet.")
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -215,13 +215,13 @@ struct SponsoredWalletsListView: View {
                     if response.respCode == "000" {
                         self.processSponsoredWallets(response)
                     } else {
-                        self.showError("Erreur", response.message ?? "Impossible de charger les portefeuilles")
+                        self.showError("Error", response.message ?? "Unable to load wallets")
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError("Erreur", apiError.message)
+                        self.showError("Error", apiError.message)
                     } else {
-                        self.showError("Erreur", error.localizedDescription)
+                        self.showError("Error", error.localizedDescription)
                     }
                 }
             }
@@ -240,7 +240,7 @@ struct SponsoredWalletsListView: View {
             wallet.walletNumber = dict["walletNumber"] as? String ?? ""
             wallet.walletNumberSponsored = dict["walletNumberSponsored"] as? String ?? ""
             wallet.userName = dict["userName"] as? String ?? ""
-            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? "Non spécifié"
+            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? "Not specified"
             wallet.phoneNumber = dict["phoneNumber"] as? String ?? ""
             wallet.phoneNumberSponsored = dict["phoneNumberSponsored"] as? String ?? ""
             
@@ -333,16 +333,16 @@ struct SponsoredWalletsListView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccess("Portefeuille dissocié avec succès")
+                        self.showSuccess("Wallet unlinked successfully")
                         self.loadSponsoredWallets()
                     } else {
-                        self.showError("Erreur", response.message ?? "Échec de la dissociation")
+                        self.showError("Error", response.message ?? "Failed to unlink wallet")
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError("Erreur", apiError.message)
+                        self.showError("Error", apiError.message)
                     } else {
-                        self.showError("Erreur", error.localizedDescription)
+                        self.showError("Error", error.localizedDescription)
                     }
                 }
             }
@@ -356,7 +356,7 @@ struct SponsoredWalletsListView: View {
     }
     
     private func showSuccess(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = "Success"
         alertMessage = message
         showAlert = true
     }
@@ -375,7 +375,7 @@ struct SponsoredWalletCard: View {
             // Header with name, phone and menu
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Bénéficiaire: \(wallet.userNameSponsored)")
+                    Text("Beneficiary: \(wallet.userNameSponsored)")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(Color(hex: "174EA6"))
                     
@@ -403,7 +403,7 @@ struct SponsoredWalletCard: View {
             // Limits
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Limite journalière")
+                    Text("Daily limit")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                     
@@ -415,7 +415,7 @@ struct SponsoredWalletCard: View {
                 Spacer()
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Limite mensuelle")
+                    Text("Monthly limit")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                     
@@ -429,7 +429,7 @@ struct SponsoredWalletCard: View {
             
             // Date range
             VStack(alignment: .leading, spacing: 4) {
-                Text("Période de validité")
+                Text("Validity period")
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
                 
@@ -441,7 +441,7 @@ struct SponsoredWalletCard: View {
             // Bank
             if !wallet.bankWording.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Banque")
+                    Text("Bank")
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                     
@@ -460,13 +460,13 @@ struct SponsoredWalletCard: View {
             ActionSheet(
                 title: Text("Options"),
                 buttons: [
-                    .default(Text("Mettre à jour")) {
+                    .default(Text("Update")) {
                         onUpdate()
                     },
-                    .destructive(Text("Dissocier")) {
+                    .destructive(Text("Unlink")) {
                         onUnlink()
                     },
-                    .cancel(Text("Annuler"))
+                    .cancel(Text("Cancel"))
                 ]
             )
         }
@@ -474,7 +474,7 @@ struct SponsoredWalletCard: View {
     
     private func formatCurrency(_ amount: String) -> String {
         guard let value = Double(amount), value > 0 else {
-            return "Non limité"
+            return "No limit"
         }
         
         let formatter = NumberFormatter()
@@ -489,15 +489,15 @@ struct SponsoredWalletCard: View {
         var result = ""
         
         if !start.isEmpty && start != "null" {
-            result += "Du \(formatDate(start))"
+            result += "From \(formatDate(start))"
         } else {
-            result += "Date de début non spécifiée"
+            result += "Start date not specified"
         }
         
         if !end.isEmpty && end != "null" {
-            result += " au \(formatDate(end))"
+            result += " to \(formatDate(end))"
         } else if !start.isEmpty && start != "null" {
-            result += " - Sans date de fin"
+            result += " - No end date"
         }
         
         return result
@@ -542,7 +542,7 @@ struct PinDialogView: View {
                 }
             
             VStack(spacing: 20) {
-                Text(title)
+            Text(title)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -551,7 +551,7 @@ struct PinDialogView: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                 
-                SecureField("Code PIN", text: $pin)
+                SecureField("PIN", text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
                     .padding()
@@ -559,7 +559,7 @@ struct PinDialogView: View {
                     .cornerRadius(8)
                 
                 if showError {
-                    Text("Veuillez entrer votre code PIN")
+                    Text("Please enter your PIN")
                         .font(.system(size: 12))
                         .foregroundColor(.red)
                 }
@@ -568,7 +568,7 @@ struct PinDialogView: View {
                     Button(action: {
                         isPresented = false
                     }) {
-                        Text("Annuler")
+                        Text("Cancel")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity)
@@ -585,12 +585,12 @@ struct PinDialogView: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text("Confirmer")
+                        Text("Confirm")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(Color.greenH)
+                            .background(Color.blueH)
                             .cornerRadius(8)
                     }
                 }

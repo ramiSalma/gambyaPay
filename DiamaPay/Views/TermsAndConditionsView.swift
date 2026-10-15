@@ -387,7 +387,7 @@ struct TermsAndConditionsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("LA BANQUE")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color.greenH)
+                        .foregroundColor(Color.blueH)
                     
                     modernParagraph("La DIAMA BANK SA s'engage à fournir le service selon les modalités définies au présent Contrat.")
                     modernParagraph("La Banque décline toute responsabilité en cas de dysfonctionnement dû à un défaut de compatibilité de l'équipement personnel du client ou de la configuration de son matériel.")
@@ -395,7 +395,7 @@ struct TermsAndConditionsView: View {
                     
                     Text("LE CLIENT")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color.greenH)
+                        .foregroundColor(Color.blueH)
                         .padding(.top, 8)
                     
                     modernParagraph("Le Client doit prendre toute mesure pour conserver à tout moment en sa possession son smartphone et préserver la confidentialité de ses codes.")

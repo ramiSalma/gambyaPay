@@ -15,13 +15,11 @@ struct TransactionDetailView: View {
 
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader()
-                titleCard
-                
+                DiamaPayHeader(title: "Transaction Details", headerColor: Color(hex: "174EA6"))
                 ScrollView {
                     VStack(spacing: 20) {
                         transactionInfoCard
@@ -52,6 +50,9 @@ struct TransactionDetailView: View {
             set: { itemsToShare = $0?.items }
         )) { shareItem in
             ActivityViewController(activityItems: shareItem.items)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
     }
@@ -86,12 +87,12 @@ struct TransactionDetailView: View {
             detailRow(
                 label: "Montant",
                 value: transaction.amount,
-                color: transaction.isDebit ? .red : .greenH
+                color: transaction.isDebit ? .red : .blueH
             )
             detailRow(
                 label: "Statut",
                 value: transaction.status ?? "Inconnu",
-                color: (transaction.status ?? "") == "Approuvé" ? .greenH : .red
+                color: (transaction.status ?? "") == "Approuvé" ? .blueH : .red
             )
             detailRow(label: "Détails", value: transaction.details ?? "Aucun détail")
             detailRow(label: "Solde initial", value: transaction.openingBalance ?? "N/A")

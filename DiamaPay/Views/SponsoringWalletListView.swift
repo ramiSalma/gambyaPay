@@ -37,12 +37,12 @@ struct SponsoringWalletListView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader()
+                DiamaPayHeader(title: "Sponsored Wallets", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -52,6 +52,9 @@ struct SponsoringWalletListView: View {
                     walletListView
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .onAppear {
@@ -87,7 +90,6 @@ struct SponsoringWalletListView: View {
     // MARK: - Wallet List View
     private var walletListView: some View {
         VStack(spacing: 0) {
-            titleCard
             
             ScrollView {
                 VStack(spacing: 0) {
@@ -128,7 +130,6 @@ struct SponsoringWalletListView: View {
     // MARK: - Empty State View
     private var emptyStateView: some View {
         VStack(spacing: 16) {
-            titleCard
             
             VStack(spacing: 16) {
                 Spacer()
@@ -345,7 +346,7 @@ struct WalletRowView: View {
                         
                         Text(formatAmount(wallet.dailyLimit))
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.greenH)
+                            .foregroundColor(.blueH)
                     }
                     
                     HStack(spacing: 4) {

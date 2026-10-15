@@ -51,12 +51,12 @@ struct StandingInstructionCreateView: View {
     
     var body: some View {
         ZStack {
-            Color(UIColor.systemGroupedBackground)
+            Color.white
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(onBackToHome: {
+                DiamaPayHeader(title: "Create Standing Instruction", headerColor: Color(hex: "174EA6"), onBackToHome: {
                     presentationMode.wrappedValue.dismiss()
                 })
 
@@ -76,7 +76,6 @@ struct StandingInstructionCreateView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             // Title Card
-                            titleCard
                             
                             // Transaction Type Card
                             transactionTypeCard
@@ -101,6 +100,9 @@ struct StandingInstructionCreateView: View {
                     }
                 }
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
@@ -137,7 +139,7 @@ struct StandingInstructionCreateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Type de Transaction")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -183,7 +185,7 @@ struct StandingInstructionCreateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Détails du Destinataire")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -229,7 +231,7 @@ struct StandingInstructionCreateView: View {
                 } else if isRecipientVerified && !receiverName.isEmpty && destination.count == 9 {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(.greenH)
+                        .foregroundColor(.blueH)
                         .padding(.trailing, 12)
                 }
             }
@@ -241,7 +243,7 @@ struct StandingInstructionCreateView: View {
             if isRecipientVerified && !receiverName.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "person.fill")
-                        .foregroundColor(.greenH)
+                        .foregroundColor(.blueH)
                         .font(.system(size: 14))
                     
                     Text(receiverName)
@@ -252,7 +254,7 @@ struct StandingInstructionCreateView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
-                .background(Color.greenH.opacity(0.1))
+                .background(Color.blueH.opacity(0.1))
                 .cornerRadius(8)
             }
         }
@@ -268,7 +270,7 @@ struct StandingInstructionCreateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Montant")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -289,7 +291,7 @@ struct StandingInstructionCreateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Description")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -315,7 +317,7 @@ struct StandingInstructionCreateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Planification")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.greenH)
+                    .foregroundColor(Color.blueH)
                 
                 Rectangle()
                     .fill(Color.blueH)
@@ -413,7 +415,7 @@ struct StandingInstructionCreateView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(Color.greenH)
+                .background(Color.blueH)
                 .cornerRadius(8)
         }
         .disabled(isLoading)
@@ -733,7 +735,7 @@ struct PinEntryDialog: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
-                            .background(Color.greenH)
+                            .background(Color.blueH)
                             .cornerRadius(8)
                     }
                 }

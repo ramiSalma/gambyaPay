@@ -163,10 +163,10 @@ struct ScannerCornerFrames: View {
                 // Top-left corner
                 VStack(alignment: .leading, spacing: 0) {
                     Rectangle()
-                        .fill(Color.greenH)
+                        .fill(Color.blueH)
                         .frame(width: 40, height: 4)
                     Rectangle()
-                        .fill(Color.greenH)
+                        .fill(Color.blueH)
                         .frame(width: 4, height: 36)
                 }
                 .position(x: centerX - frameSize/2 + 20, y: centerY - frameSize/2 + 20)
@@ -174,12 +174,12 @@ struct ScannerCornerFrames: View {
                 // Top-right corner
                 VStack(alignment: .trailing, spacing: 0) {
                     Rectangle()
-                        .fill(Color.greenH)
+                        .fill(Color.blueH)
                         .frame(width: 40, height: 4)
                     HStack {
                         Spacer()
                         Rectangle()
-                            .fill(Color.greenH)
+                            .fill(Color.blueH)
                             .frame(width: 4, height: 36)
                     }
                     .frame(width: 40)
@@ -189,10 +189,10 @@ struct ScannerCornerFrames: View {
                 // Bottom-left corner
                 VStack(alignment: .leading, spacing: 0) {
                     Rectangle()
-                        .fill(Color.greenH)
+                        .fill(Color.blueH)
                         .frame(width: 4, height: 36)
                     Rectangle()
-                        .fill(Color.greenH)
+                        .fill(Color.blueH)
                         .frame(width: 40, height: 4)
                 }
                 .position(x: centerX - frameSize/2 + 20, y: centerY + frameSize/2 - 20)
@@ -202,12 +202,12 @@ struct ScannerCornerFrames: View {
                     HStack {
                         Spacer()
                         Rectangle()
-                            .fill(Color.greenH)
+                            .fill(Color.blueH)
                             .frame(width: 4, height: 36)
                     }
                     .frame(width: 40)
                     Rectangle()
-                        .fill(Color.greenH)
+                        .fill(Color.blueH)
                         .frame(width: 40, height: 4)
                 }
                 .position(x: centerX + frameSize/2 - 20, y: centerY + frameSize/2 - 20)
