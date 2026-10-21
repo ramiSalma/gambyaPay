@@ -533,7 +533,7 @@ struct TransactionRowViewA: View {
                     
                     Spacer()
                     
-                    Text("\(formatNumber(balance)) \(transaction.currency ?? "GNF")")
+                    Text("\(formatNumber(balance)) \(transaction.currency ?? "GMD")")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.primary)
                 }
@@ -556,9 +556,9 @@ struct TransactionRowViewA: View {
     }
     
     private var formattedAmount: String {
-        guard let amountStr = transaction.amount else { return "0 GNF" }
+        guard let amountStr = transaction.amount else { return "0 GMD" }
         let amount = formatNumber(amountStr)
-        let currency = transaction.currency ?? "GNF"
+        let currency = transaction.currency ?? "GMD"
         
         if transaction.isDebit {
             return "- \(amount) \(currency)"

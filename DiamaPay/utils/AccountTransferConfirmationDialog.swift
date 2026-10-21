@@ -1,13 +1,9 @@
-
 //
 //  AccountTransferConfirmationDialog.swift
 //  DiamaPay
 //
-//  Created by Bits on 30/9/2025.
-//
 
 import SwiftUI
-import Swift
 
 struct AccountTransferConfirmationDialog: View {
     let amount: String
@@ -18,219 +14,272 @@ struct AccountTransferConfirmationDialog: View {
     let accountNumber: String
     let bankName: String
     let paymentDetails: String
-    
+
     @Binding var isPresented: Bool
     let onConfirm: (String) -> Void
     let onCancel: () -> Void
-    
-    @State private var pin: String = ""
+
+    @State private var pin = ""
     @State private var showPinError = false
     @State private var pinErrorMessage = ""
     @State private var isVerifyingPin = false
-    
+    @FocusState private var pinFieldFocused: Bool
+
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.4)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    onCancel()
-                }
-            
-            VStack(spacing: 0) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("Confirmer le Transfert")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.top, 24)
-                .padding(.horizontal, 20)
-                
-                Divider()
-                    .padding(.vertical, 16)
-                
-                // Transaction Details
-                ScrollView {
-                    VStack(spacing: 16) {
-                        // Amount Section
-                        VStack(spacing: 12) {
-                            DetailRowView(label: "Montant", value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
-                            
-                            if fee > 0 {
-                                DetailRowView(label: "Frais", value: formatAmount(fee))
-                            } else {
-                                DetailRowView(label: "Frais", value: "Gratuit")
-                            }
-                            
-                            Divider()
-                            
-                            DetailRowView(
-                                label: "Total à débiter",
-                                value: formatAmount(total),
-                                isHighlighted: true
-                            )
+        GeometryReader { geometry in
+            ZStack {
+                Color.black.opacity(0.48)
+                    .ignoresSafeArea()
+                    .onTapGesture { onCancel() }
+
+                VStack(spacing: 0) {
+                    header
+
+                    ScrollView {
+                        VStack(spacing: 14) {
+                            amountCard
+                            recipientCard
+                            descriptionCard
+                            pinEntry
                         }
-                        .padding(16)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(12)
-                        
-                        // Account Section
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Compte destinataire")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.secondary)
-                            
-                            DetailRowView(label: "Titulaire", value: accountName)
-                            DetailRowView(label: "Compte", value: accountNumber)
-                            DetailRowView(label: "Banque", value: bankName)
-                        }
-                        .padding(16)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(12)
-                        
-                        // Payment Details
-                        if !paymentDetails.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Commentaire")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.secondary)
-                                
-                                Text(paymentDetails)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.primary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(16)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(12)
-                        }
-                        
-                        // PIN Entry
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Code PIN")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.secondary)
-                            
-                            SecureField("Entrer le code PIN", text: $pin)
-                                .keyboardType(.numberPad)
-                                .font(.system(size: 16, weight: .medium))
-                                .padding(.horizontal, 16)
-                                .frame(height: 50)
-                                .background(Color.white)
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(showPinError ? Color.red : Color.gray.opacity(0.3), lineWidth: 1)
-                                )
-                                .onChange(of: pin) { newValue in
-                                       if newValue.count > 4 { pin = String(newValue.prefix(4)) }
-                                       showPinError = false
-                                   }
-                            
-                            
-                            if showPinError {
-                                Text(pinErrorMessage)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.red)
-                            }
-                        }
-                        .padding(16)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(12)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 18)
                     }
-                    .padding(.horizontal, 20)
+
+                    actionButtons
                 }
-                .frame(maxHeight: 350)
-                
-                Divider()
-                    .padding(.vertical, 16)
-                
-                // Action Buttons
-               // HStack(spacing: 12) {
-                 //   Button(action: { validateAndConfirm() }) {
-                       // Group {
-                         //   if isVerifyingPin {
-                           //     ProgressView()
-                             //       .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                      //      } else {
-                        //        Text("Confirmer")
-                          //          .font(.system(size: 16, weight: .semibold))
-                            //        .foregroundColor(.white)
-               //             }
-                 //       }
-                   //     .frame(maxWidth: .infinity)
-                     //   .frame(height: 50)
-                       // .background(Color.greenH)
-                       // .cornerRadius(8)
-                   // }
-                   // .disabled(isVerifyingPin)
-                HStack(spacing: 12) {
-                    Button(action: {
-                        onCancel()
-                    }) {
-                        Text("Annuler")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.blueH)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color.white)
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.blueH, lineWidth: 1)
-                            )
-                    }
-                    Button(action: {
-                        validateAndConfirm()
-                    }) {
-                        Text("Confirmer")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color.greenH)
-                            .cornerRadius(8)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .frame(maxWidth: 500)
+                .frame(maxHeight: min(geometry.size.height * 0.92, 820))
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .shadow(color: .black.opacity(0.22), radius: 22, x: 0, y: 10)
+                .padding(.horizontal, 18)
             }
-            .frame(maxWidth: 500)
-            .background(Color.white)
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
-            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
-    
-    private func formatAmount(_ amount: Double) -> String {
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 14) {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 30, weight: .semibold))
+                Text("Confirmation du transfert")
+                    .font(.system(size: 25, weight: .bold))
+            }
+            Text("Vérifiez les détails et saisissez votre code PIN")
+                .font(.system(size: 16, weight: .medium))
+                .padding(.leading, 45)
+        }
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 24)
+        .background(Color(hex: "0788B9"))
+    }
+
+    private var amountCard: some View {
+        VStack(spacing: 12) {
+            Text("MONTANT")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text(formatAmount(parsedAmount))
+                .font(.system(size: 30, weight: .bold))
+                .foregroundColor(Color(hex: "0788B9"))
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 8)
+
+            Divider()
+            HStack {
+                Text("Frais d'envoi")
+                Spacer()
+                Text(fee > 0 ? formatAmount(fee) : "Gratuit")
+            }
+            .font(.system(size: 15))
+            .foregroundColor(.secondary)
+
+            Divider()
+            HStack {
+                Text("Total à débiter")
+                Spacer()
+                Text(formatAmount(total))
+            }
+            .font(.system(size: 18, weight: .bold))
+            .foregroundColor(Color(hex: "174EA6"))
+        }
+        .padding(16)
+        .background(Color(UIColor.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.gray.opacity(0.14), lineWidth: 1))
+    }
+
+    private var recipientCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("INFORMATIONS DU BÉNÉFICIAIRE")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.secondary)
+
+            detailRow("Bénéficiaire", value: accountName)
+            Divider()
+            detailRow("Numéro de compte", value: accountNumber)
+            if !bankName.isEmpty {
+                Divider()
+                detailRow("Banque", value: bankName)
+            }
+        }
+        .padding(16)
+        .background(Color(UIColor.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.gray.opacity(0.14), lineWidth: 1))
+    }
+
+    @ViewBuilder
+    private var descriptionCard: some View {
+        if !paymentDetails.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            VStack(alignment: .leading, spacing: 9) {
+                Text("DESCRIPTION")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.secondary)
+                Text(paymentDetails)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(16)
+            .background(Color(UIColor.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.gray.opacity(0.14), lineWidth: 1))
+        }
+    }
+
+    private var pinEntry: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("AUTHENTIFICATION")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.secondary)
+                Spacer()
+                if pinFieldFocused {
+                    Button("Done") { pinFieldFocused = false }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color(hex: "0788B9"))
+                }
+            }
+
+            SecureField("Code PIN", text: $pin)
+                .keyboardType(.numberPad)
+                .textContentType(.oneTimeCode)
+                .focused($pinFieldFocused)
+                .font(.system(size: 20, weight: .medium))
+                .padding(.horizontal, 16)
+                .frame(height: 62)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(showPinError ? Color.red : Color(hex: "0788B9"), lineWidth: 2))
+                .onChange(of: pin) { newValue in
+                    let digits = String(newValue.filter(\.isNumber).prefix(4))
+                    if digits != newValue { pin = digits }
+                    showPinError = false
+                }
+
+            if showPinError {
+                Text(pinErrorMessage)
+                    .font(.system(size: 13))
+                    .foregroundColor(.red)
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 12) {
+            Button(action: onCancel) {
+                Text("Annuler")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(Color(hex: "0788B9"))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "0788B9"), lineWidth: 1.5))
+            }
+            .disabled(isVerifyingPin)
+
+            Button {
+                validateAndConfirm()
+            } label: {
+                HStack(spacing: 8) {
+                    if isVerifyingPin {
+                        ProgressView().tint(.white)
+                    }
+                    Text("Transférer")
+                        .font(.system(size: 17, weight: .bold))
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 54)
+                .background(Color(hex: "0788B9"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .disabled(isVerifyingPin)
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 12)
+        .padding(.bottom, 18)
+    }
+
+    private var parsedAmount: Double {
+        Double(amount.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: ",", with: ".")) ?? 0
+    }
+
+    private func detailRow(_ title: String, value: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(title)
+                .foregroundColor(.secondary)
+            Spacer(minLength: 8)
+            Text(value)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.trailing)
+        }
+        .font(.system(size: 15))
+    }
+
+    private func formatAmount(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
         formatter.locale = Locale(identifier: "fr_FR")
-        return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
+        return "\(formatter.string(from: NSNumber(value: value)) ?? "0.00") \(currency)"
     }
-  
+
     private func validateAndConfirm() {
+        guard !isVerifyingPin, isPresented else { return }
         showPinError = false
-        
-        guard pin.count == 4 else {
+
+        guard pin.count == 4, pin.allSatisfy({ $0.isASCII && $0.isNumber }) else {
             pinErrorMessage = "Le PIN doit contenir exactement 4 chiffres"
             showPinError = true
             return
         }
-        
+
         isVerifyingPin = true
-        
         PinVerificationService.verify(pin: pin) { verifiedPin in
-            isVerifyingPin = false
-            onConfirm(verifiedPin)
+            DispatchQueue.main.async {
+                isVerifyingPin = false
+                guard isPresented else { return }
+                onConfirm(verifiedPin)
+            }
         } onFailure: { message in
-            isVerifyingPin = false
-            pinErrorMessage = message
-            showPinError = true
-            pin = ""
+            DispatchQueue.main.async {
+                isVerifyingPin = false
+                guard isPresented else { return }
+                pinErrorMessage = message
+                showPinError = true
+                pin = ""
+            }
         }
     }
-    
 }

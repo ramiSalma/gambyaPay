@@ -9,6 +9,7 @@ import SwiftUI;
 
 // MARK: - Main Component
 struct SourceOfFundsView: View {
+    @State private var hasInitialized = false
     @State private var selectedSource: SourceOfFunds = .wallet
     @State private var selectedWallet: SponsoringWallet? = nil
     @State private var sponsors: [SponsoringWallet] = []
@@ -25,6 +26,7 @@ struct SourceOfFundsView: View {
     var onWalletChanged: ((SponsoringWallet?) -> Void)?
     var onBalanceChanged: ((String) -> Void)?
     var walletTransferStyle = false
+    var blueAccent = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -44,12 +46,12 @@ struct SourceOfFundsView: View {
                 // Balance Display
                 balanceSection
             }
-            .padding(walletTransferStyle ? 22 : 24)
+            .padding(walletTransferStyle ? 15 : 24)
             .background(Color.white)
-            .cornerRadius(walletTransferStyle ? 22 : 20)
+            .cornerRadius(walletTransferStyle ? 16 : 20)
             .overlay {
                 if walletTransferStyle {
-                    RoundedRectangle(cornerRadius: 22)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.gray.opacity(0.12), lineWidth: 1)
                 }
             }
@@ -58,8 +60,10 @@ struct SourceOfFundsView: View {
         .padding(.vertical, walletTransferStyle ? 0 : 20)
         .background(walletTransferStyle ? Color.clear : Color(red: 0.95, green: 0.95, blue: 0.95))
         .onAppear {
-            // Initialize with My Wallet checked (exact Android behavior)
+            guard !hasInitialized else { return }
+            hasInitialized = true
             selectedSource = .wallet
+            balance = String(format: "%.2f", userDataManager.getAvailableBalance())
             loadSponsoringWallets()
         }
         .alert("Error!", isPresented: $showAlert) {
@@ -85,7 +89,7 @@ struct SourceOfFundsView: View {
                     .fill(Color(hex: "0788B9"))
                     .frame(width: 4, height: 32)
                 Text("Source of Funds")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.primary)
             } else {
                 RoundedRectangle(cornerRadius: 8)
@@ -99,7 +103,7 @@ struct SourceOfFundsView: View {
             
             Spacer()
         }
-        .padding(.bottom, 20)
+        .padding(.bottom, walletTransferStyle ? 13 : 20)
     }
     
     // MARK: - Source Selection Toggle (exact Android layout)
@@ -114,13 +118,13 @@ struct SourceOfFundsView: View {
                 }
             }) {
                 Text(walletTransferStyle ? "Wallet" : "Mon Portefeuille")
-                    .font(.system(size: walletTransferStyle ? 17 : 14, weight: .semibold))
+                    .font(.system(size: walletTransferStyle ? 14 : 14, weight: .semibold))
                     .foregroundColor(selectedSource == .wallet ? .white : (walletTransferStyle ? Color.gray : Color.blueH))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedSource == .wallet ? Color.blueH : Color.clear) // primary_green
+                    .fill(selectedSource == .wallet ? (walletTransferStyle && !blueAccent ? Color(hex: "359B46") : Color.blueH) : Color.clear) // primary_green
                     .shadow(color: selectedSource == .wallet ? Color(red: 0.2, green: 0.7, blue: 0.4).opacity(0.3) : Color.clear, radius: 3)
             )
             
@@ -135,19 +139,19 @@ struct SourceOfFundsView: View {
                 }
             }) {
                 Text("Sponsor")
-                    .font(.system(size: walletTransferStyle ? 17 : 14, weight: .semibold))
+                    .font(.system(size: walletTransferStyle ? 14 : 14, weight: .semibold))
                     .foregroundColor(selectedSource == .sponsor ? .white : Color(red: 0.4, green: 0.4, blue: 0.4))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(selectedSource == .sponsor ? Color.blueH: Color.clear)
+                    .fill(selectedSource == .sponsor ? (walletTransferStyle && !blueAccent ? Color(hex: "359B46") : Color.blueH) : Color.clear)
                     .shadow(color: selectedSource == .sponsor ? Color(red: 0.2, green: 0.7, blue: 0.4).opacity(0.3) : Color.clear, radius: 3)
             )
             .disabled(sponsors.isEmpty || sponsors.count <= 1)
             .opacity((sponsors.isEmpty || sponsors.count <= 1) ? 0.5 : 1.0)
         }
-        .frame(height: 56)
+        .frame(height: walletTransferStyle ? 44 : 56)
         .padding(walletTransferStyle ? 0 : 4)
         .background(walletTransferStyle ? Color.gray.opacity(0.18) : Color(red: 0.98, green: 0.98, blue: 0.98))
         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -156,7 +160,7 @@ struct SourceOfFundsView: View {
                 RoundedRectangle(cornerRadius: 16).stroke(Color(red: 0.9, green: 0.9, blue: 0.9), lineWidth: 1)
             }
         }
-        .padding(.bottom, 24)
+        .padding(.bottom, walletTransferStyle ? 16 : 24)
     }
     
     // MARK: - Sponsor Section (exact Android behavior)
@@ -173,20 +177,20 @@ struct SourceOfFundsView: View {
                 ForEach(sponsors, id: \.id) { sponsor in
                     Button(action: {
                         selectedWallet = sponsor
-                        onWalletChanged?(sponsor)
+                        onWalletChanged?(sponsor.walletNumber.isEmpty ? nil : sponsor)
                         if sponsor.userName != "Sélectionner un Sponsor" {
                             getDailyLimit(for: sponsor)
                         } else {
                             balance = "00.00"
                         }
                     }) {
-                        Text(sponsor.userName.isEmpty ? (walletTransferStyle ? "Unnamed Sponsor" : "Sponsor sans nom") : sponsor.userName)
+                        Text(sponsor.walletNumber.isEmpty ? (walletTransferStyle ? "Select a Sponsor" : "Sélectionner un Sponsor") : (sponsor.userName.isEmpty ? (walletTransferStyle ? "Unnamed Sponsor" : "Sponsor sans nom") : sponsor.userName))
                     }
                 }
             } label: {
                 HStack {
-                    Text(selectedWallet?.userName ?? (walletTransferStyle ? "Select a Sponsor" : "Sélectionner un Sponsor"))
-                        .font(.system(size: walletTransferStyle ? 17 : 14, weight: .medium))
+                    Text(selectedWallet?.walletNumber.isEmpty == false ? (selectedWallet?.userName ?? "") : (walletTransferStyle ? "Select a Sponsor" : "Sélectionner un Sponsor"))
+                        .font(.system(size: walletTransferStyle ? 14 : 14, weight: .medium))
                         .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
                     
                     Spacer()
@@ -196,7 +200,7 @@ struct SourceOfFundsView: View {
                         .foregroundColor(Color(red: 0.6, green: 0.6, blue: 0.6))
                 }
                 .padding(.horizontal, 12)
-                .frame(height: walletTransferStyle ? 60 : 48)
+                .frame(height: walletTransferStyle ? 46 : 48)
                 .background(walletTransferStyle ? Color.white : Color(red: 0.96, green: 0.96, blue: 0.96))
                 .overlay {
                     if walletTransferStyle {
@@ -209,26 +213,38 @@ struct SourceOfFundsView: View {
         }
     }
     
+    private var walletTransferBalanceText: String {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_GM")
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        let value = formatter.string(from: NSNumber(value: Double(balance) ?? 0)) ?? "0.00"
+        if selectedSource == .wallet { return "\(value) GMD" }
+        return selectedWallet?.walletNumber.isEmpty == false ? value : "00.00"
+    }
+
     private var balanceSection: some View {
         VStack(spacing: 0) {
             if walletTransferStyle {
                 HStack {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text(walletTransferStyle ? (selectedSource == .wallet ? "Available balance" : "Daily limit (GMD)") : balanceLabel)
-                            .font(.system(size: 16, weight: .medium))
+                            .font(.system(size: 13, weight: .medium))
                             .tracking(0.5)
                             .foregroundColor(.secondary)
-                        Text("\(balance.formatAsCurrency()) \(walletTransferStyle ? "GMD" : "GNF")")
-                            .font(.system(size: 27, weight: .semibold))
+                        Text(walletTransferBalanceText)
+                            .font(.system(size: 21, weight: .semibold))
                             .foregroundColor(.primary)
                     }
                     Spacer(minLength: 12)
                     Image(systemName: "wallet.bifold.fill")
-                        .font(.system(size: 28, weight: .medium))
+                        .font(.system(size: 23, weight: .medium))
                         .foregroundColor(Color.gray.opacity(0.55))
                 }
-                .padding(22)
-                .frame(maxWidth: .infinity, minHeight: 130, alignment: .leading)
+                .padding(16)
+                .frame(maxWidth: .infinity, minHeight: 100, alignment: .leading)
                 .background(Color(UIColor.systemGray6))
                 .clipShape(RoundedRectangle(cornerRadius: 4))
             } else {
@@ -245,7 +261,7 @@ struct SourceOfFundsView: View {
                 
                 // Balance Content (exact Android layout)
                 VStack(spacing: 6) {
-                    Text("GNF \(balance.formatAsCurrency())")  // ← Add .formatAsCurrency()
+                    Text("GMD \(balance.formatAsCurrency())")  // ← Add .formatAsCurrency()
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(.white)
                     
@@ -272,7 +288,7 @@ struct SourceOfFundsView: View {
         case .wallet:
             return "Solde disponible"
         case .sponsor:
-            return "Limite quotidienne (GNF)"
+            return "Limite quotidienne (GMD)"
         }
     }
     
@@ -415,7 +431,7 @@ struct SourceOfFundsView: View {
             balance = "00.00"
         }
         // Pass formatted value to callback
-        onBalanceChanged?("GNF \(balance.formatAsCurrency())")
+        onBalanceChanged?("GMD \(balance.formatAsCurrency())")
     }
     
     private func update() {
@@ -423,38 +439,40 @@ struct SourceOfFundsView: View {
         let sourceOfFunds = selectedSource
         
         if sourceOfFunds == .sponsor {
-            balance = "00.00"
-            // Sponsor section is already visible due to conditional rendering
+            if let wallet = selectedWallet, !wallet.walletNumber.isEmpty {
+                onWalletChanged?(wallet)
+                getDailyLimit(for: wallet)
+            } else {
+                balance = "00.00"
+                onWalletChanged?(nil)
+            }
         } else if sourceOfFunds == .wallet {
             // Hide sponsor elements (handled by conditional rendering)
             fetchWalletBalance()
         }
     }
     private func fetchWalletBalance() {
-        initProgress()
-        
-        DispatchQueue.main.async {
-            self.dismissProgress()
-            let formattedBalance = self.userDataManager.getFormattedBalance()
-            
-            if !formattedBalance.isEmpty {
-                // Extract just the number part if it contains currency
-                let components = formattedBalance.components(separatedBy: " ")
-                if let numberPart = components.first {
-                    // Clean any existing formatting before storing
-                    self.balance = numberPart.cleanCurrencyValue()
-                } else {
-                    self.balance = "00.00"
+        balance = String(format: "%.2f", userDataManager.getAvailableBalance())
+        onBalanceChanged?("GMD \(balance.formatAsCurrency())")
+        guard walletTransferStyle else { return }
+        APIClient.shared.getBalance { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    userDataManager.saveWalletBalance(availableAmount: response.availableAmount,
+                                                      totalAmount: response.totalAmount,
+                                                      currency: response.currency)
+                    guard selectedSource == .wallet else { return }
+                    balance = String(format: "%.2f", response.availableAmount)
+                    onBalanceChanged?("GMD \(balance.formatAsCurrency())")
+                case .failure:
+                    // Keep the last known balance when the refresh is unavailable.
+                    break
                 }
-            } else {
-                self.balance = "00.00"
             }
-            
-            // Pass formatted value to callback
-            self.onBalanceChanged?("GNF \(self.balance.formatAsCurrency())")
         }
     }
-    
+
     private func disableSponsorOption() {
         // In SwiftUI, this is handled by the disabled modifier on the button
         // The button is already disabled when sponsors.count <= 1
@@ -487,7 +505,7 @@ struct SourceOfFundsView: View {
     }
     
     func getBalance() -> String {
-        return "GNF \(balance.formatAsCurrency())"
+        return "GMD \(balance.formatAsCurrency())"
     }
 }
 

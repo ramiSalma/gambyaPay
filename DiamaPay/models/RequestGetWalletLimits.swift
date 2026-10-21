@@ -42,7 +42,7 @@ struct LimitSummary: Codable {
     var debutPeriode: String?
     var finPeriode: String?
     var derniereTransaction: String?
-    var soldeDisponible: Double?           // PRFID limit (global daily limit)
+    var soldeDisponible: Double?           // Summary value used for the existing client’s global daily limit card.
     var devise: String?
 }
 

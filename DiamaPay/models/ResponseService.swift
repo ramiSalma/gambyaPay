@@ -4,7 +4,7 @@
 //
 //  Created by Bits on 27/9/2025.
 //
-import SwiftUI
+import Foundation
 struct ResponseService: Codable {
     let status: String?
     let authCode: String?
@@ -128,10 +128,10 @@ struct ResponseService: Codable {
     }
     
     var isSuccessful: Bool {
-        return respCode == "000" || respCode == "00"
+        return respCode == "000"
     }
     var transactionReference: String {
-        return result?.transactionReference ?? (result?.getString("authCode") ?? authCode ?? "")
+        return result?.stringValue ?? result?.transactionReference ?? (result?.getString("authCode") ?? authCode ?? "")
     }
 
     var transactionAmount: String {

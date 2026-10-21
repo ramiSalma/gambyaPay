@@ -7,6 +7,8 @@
 
 
 struct RequestApproval: Codable {
+    var phoneNumber: String? = nil
+
     var walletNumber: String?
     var source: String?
     var bank: String?

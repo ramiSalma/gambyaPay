@@ -15,29 +15,35 @@ struct TransactionDetailView: View {
 
     var body: some View {
         ZStack {
-            Color.white
+            Color(hex: "F4F7FC")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 DiamaPayHeader(title: "Transaction Details", headerColor: Color(hex: "174EA6"))
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 18) {
                         transactionInfoCard
                         
                         Button(action: {
                             generatePDF()
                         }) {
-                            HStack {
+                            HStack(spacing: 10) {
                                 Image(systemName: "square.and.arrow.up")
-                                Text("Partager en PDF")
+                                Text("Share receipt")
                             }
                             .foregroundColor(.white)
                             .font(.system(size: 16, weight: .semibold))
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blueH)
-                            .cornerRadius(10)
-                            .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
+                            .padding(.vertical, 16)
+                            .background(
+                                LinearGradient(
+                                    colors: [Color(hex: "174EA6"), Color(hex: "0788B9")],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: Color(hex: "174EA6").opacity(0.22), radius: 10, x: 0, y: 5)
                         }
                         .padding(.horizontal, 16)
                         .padding(.bottom, 30)
@@ -57,65 +63,135 @@ struct TransactionDetailView: View {
         .navigationBarHidden(true)
     }
     
-    private var titleCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-            
-            VStack(spacing: 8) {
-                Text("Détails de la transaction")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 80, height: 3)
-            }
-            .padding(.vertical, 8)
-        }
-        .frame(height: 80)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-    }
-    
     private var transactionInfoCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            detailRow(label: "Référence", value: transaction.transactionReference ?? "N/A")
-            detailRow(label: "Date", value: transaction.transactionDate ?? "N/A")
-            detailRow(label: "Type", value: transaction.title)
-            detailRow(
-                label: "Montant",
-                value: transaction.amount,
-                color: transaction.isDebit ? .red : .blueH
-            )
-            detailRow(
-                label: "Statut",
-                value: transaction.status ?? "Inconnu",
-                color: (transaction.status ?? "") == "Approuvé" ? .blueH : .red
-            )
-            detailRow(label: "Détails", value: transaction.details ?? "Aucun détail")
-            detailRow(label: "Solde initial", value: transaction.openingBalance ?? "N/A")
-            detailRow(label: "Solde final", value: transaction.closingBalance ?? "N/A")
+        VStack(spacing: 14) {
+            summaryCard
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("TRANSACTION INFORMATION")
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(1.1)
+                    .foregroundColor(Color(hex: "174EA6"))
+                    .padding(.bottom, 6)
+
+                detailRow(label: "Reference", value: transaction.transactionReference ?? "N/A")
+                detailRow(label: "Type", value: transaction.title)
+                detailRow(label: "Details", value: transaction.details ?? "No additional details")
+                detailRow(label: "Opening balance", value: transaction.openingBalance ?? "N/A")
+                detailRow(label: "Closing balance", value: transaction.closingBalance ?? "N/A")
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "DCE7F7"), lineWidth: 1))
+            .shadow(color: Color(hex: "174EA6").opacity(0.06), radius: 12, x: 0, y: 5)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
         .padding(.horizontal, 16)
+        .padding(.top, 18)
+    }
+
+    private var summaryCard: some View {
+        ZStack(alignment: .topTrailing) {
+            LinearGradient(
+                colors: [Color(hex: "123B7A"), Color(hex: "1768B2"), Color(hex: "0788B9")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Circle()
+                .fill(Color.white.opacity(0.08))
+                .frame(width: 180, height: 180)
+                .offset(x: 58, y: -90)
+
+            Circle()
+                .fill(Color.white.opacity(0.06))
+                .frame(width: 110, height: 110)
+                .offset(x: -110, y: 115)
+
+            VStack(alignment: .leading, spacing: 20) {
+                HStack(spacing: 12) {
+                    Image(systemName: transaction.isDebit ? "arrow.up.right" : "arrow.down.left")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.16))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(transaction.title)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                        Text(transaction.date)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.76))
+                    }
+
+                    Spacer(minLength: 0)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(transaction.isDebit ? "Money sent" : "Money received")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.78))
+                    Text(transaction.amount)
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .minimumScaleFactor(0.75)
+                        .lineLimit(1)
+                }
+
+                HStack {
+                    Label(transaction.status ?? "Unknown", systemImage: statusIcon)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 11)
+                        .padding(.vertical, 7)
+                        .background(Color.white.opacity(0.16))
+                        .clipShape(Capsule())
+
+                    Spacer()
+
+                    Text("Ref. \(transaction.transactionReference ?? "N/A")")
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundColor(.white.opacity(0.82))
+                        .lineLimit(1)
+                }
+            }
+            .padding(20)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.white.opacity(0.25), lineWidth: 1))
+        .shadow(color: Color(hex: "174EA6").opacity(0.24), radius: 16, x: 0, y: 8)
+    }
+
+    private var statusIcon: String {
+        let status = (transaction.status ?? "").lowercased()
+        if status.contains("approv") || status.contains("success") || status == "ok" || status == "000" || status == "completed" {
+            return "checkmark.circle.fill"
+        }
+        if status.contains("pending") || status.contains("processing") {
+            return "clock.fill"
+        }
+        if status.contains("fail") || status.contains("reject") || status.contains("declin") || status.contains("error") {
+            return "xmark.circle.fill"
+        }
+        return "info.circle.fill"
     }
     
-    private func detailRow(label: String, value: String, color: Color = .primary) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+    private func detailRow(label: String, value: String) -> some View {
+        HStack(alignment: .top, spacing: 16) {
             Text(label)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color(hex: "496589"))
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text(value)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(color)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(Color(hex: "172B4D"))
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 11)
     }
 
     private func generatePDF() {
@@ -124,7 +200,7 @@ struct TransactionDetailView: View {
         let pdfMetaData = [
             kCGPDFContextCreator: "DIAMACASH",
             kCGPDFContextAuthor: "DIAMACASH App",
-            kCGPDFContextTitle: "Reçu de transaction"
+            kCGPDFContextTitle: "Transaction receipt"
         ]
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = pdfMetaData as [String: Any]
@@ -146,22 +222,21 @@ struct TransactionDetailView: View {
             var yOffset: CGFloat = 40
             let leftMargin: CGFloat = 40
             
-            let title = "Reçu de Transaction"
-            title.draw(at: CGPoint(x: leftMargin, y: yOffset), withAttributes: [
+            "Transaction Receipt".draw(at: CGPoint(x: leftMargin, y: yOffset), withAttributes: [
                 .font: titleFont,
                 .foregroundColor: textColor
             ])
             yOffset += 40
             
             let lines = [
-                "Référence: \(transaction.transactionReference ?? "N/A")",
-                "Date: \(transaction.transactionDate ?? "N/A")",
+                "Reference: \(transaction.transactionReference ?? "N/A")",
+                "Date: \(transaction.date)",
                 "Type: \(transaction.title)",
-                "Montant: \(transaction.amount)",
-                "Statut: \(transaction.status ?? "Inconnu")",
-                "Détails: \(transaction.details ?? "N/A")",
-                "Solde initial: \(transaction.openingBalance ?? "N/A")",
-                "Solde final: \(transaction.closingBalance ?? "N/A")"
+                "Amount: \(transaction.amount)",
+                "Status: \(transaction.status ?? "Unknown")",
+                "Details: \(transaction.details ?? "N/A")",
+                "Opening balance: \(transaction.openingBalance ?? "N/A")",
+                "Closing balance: \(transaction.closingBalance ?? "N/A")"
             ]
             
             //print("🔵 Drawing \(lines.count) lines")

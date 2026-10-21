@@ -38,15 +38,25 @@ struct TransferConfirmationDialog: View {
                 }
             
             VStack(spacing: 0) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("Confirmer le Transfert")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.primary)
-                        .multilineTextAlignment(.center)
+                HStack(alignment: .top, spacing: 14) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(Color(hex: "174EA6"))
+                        .frame(width: 42, height: 42)
+                        .background(Color(hex: "EAF1FB"))
+                        .clipShape(Circle())
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Confirm transfer")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(Color(hex: "172B4D"))
+                        Text("Review the details and enter your PIN")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(hex: "5F6B7A"))
+                    }
+                    Spacer(minLength: 0)
                 }
-                .padding(.top, 24)
-                .padding(.horizontal, 20)
+                .padding(.top, 22)
+                .padding(.horizontal, 22)
                 
                 Divider()
                     .padding(.vertical, 16)
@@ -56,16 +66,16 @@ struct TransferConfirmationDialog: View {
                     VStack(spacing: 16) {
                         // Amount Section with Fees Breakdown
                         VStack(spacing: 12) {
-                            DetailRowView(label: "Montant du transfert", value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
+                            DetailRowView(label: "Transfer amount", value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
                             
                             Divider()
                                 .padding(.vertical, 4)
                             
                             // Fees Breakdown Section
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Frais applicables")
+                                Text("Applicable fees")
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(Color(hex: "667085"))
                                 
                                 // Withdrawal Fee (if applicable)
                                 if withdrawalFee > 0 {
@@ -74,9 +84,9 @@ struct TransferConfirmationDialog: View {
                                             Image(systemName: "banknote")
                                                 .font(.system(size: 12))
                                                 .foregroundColor(.orange)
-                                            Text("Frais de retrait")
+                                            Text("Withdrawal fee")
                                                 .font(.system(size: 13))
-                                                .foregroundColor(.primary)
+                                                .foregroundColor(Color(hex: "263445"))
                                         }
                                         Spacer()
                                         Text(formatAmount(withdrawalFee))
@@ -95,12 +105,12 @@ struct TransferConfirmationDialog: View {
                                         Image(systemName: "paperplane.fill")
                                             .font(.system(size: 12))
                                             .foregroundColor(transferFee > 0 ? .blueH : .green)
-                                        Text("Frais d'envoi")
+                                        Text("Transfer fee")
                                             .font(.system(size: 13))
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(Color(hex: "263445"))
                                     }
                                     Spacer()
-                                    Text(transferFee > 0 ? formatAmount(transferFee) : "Gratuit")
+                                    Text(transferFee > 0 ? formatAmount(transferFee) : "Free")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(transferFee > 0 ? .blueH : .green)
                                 }
@@ -114,69 +124,73 @@ struct TransferConfirmationDialog: View {
                                 .padding(.vertical, 4)
                             
                             DetailRowView(
-                                label: "Total à débiter",
+                                label: "Total to debit",
                                 value: formatAmount(total),
                                 isHighlighted: true
                             )
                         }
                         .padding(16)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(12)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "E5E9EF"), lineWidth: 1))
                         
                         // Recipient Section
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Destinataire")
+                            Text("Recipient")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(Color(hex: "667085"))
                             
-                            DetailRowView(label: "Nom", value: recipientName)
-                            DetailRowView(label: "Téléphone", value: recipientPhone)
+                            DetailRowView(label: "Name", value: recipientName)
+                            DetailRowView(label: "Recipient number", value: recipientPhone)
                         }
                         .padding(16)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(12)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "E5E9EF"), lineWidth: 1))
                         
                         // Source of Funds
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Source des fonds")
+                            Text("Source of funds")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(Color(hex: "667085"))
                             
                             if sourceType == .sponsor, let wallet = selectedWallet {
-                                DetailRowView(label: "Type", value: "Portefeuille Sponsor")
+                                DetailRowView(label: "Type", value: "Sponsor wallet")
                                 DetailRowView(label: "Sponsor", value: wallet.userName)
                             } else {
-                                DetailRowView(label: "Type", value: "Mon Portefeuille")
+                                DetailRowView(label: "Type", value: "My wallet")
                             }
                         }
                         .padding(16)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(12)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "E5E9EF"), lineWidth: 1))
                         
                         // Payment Details
                         if !paymentDetails.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Commentaire")
+                                Text("Reason")
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(Color(hex: "667085"))
                                 
                                 Text(paymentDetails)
                                     .font(.system(size: 14))
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(Color(hex: "263445"))
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(16)
-                            .background(Color(UIColor.systemGray6))
-                            .cornerRadius(12)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "E5E9EF"), lineWidth: 1))
                         }
                         
                         // PIN Entry
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Code PIN")
+                            Text("PIN")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(Color(hex: "667085"))
                             
-                            SecureField("Entrer le code PIN", text: $pin)
+                            SecureField("Enter PIN", text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                                 .padding(.horizontal, 16)
@@ -199,8 +213,9 @@ struct TransferConfirmationDialog: View {
                             }
                         }
                         .padding(16)
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(12)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "E5E9EF"), lineWidth: 1))
                     }
                     .padding(.horizontal, 20)
                 }
@@ -214,7 +229,7 @@ struct TransferConfirmationDialog: View {
                     Button(action: {
                         onCancel()
                     }) {
-                        Text("Annuler")
+                        Text("Cancel")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -223,7 +238,7 @@ struct TransferConfirmationDialog: View {
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.blueH, lineWidth: 1)
+                                    .stroke(Color(hex: "0788B9"), lineWidth: 1)
                             )
                     }
                     
@@ -233,15 +248,15 @@ struct TransferConfirmationDialog: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text("Confirmer")
+                                Text("Confirm")
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                             }
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.greenH)
-                        .cornerRadius(8)
+                        .background(Color(hex: "174EA6"))
+                        .cornerRadius(10)
                     }
                     .disabled(isVerifyingPin)
                 }
@@ -254,6 +269,8 @@ struct TransferConfirmationDialog: View {
             .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
             .padding(.horizontal, 20)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .zIndex(1)
     }
     
     private func formatAmount(_ amount: Double) -> String {
@@ -264,10 +281,11 @@ struct TransferConfirmationDialog: View {
     }
     
     private func validateAndConfirm() {
+        guard !isVerifyingPin, isPresented else { return }
         showPinError = false
         
-        guard pin.count == 4 else {
-            pinErrorMessage = "Le PIN doit contenir exactement 4 chiffres"
+        guard pin.count == 4, pin.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+            pinErrorMessage = "PIN must contain exactly 4 digits"
             showPinError = true
             return
         }
@@ -276,9 +294,11 @@ struct TransferConfirmationDialog: View {
         
         PinVerificationService.verify(pin: pin) { verifiedPin in
             isVerifyingPin = false
+            guard isPresented else { return }
             onConfirm(verifiedPin)
         } onFailure: { message in
             isVerifyingPin = false
+            guard isPresented else { return }
             pinErrorMessage = message
             showPinError = true
             pin = ""

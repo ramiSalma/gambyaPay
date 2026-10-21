@@ -205,6 +205,14 @@ class UserDataManager {
         saveIfNotNil(authResponse.userType, forKey: Keys.userType)
         saveIfNotNil(authResponse.type, forKey: Keys.type)
         saveIfNotNil(authResponse.respCode, forKey: Keys.respCode)
+
+        // Provider data is included in the authenticated login response. Keep a
+        // local copy so screens can still populate when the provider endpoint
+        // is restricted for the signed-in user.
+        if let providerList = authResponse.providerList,
+           let data = try? JSONEncoder().encode(providerList) {
+            userDefaults.set(data, forKey: "mobile_money_providers")
+        }
         
         if let serverDeviceId = authResponse.deviceIdentifier, !serverDeviceId.isEmpty {
             userDefaults.set(serverDeviceId, forKey: Keys.deviceIdentifier)
@@ -230,6 +238,26 @@ class UserDataManager {
         let savedToken = getToken()
         if savedToken.isEmpty {
         } else {
+        }
+    }
+
+    func loadMobileMoneyProviders() -> [Provider] {
+        guard let data = userDefaults.data(forKey: "mobile_money_providers"),
+              let items = try? JSONDecoder().decode([AnyCodable].self, from: data) else { return [] }
+        return items.compactMap { item in
+            guard let values = item.value as? [String: Any] else { return nil }
+            func string(_ keys: String...) -> String? {
+                for key in keys {
+                    if let value = values[key], !(value is NSNull) { return String(describing: value) }
+                }
+                return nil
+            }
+            return Provider(
+                id: string("id", "providerId"),
+                name: string("label", "name", "providerName"),
+                code: string("code", "providerCode", "id"),
+                type: string("type", "providerType")
+            )
         }
     }
     
@@ -349,6 +377,8 @@ class UserDataManager {
     
     private func mapCurrencyCode(_ currencyCode: String) -> String {
         switch currencyCode {
+        case "270":
+            return "GMD"
         case "324":
             return "GNF" // Guinea Franc
         case "952":
@@ -377,11 +407,11 @@ class UserDataManager {
     }
     
     func getCurrency() -> String {
-        return "324" // userDefaults.string(forKey: Keys.currency) ?? "GNF"
+        return "270"
     }
     
     func getFormattedBalance() -> String {
-        return userDefaults.string(forKey: Keys.formattedBalance) ?? "0.00 GNF"
+        return userDefaults.string(forKey: Keys.formattedBalance) ?? "0.00 GMD"
     }
     
     // MARK: - Clear Data

@@ -7,12 +7,23 @@
 
 import SwiftUI
 
+private enum RegistrationTheme {
+    static let navy = Color(red: 23 / 255.0, green: 73 / 255.0, blue: 157 / 255.0)
+    static let teal = Color(red: 0 / 255.0, green: 132 / 255.0, blue: 184 / 255.0)
+    static let canvas = Color(red: 247 / 255.0, green: 248 / 255.0, blue: 253 / 255.0)
+    static let ink = Color(red: 73 / 255.0, green: 82 / 255.0, blue: 99 / 255.0)
+}
+
 struct RegistrationFlowView: View {
     @State private var currentStep = 1
     @StateObject private var registrationData = RegistrationData()
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var isLoading = false
+    @State private var showPersonalInfoErrors = false
+    @State private var showPinErrors = false
+    @State private var showOtpErrors = false
+    @State private var otpServerError: String?
     @Environment(\.dismiss) private var dismiss
     @State private var showImagePicker = false
     @State private var pickerType: String = ""
@@ -21,6 +32,7 @@ struct RegistrationFlowView: View {
     
     // API data states
     @State private var nationalities: [Nationality] = []
+    @State private var branches: [Branch] = []
     @State private var secretQuestions: [SecretQuestion] = []
     @State private var isLoadingNationalities = false
     @State private var isLoadingSecretQuestions = false
@@ -28,37 +40,51 @@ struct RegistrationFlowView: View {
     // Terms and Conditions tracking
     @State private var expandedTermsSections: Set<String> = []
     
-    let totalSteps = 6
+    let totalSteps = 5
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 headerView
                 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        stepContentView
+                if currentStep == 4 {
+                    TermsAndConditionsView(
+                        registrationAcceptance: Binding(
+                            get: { registrationData.acceptTerms && registrationData.acceptPrivacy },
+                            set: { accepted in
+                                registrationData.acceptTerms = accepted
+                                registrationData.acceptPrivacy = accepted
+                            }
+                        ),
+                        onAccept: nextStep,
+                        onRefuse: { dismiss() }
+                    )
+                } else {
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            stepContentView
+                            navigationButtonsView
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.top, 30)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.top, 30)
                 }
-                
-                navigationButtonsView
             }
             .navigationBarHidden(true)
-            .background(Color(.systemGroupedBackground))
+            .background(RegistrationTheme.canvas)
         }
-        .alert("Erreur", isPresented: $showAlert) {
+        .alert("Registration", isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(alertMessage)
         }
         .actionSheet(isPresented: $showingActionSheet) {
             ActionSheet(
-                title: Text("Sélectionner la source"),
-                message: Text("Choisissez comment ajouter la photo"),
+                title: Text("Choose photo source"),
+                message: Text("Choose how to add the photo"),
                 buttons: [
-                    .default(Text("📷 Appareil photo")) {
+                    .default(Text("📷 Camera")) {
                         if UIImagePickerController.isSourceTypeAvailable(.camera) {
                             imagePickerSourceType = .camera
                             showImagePicker = true
@@ -67,23 +93,24 @@ struct RegistrationFlowView: View {
                             showImagePicker = true
                         }
                     },
-                    .default(Text("📁 Bibliothèque de photos")) {
+                    .default(Text("📁 Photo Library")) {
                         imagePickerSourceType = .photoLibrary
                         showImagePicker = true
                     },
-                    .cancel(Text("Annuler"))
+                    .cancel(Text("Cancel"))
                 ]
             )
         }
         .onAppear {
             fetchNationalities()
             fetchSecretQuestions()
+            fetchRegistrationBranches()
         }
     }
     
     // MARK: - Header View with Step Indicator
     private var headerView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 18) {
             // "Étape" text centered with back arrow on the left
             ZStack {
                 // Back arrow on the left
@@ -105,39 +132,40 @@ struct RegistrationFlowView: View {
                 }
                 
                 // Centered text
-                Text("Étape \(currentStep) sur \(totalSteps)")
-                    .font(.system(size: 16, weight: .medium))
+                Text("Step \(min(currentStep, totalSteps)) of \(totalSteps)")
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
             
             // Step Indicator
-            HStack(spacing: 8) {
+            HStack(spacing: 4) {
                 ForEach(1...totalSteps, id: \.self) { step in
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         Circle()
-                            .fill(step <= currentStep ? Color.blueH : Color.white)
-                            .stroke(Color.white)
-                            .frame(width: 30, height: 30)
+                            .fill(step == currentStep ? RegistrationTheme.teal : (step < currentStep ? RegistrationTheme.navy : .white))
+                            .stroke(step <= currentStep ? Color.white : Color.white.opacity(0.8), lineWidth: step == currentStep ? 2 : 1)
+                            .frame(width: 34, height: 34)
                             .overlay(
                                 Text("\(step)")
                                     .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(step <= currentStep ? .white : .gray)
+                                    .foregroundColor(step <= currentStep ? .white : RegistrationTheme.ink)
                             )
                         
                         if step < totalSteps {
                             Rectangle()
-                                .fill(step < currentStep ? Color.green : Color.white.opacity(0.5))
+                                .fill(Color.white.opacity(0.8))
                                 .frame(height: 2)
-                                .frame(maxWidth: 60)
+                                .frame(maxWidth: 30)
                         }
                     }
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 14)
+            .padding(.bottom, 28)
         }
-        .background(Color.blueH)
+        .background(RegistrationTheme.navy)
     }
     
     // MARK: - Step Content View
@@ -157,18 +185,18 @@ struct RegistrationFlowView: View {
     // MARK: - Step 1: Personal Info
     private var step1PersonalInfoView: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Saisissez vos informations personnelles")
+            Text("Enter your personal information")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.primary)
             
-            sectionHeader("Informations de base")
-            CustomTextField(title: "Prénom*", text: $registrationData.firstName)
-            CustomTextField(title: "Nom de Famille*", text: $registrationData.lastName)
-            CustomTextField(title: "Numéro de téléphone*", text: $registrationData.phoneNumber, icon: "phone.fill", keyboardType: .phonePad)
-            CustomTextField(title: "Email", text: $registrationData.email, icon: "envelope", keyboardType: .emailAddress)
+            sectionHeader("Basic Information")
+            CustomTextField(title: "First Name*", text: $registrationData.firstName, error: personalInfoError("firstName"))
+            CustomTextField(title: "Last Name*", text: $registrationData.lastName, error: personalInfoError("lastName"))
+            CustomTextField(title: "Phone Number*", text: $registrationData.phoneNumber, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("phone"), digitLimit: 10)
+            CustomTextField(title: "Email*", text: $registrationData.email, icon: "envelope", keyboardType: .emailAddress, error: personalInfoError("email"))
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("Date de Naissance*")
+                Text("Date of Birth*")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.primary)
                 
@@ -196,28 +224,38 @@ struct RegistrationFlowView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 15)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                )
+                .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
+                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
+                inlineFieldError(personalInfoError("birthDate"))
             }
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Genre*")
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Gender*")
                     .font(.system(size: 16, weight: .medium))
-                HStack(spacing: 20) {
-                    GenderButton(title: "Masculin", isSelected: registrationData.gender == "M") {
-                        registrationData.gender = "M"
+                    .foregroundColor(RegistrationTheme.ink)
+                Menu {
+                    Button("Male") { registrationData.gender = "M" }
+                    Button("Female") { registrationData.gender = "F" }
+                } label: {
+                    HStack {
+                        Text(registrationData.gender.isEmpty ? "Select your gender" : (registrationData.gender == "M" ? "Male" : "Female"))
+                            .foregroundColor(registrationData.gender.isEmpty ? .gray : .primary)
+                        Spacer()
+                        Image(systemName: "chevron.down").foregroundColor(.gray)
                     }
-                    GenderButton(title: "Féminin", isSelected: registrationData.gender == "F") {
-                        registrationData.gender = "F"
-                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 19)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(.white)
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
                 }
+                inlineFieldError(personalInfoError("gender"))
             }
             
             sectionHeader("Identification")
             
-            // Nationality Picker with Search
+            CustomTextField(title: "National ID*", text: $registrationData.documentId, error: personalInfoError("documentId"))
+
+            // Nationality and branch selectors mirror the Android registration form.
             SearchableNationalityPicker(
                 nationalities: nationalities,
                 isLoading: isLoadingNationalities,
@@ -227,15 +265,41 @@ struct RegistrationFlowView: View {
                     registrationData.nationalityDisplay = nationality.wording
                 }
             )
+            inlineFieldError(personalInfoError("nationality"))
+
+            VStack(alignment: .leading, spacing: 8) {
+                Menu {
+                    ForEach(branches, id: \.id) { branch in
+                        Button(branch.name ?? branch.id ?? "Branch") {
+                            registrationData.branchCode = branch.id ?? ""
+                            registrationData.branchDisplay = branch.name ?? branch.id ?? ""
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(registrationData.branchDisplay.isEmpty ? "Choose a branch" : registrationData.branchDisplay)
+                            .foregroundColor(registrationData.branchDisplay.isEmpty ? .gray : .primary)
+                        Spacer()
+                        Image(systemName: "chevron.down").foregroundColor(.gray)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 19)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
+                }
+                .disabled(branches.isEmpty)
+                inlineFieldError(personalInfoError("branchCode"))
+            }
             
-            CustomTextField(title: "Adresse résidentielle*", text: $registrationData.address, icon: "location.circle")
-            
-            sectionHeader("Sécurité")
+            CustomTextField(title: "Residential Address*", text: $registrationData.address, icon: "location.circle", error: personalInfoError("address"))
+
+
+            sectionHeader("Security")
             
             // Secret Question Picker with API
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("Question secrète*")
+                    Text("Secret Question*")
                         .font(.system(size: 16, weight: .medium))
                     
                     if isLoadingSecretQuestions {
@@ -246,7 +310,7 @@ struct RegistrationFlowView: View {
                 
                 Menu {
                     if secretQuestions.isEmpty {
-                        Button("Chargement...") { }
+                        Button("Loading...") { }
                             .disabled(true)
                     } else {
                         ForEach(secretQuestions, id: \.id) { question in
@@ -262,7 +326,7 @@ struct RegistrationFlowView: View {
                             .foregroundColor(.blueH)
                             .frame(width: 20)
                         
-                        Text(registrationData.secretQDisplay.isEmpty ? "Sélectionner une question" : registrationData.secretQDisplay)
+                        Text(registrationData.secretQDisplay.isEmpty ? "Select a question" : registrationData.secretQDisplay)
                             .foregroundColor(registrationData.secretQDisplay.isEmpty ? .gray : .primary)
                         
                         Spacer()
@@ -271,20 +335,20 @@ struct RegistrationFlowView: View {
                             .foregroundColor(.gray)
                     }
                     .padding(.horizontal, 20)
-                    .padding(.vertical, 15)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
+                    .padding(.vertical, 19)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
                 }
                 .disabled(isLoadingSecretQuestions || secretQuestions.isEmpty)
+                inlineFieldError(personalInfoError("secretQ"))
             }
             
-            CustomTextField(title: "Votre réponse*", text: $registrationData.answer)
+            CustomTextField(title: "Your Answer*", text: $registrationData.answer, error: personalInfoError("answer"))
             
-            sectionHeader("Personne à contacter (optionnel)")
-            CustomTextField(title: "Nom de la personne à contacter", text: $registrationData.nkinName)
-            CustomTextField(title: "Téléphone de la personne à contacter", text: $registrationData.nkinPhone, icon: "phone.fill", keyboardType: .phonePad)
+            sectionHeader("Next Of Kin")
+            CustomTextField(title: "Next Of Kin Name*", text: $registrationData.nkinName, error: personalInfoError("nkinName"))
+            CustomTextField(title: "Next Of Kin Phone*", text: $registrationData.nkinPhone, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("nkinPhone"), digitLimit: 10)
+
         }
         .padding(.vertical, 20)
         .padding(.horizontal, 10)
@@ -293,42 +357,44 @@ struct RegistrationFlowView: View {
     // MARK: - Step 2: PIN Setup
     private var step2PinSetupView: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Créez votre code PIN")
+                Text("Create Your PIN Code")
                 .font(.system(size: 24, weight: .semibold))
             
-            Text("Ce code PIN sera utilisé pour sécuriser votre compte et confirmer vos transactions.")
+            Text("This PIN code will secure your account and confirm your transactions.")
                 .font(.system(size: 16))
                 .foregroundColor(.secondary)
             
             VStack(spacing: 16) {
-                SecureField("Saisissez votre code PIN à 4 chiffres", text: $registrationData.pin)
+                SecureField("Enter your 4-digit PIN code", text: $registrationData.pin)
                     .keyboardType(.numberPad)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    .padding(18)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
                     .onChange(of: registrationData.pin) {
                         if registrationData.pin.count > 4 {
                             registrationData.pin = String(registrationData.pin.prefix(4))
                         }
                     }
+                inlineFieldError(showPinErrors ? pinError : nil)
                 
-                SecureField("Confirmez votre code PIN", text: $registrationData.confirmPin)
+                SecureField("Confirm your PIN code", text: $registrationData.confirmPin)
                     .keyboardType(.numberPad)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    .padding(18)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
                     .onChange(of: registrationData.confirmPin) {
                         if registrationData.confirmPin.count > 4 {
                             registrationData.confirmPin = String(registrationData.confirmPin.prefix(4))
                         }
                     }
+                inlineFieldError(showPinErrors ? confirmPinError : nil)
                 
                 if !registrationData.pin.isEmpty || !registrationData.confirmPin.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             Image(systemName: registrationData.pin.count == 4 ? "checkmark.circle.fill" : "xmark.circle.fill")
                                 .foregroundColor(registrationData.pin.count == 4 ? .green : .red)
-                            Text("PIN doit contenir 4 chiffres")
+                            Text("PIN must contain exactly 4 digits")
                                 .font(.caption)
                         }
                         
@@ -337,8 +403,8 @@ struct RegistrationFlowView: View {
                                 Image(systemName: isWeakPin(registrationData.pin) ? "xmark.circle.fill" : "checkmark.circle.fill")
                                     .foregroundColor(isWeakPin(registrationData.pin) ? .red : .green)
                                 Text(isWeakPin(registrationData.pin)
-                                     ? "Ce PIN n'est pas sécurisé, veuillez en choisir un autre"
-                                     : "PIN suffisamment sécurisé")
+                                     ? "Choose a less predictable PIN"
+                                     : "PIN looks secure")
                                     .font(.caption)
                                     .foregroundColor(isWeakPin(registrationData.pin) ? .red : .primary)
                             }
@@ -348,7 +414,7 @@ struct RegistrationFlowView: View {
                             HStack {
                                 Image(systemName: registrationData.pin == registrationData.confirmPin ? "checkmark.circle.fill" : "xmark.circle.fill")
                                     .foregroundColor(registrationData.pin == registrationData.confirmPin ? .green : .red)
-                                Text("Les PINs doivent correspondre")
+                                Text("PINs must match")
                                     .font(.caption)
                             }
                         }
@@ -363,13 +429,42 @@ struct RegistrationFlowView: View {
     // MARK: - Step 3: Document Scan View
     private var step3DocumentScanView: some View {
         VStack(spacing: 25) {
-            Text("Numérisez vos documents d'identification")
+            Text("Scan your identification documents")
                 .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(RegistrationTheme.ink)
+            Text("To validate your account, scan the requested documents. Make sure each image is clear and readable.")
+                .font(.system(size: 16))
+                .foregroundColor(RegistrationTheme.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
+            HStack(alignment: .top, spacing: 14) {
+                GeometryReader { geometry in
+                    let documentImages = [registrationData.selfieBase64, registrationData.idFrontBase64, registrationData.idBackBase64]
+                    let completedCount = documentImages.filter { !$0.isEmpty }.count
+                    ZStack(alignment: .top) {
+                        Rectangle()
+                            .fill(completedCount == 3 ? RegistrationTheme.navy : Color.gray.opacity(0.25))
+                            .frame(width: 3, height: max(0, geometry.size.height - 24))
+                            .offset(y: 12)
+
+                        VStack(spacing: 0) {
+                            ForEach(0..<3, id: \.self) { index in
+                                Circle()
+                                    .fill(!documentImages[index].isEmpty ? RegistrationTheme.navy : (index == completedCount ? RegistrationTheme.teal : .white))
+                                    .frame(width: 24, height: 24)
+                                    .overlay(Circle().stroke(index <= completedCount ? RegistrationTheme.teal : Color.gray.opacity(0.35), lineWidth: 2))
+                                if index < 2 { Spacer(minLength: 0) }
+                            }
+                        }
+                    }
+                }
+                .frame(width: 24)
+
+                VStack(spacing: 20) {
             identificationCard(
-                title: "1. Photo personnelle",
-                description: "Prenez une photo de votre visage clair et net.",
-                buttonText: registrationData.selfieBase64.isEmpty ? "Prendre une photo" : "✓ Photo capturée - Refaire",
+                title: "Personal Photo",
+                description: "Take a well-lit photo of your face without glasses or a hat, against a plain background.",
+                buttonText: registrationData.selfieBase64.isEmpty ? "Take a Photo" : "Retake Photo",
                 systemIcon: "person.circle.fill",
                 isCompleted: !registrationData.selfieBase64.isEmpty,
                 isEnabled: true
@@ -378,38 +473,36 @@ struct RegistrationFlowView: View {
                 showSourceSelection()
             }
             
-            if !registrationData.selfieBase64.isEmpty {
-                identificationCard(
-                    title: "2. Recto de la carte d'identité",
-                    description: "Assurez-vous que toutes les informations sont visibles.",
-                    buttonText: registrationData.idFrontBase64.isEmpty ? "Prendre une photo" : "✓ Recto capturé - Refaire",
+            identificationCard(
+                    title: "Front of ID Card",
+                    description: "Make sure all information is clearly visible and the photo is not reflective.",
+                    buttonText: registrationData.idFrontBase64.isEmpty ? "Take Front Photo" : "Retake Front",
                     systemIcon: "creditcard.fill",
                     isCompleted: !registrationData.idFrontBase64.isEmpty,
                     isEnabled: true
-                ) {
-                    pickerType = "idFront"
-                    showSourceSelection()
-                }
+            ) {
+                pickerType = "idFront"
+                showSourceSelection()
             }
             
-            if !registrationData.selfieBase64.isEmpty && !registrationData.idFrontBase64.isEmpty {
-                identificationCard(
-                    title: "3. Verso de la carte d'identité",
-                    description: "Assurez-vous que toutes les informations sont visibles.",
-                    buttonText: registrationData.idBackBase64.isEmpty ? "Prendre une photo" : "✓ Verso capturé - Refaire",
+            identificationCard(
+                    title: "Back of ID Card",
+                    description: "Make sure all information is clearly visible and the document is complete.",
+                    buttonText: registrationData.idBackBase64.isEmpty ? "Take Back Photo" : "Retake Back",
                     systemIcon: "creditcard.and.123",
                     isCompleted: !registrationData.idBackBase64.isEmpty,
                     isEnabled: true
-                ) {
-                    pickerType = "idBack"
-                    showSourceSelection()
+            ) {
+                pickerType = "idBack"
+                showSourceSelection()
+            }
                 }
             }
             
             let completedDocs = [registrationData.selfieBase64, registrationData.idFrontBase64, registrationData.idBackBase64].filter { !$0.isEmpty }.count
             
             HStack {
-                Text("Documents complétés: \(completedDocs)/3")
+                Text("Documents captured: \(completedDocs)/3")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
@@ -421,7 +514,7 @@ struct RegistrationFlowView: View {
             .padding(.horizontal)
             
             if completedDocs == 3 {
-                Text("Tous les documents sont capturés - Vous pouvez continuer")
+                Text("All documents are captured. You can continue.")
                     .font(.caption)
                     .foregroundColor(.green)
                     .padding(.top, 10)
@@ -438,15 +531,15 @@ struct RegistrationFlowView: View {
     // MARK: - Step 4: Terms and Conditions (COMPLETE VERSION)
     private var step4TermsAndConditionsView: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Conditions Générales d'Utilisation")
+            Text("Terms and Conditions")
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.primary)
             
-            Text("DIAMACASH - DIAMA BANK SA")
+            Text("GambiaPay - Moneya")
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.blueH)
             
-            Text("Veuillez lire et accepter toutes les conditions pour continuer")
+            Text("Please review and accept the terms to continue.")
                 .font(.system(size: 13))
                 .foregroundColor(.secondary)
             
@@ -456,7 +549,7 @@ struct RegistrationFlowView: View {
                     // Definitions Section
                     termsSection(
                         icon: "book.fill",
-                        title: "Définitions",
+                        title: "Definitions",
                         id: "definitions"
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
@@ -480,7 +573,7 @@ struct RegistrationFlowView: View {
                     // Object Section
                     termsSection(
                         icon: "target",
-                        title: "Objet",
+                        title: "Object",
                         id: "object"
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
@@ -492,7 +585,7 @@ struct RegistrationFlowView: View {
                     // Features Section
                     termsSection(
                         icon: "star.fill",
-                        title: "Fonctionnalités du service",
+                        title: "Service Features",
                         id: "features"
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
@@ -686,7 +779,7 @@ struct RegistrationFlowView: View {
                             .font(.system(size: 22))
                             .foregroundColor(registrationData.acceptTerms ? .blueH : .gray)
                         
-                        Text("J'ai lu et j'accepte les Conditions Générales d'Utilisation")
+                        Text("I have read and accept the terms and conditions")
                             .font(.system(size: 14))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.leading)
@@ -703,7 +796,7 @@ struct RegistrationFlowView: View {
                             .font(.system(size: 22))
                             .foregroundColor(registrationData.acceptPrivacy ? .blueH : .gray)
                         
-                        Text("J'accepte le traitement de mes données personnelles conformément à la politique de confidentialité")
+                        Text("I agree to the processing of my personal data under the privacy policy")
                             .font(.system(size: 14))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.leading)
@@ -873,32 +966,44 @@ struct RegistrationFlowView: View {
 
     // MARK: - Step 5: OTP Verification
     private var step5OtpVerificationView: some View {
-        VStack(spacing: 20) {
-            Text("Vérifiez votre numéro de téléphone")
-                .font(.system(size: 20, weight: .semibold))
+        VStack(alignment: .leading, spacing: 22) {
+            Text("Verify your phone number")
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundColor(.gray)
             
-            Text("Entrez le code de vérification envoyé au \(maskedPhoneNumber)")
-                .font(.system(size: 16))
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+            Text("Enter the verification code sent to \(maskedPhoneNumber)")
+                .font(.system(size: 17))
+                .foregroundColor(RegistrationTheme.ink)
+
+            Image(systemName: "iphone.gen3.radiowaves.left.and.right")
+                .font(.system(size: 92, weight: .light))
+                .foregroundColor(RegistrationTheme.navy)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
             
-            TextField("Entrez le code de vérification", text: $registrationData.otpCode)
-                .keyboardType(.numberPad)
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .onChange(of: registrationData.otpCode) {
-                    if registrationData.otpCode.count > 6 {
-                        registrationData.otpCode = String(registrationData.otpCode.prefix(6))
-                    }
-                }
-            
-            Button("Renvoyer le code OTP") {
-                alertMessage = "Code OTP renvoyé"
-                showAlert = true
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Verification Code")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.gray)
+                TextField("Enter the verification code", text: $registrationData.otpCode)
+                    .keyboardType(.numberPad)
+                    .padding(16)
+                    .background(RoundedRectangle(cornerRadius: 14).fill(Color.white)
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
             }
-            .font(.system(size: 14))
-            .foregroundColor(.blueH)
+            .padding(20)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 22))
+            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 3)
+                .onChange(of: registrationData.otpCode) {
+                    registrationData.otpCode = String(registrationData.otpCode.filter(\.isNumber).prefix(6))
+                    otpServerError = nil
+                }
+            inlineFieldError(otpServerError ?? (showOtpErrors && registrationData.otpCode.count != 6 ? "Enter the 6-digit verification code." : nil))
+            
+            Text("Didn't receive the code? Please contact support.")
+                .font(.system(size: 14))
+                .foregroundColor(RegistrationTheme.teal)
+                .frame(maxWidth: .infinity)
         }
         .padding(.horizontal)
     }
@@ -908,7 +1013,61 @@ struct RegistrationFlowView: View {
         if phone.count > 4 {
             return phone.prefix(3) + "****" + phone.suffix(3)
         }
-        return "votre téléphone"
+        return "your phone"
+    }
+
+    private func personalInfoError(_ key: String) -> String? {
+        guard showPersonalInfoErrors else { return nil }
+        return personalInfoErrors[key]
+    }
+
+    private var personalInfoErrors: [String: String] {
+        var errors: [String: String] = [:]
+        if registrationData.firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["firstName"] = "Enter your first name." }
+        if registrationData.lastName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["lastName"] = "Enter your last name." }
+        if normalizedGambianPhone(registrationData.phoneNumber) == nil { errors["phone"] = "Enter exactly 10 digits, including the country code." }
+        if registrationData.email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["email"] = "Enter your email address." }
+        else if !isValidEmail(registrationData.email) { errors["email"] = "Enter a valid email address, for example name@example.com." }
+        if registrationData.dateOfBirth.isEmpty { errors["birthDate"] = "Select your date of birth." }
+        if registrationData.gender.isEmpty { errors["gender"] = "Select Male or Female." }
+        if registrationData.nationality.isEmpty { errors["nationality"] = "Choose your nationality." }
+        if registrationData.documentId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["documentId"] = "Enter the number shown on your ID." }
+        if registrationData.branchCode.isEmpty { errors["branchCode"] = "Choose a branch." }
+        if registrationData.address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["address"] = "Enter your residential address." }
+        if registrationData.secretQ.isEmpty { errors["secretQ"] = "Select a security question." }
+        if registrationData.answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["answer"] = "Enter an answer to your security question." }
+        if registrationData.nkinName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["nkinName"] = "Enter your next of kin's name." }
+        if normalizedGambianPhone(registrationData.nkinPhone) == nil { errors["nkinPhone"] = "Enter exactly 10 digits, including the country code." }
+        if APIClient.getDeviceId().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["deviceId"] = "Could not identify this device. Please restart the app and try again." }
+        return errors
+    }
+
+    private var pinError: String? {
+        if registrationData.pin.count != 4 || !registrationData.pin.allSatisfy(\.isNumber) { return "Your PIN must contain exactly 4 digits." }
+        if isWeakPin(registrationData.pin) { return "Choose a less predictable PIN, such as one without repeated or sequential digits." }
+        return nil
+    }
+
+    private var confirmPinError: String? {
+        guard !registrationData.confirmPin.isEmpty else { return "Confirm your 4-digit PIN." }
+        return registrationData.pin == registrationData.confirmPin ? nil : "The PINs do not match."
+    }
+
+    @ViewBuilder
+    private func inlineFieldError(_ message: String?) -> some View {
+        if let message {
+            HStack(alignment: .top, spacing: 6) {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .font(.system(size: 13))
+                Text(message)
+                    .font(.system(size: 13))
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .foregroundColor(.red)
+            .padding(.horizontal, 4)
+            .accessibilityLabel(message)
+        }
     }
     
     // MARK: - Step 6: Success
@@ -937,7 +1096,8 @@ struct RegistrationFlowView: View {
     // MARK: - Navigation Buttons
     private var navigationButtonsView: some View {
         VStack(spacing: 15) {
-            if currentStep < totalSteps {
+            if currentStep <= totalSteps {
+                let canAttemptCurrentStep = [1, 2, 5].contains(currentStep) || canProceedToNextStep()
                 Button(action: nextStep) {
                     HStack {
                         if isLoading {
@@ -945,23 +1105,23 @@ struct RegistrationFlowView: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.8)
                         }
-                        Text(isLoading ? "CHARGEMENT..." : "SUIVANT")
+                Text(isLoading ? "LOADING..." : (currentStep == 4 ? "ACCEPT" : (currentStep == 5 ? "VERIFY" : "NEXT")))
                             .foregroundColor(.white)
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
-                    .background(canProceedToNextStep() && !isLoading ? Color(red: 0.1, green: 0.4, blue: 0.1) : Color.gray)
-                    .cornerRadius(8)
+                    .background(canAttemptCurrentStep && !isLoading ? RegistrationTheme.teal : Color.gray)
+                    .cornerRadius(16)
                 }
-                .disabled(isLoading || !canProceedToNextStep())
+                .disabled(isLoading || !canAttemptCurrentStep)
             } else {
-                Button("Aller à la connexion") {
+                Button("Go to Login") {
                     dismiss()
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(Color.blueH)
+                .background(RegistrationTheme.navy)
                 .foregroundColor(.white)
                 .fontWeight(.semibold)
                 .cornerRadius(8)
@@ -992,13 +1152,22 @@ struct RegistrationFlowView: View {
             }
         }
     }
+
+    private func fetchRegistrationBranches() {
+        APIClient.shared.getAllBranches(bankCode: "00100") { result in
+            switch result {
+            case .success(let values):
+                self.branches = values.filter { !($0.id ?? "").isEmpty }
+            case .failure:
+                self.branches = []
+            }
+        }
+    }
     
     private func fetchSecretQuestions() {
         isLoadingSecretQuestions = true
         
-        let request = EmptyRequest()
-        
-        APIClient.shared.listSecretQuestions(request: request) { result in
+        APIClient.shared.listSecretQuestions { result in
             DispatchQueue.main.async {
                 self.isLoadingSecretQuestions = false
                 
@@ -1026,8 +1195,8 @@ struct RegistrationFlowView: View {
         for item in resultList {
             guard let dict = item as? [String: Any] else { continue }
             
-            if let questionId = dict["questionId"] as? String,
-               let questionText = dict["question"] as? String,
+            if let questionId = dict["id"] as? String ?? dict["questionId"] as? String,
+               let questionText = dict["wording"] as? String ?? dict["question"] as? String,
                !questionText.isEmpty {
                 questions.append(SecretQuestion(id: questionId, question: questionText))
             }
@@ -1073,15 +1242,13 @@ struct RegistrationFlowView: View {
             }
             
         case 2:
+            showPinErrors = true
             if registrationData.pin.count != 4 {
-                alertMessage = "Le PIN doit contenir 4 chiffres"
-                showAlert = true
+                return
             } else if isWeakPin(registrationData.pin) {
-                alertMessage = "Ce code PIN n'est pas sécurisé (ex: 0000, 1111, 1234). Veuillez en choisir un autre."
-                showAlert = true
+                return
             } else if registrationData.pin != registrationData.confirmPin {
-                alertMessage = "Les PINs ne correspondent pas"
-                showAlert = true
+                return
             } else {
                 withAnimation { currentStep += 1 }
             }
@@ -1113,8 +1280,7 @@ struct RegistrationFlowView: View {
                 isLoading = true
                 verifyOtpCode()
             } else {
-                alertMessage = "Please enter a valid OTP"
-                showAlert = true
+                showOtpErrors = true
             }
             
         default:
@@ -1149,81 +1315,8 @@ struct RegistrationFlowView: View {
     
     // MARK: - Validation
     private func validatePersonalInfo() -> Bool {
-        if registrationData.firstName.isEmpty {
-            alertMessage = "First name is required"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.lastName.isEmpty {
-            alertMessage = "Last name is required"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.phoneNumber.isEmpty {
-            alertMessage = "Phone number is required"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.phoneNumber.count != 9 || !registrationData.phoneNumber.allSatisfy(\.isNumber) {
-            alertMessage = "Phone number must be 9 digits"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.dateOfBirth.isEmpty {
-            alertMessage = "Date of birth is required"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.gender.isEmpty {
-            alertMessage = "Please select a gender"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.nationality.isEmpty {
-            alertMessage = "Please select a nationality"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.address.isEmpty {
-            alertMessage = "Address is required"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.secretQ.isEmpty {
-            alertMessage = "Please select a secret question"
-            showAlert = true
-            return false
-        }
-        
-        if registrationData.answer.isEmpty {
-            alertMessage = "Secret answer is required"
-            showAlert = true
-            return false
-        }
-        
-        if !registrationData.email.isEmpty && !isValidEmail(registrationData.email) {
-            alertMessage = "Please enter a valid email address"
-            showAlert = true
-            return false
-        }
-        
-        if !registrationData.nkinPhone.isEmpty {
-            if registrationData.nkinPhone.count != 9 || !registrationData.nkinPhone.allSatisfy(\.isNumber) {
-                alertMessage = "Next of kin phone number must be 9 digits"
-                showAlert = true
-                return false
-            }
-        }
-        
-        return true
+        showPersonalInfoErrors = true
+        return personalInfoErrors.isEmpty
     }
     
     private func isValidEmail(_ email: String) -> Bool {
@@ -1263,35 +1356,38 @@ struct RegistrationFlowView: View {
     
     // MARK: - API Submission
     private func submitRegistration() {
+        guard personalInfoErrors.isEmpty else {
+            isLoading = false
+            showPersonalInfoErrors = true
+            currentStep = 1
+            return
+        }
         let request = CustomerRegistrationRequest(
-            firstName: registrationData.firstName,
-            lastName: registrationData.lastName,
-            phone: registrationData.phoneNumber,
-            email: registrationData.email.isEmpty ? nil : registrationData.email,
+            firstName: registrationData.firstName.trimmingCharacters(in: .whitespacesAndNewlines),
+            lastName: registrationData.lastName.trimmingCharacters(in: .whitespacesAndNewlines),
+            phone: normalizedGambianPhone(registrationData.phoneNumber) ?? "",
+            email: registrationData.email.trimmingCharacters(in: .whitespacesAndNewlines),
             birthDate: registrationData.dateOfBirth,
             nationality: registrationData.nationality,
-            documentCode: "NI",
-            documentId: registrationData.documentId.isEmpty ? nil : registrationData.documentId,
+            documentCode: registrationData.documentCode,
+            documentId: registrationData.documentId.trimmingCharacters(in: .whitespacesAndNewlines),
             gender: registrationData.gender,
-            currencyCode: "324",
+            currencyCode: "270",
             bank: "00100",
-            branchCode: "001",
+            branchCode: registrationData.branchCode,
             secretQ: registrationData.secretQ,
-            answer: registrationData.answer,
-            address: registrationData.address,
+            answer: registrationData.answer.trimmingCharacters(in: .whitespacesAndNewlines),
+            address: registrationData.address.trimmingCharacters(in: .whitespacesAndNewlines),
             type: "P",
-            productCode: "010",
-            entityId: registrationData.phoneNumber,
-            lastActionUser: nil,
+            productCode: "001",
             pin: registrationData.pin,
-            nkinName: registrationData.nkinName.isEmpty ? nil : registrationData.nkinName,
-            nkinPhone: registrationData.nkinPhone.isEmpty ? nil : registrationData.nkinPhone,
+            nkinName: registrationData.nkinName.trimmingCharacters(in: .whitespacesAndNewlines),
+            nkinPhone: normalizedGambianPhone(registrationData.nkinPhone) ?? "",
             srcFunds: nil,
             occupation: nil,
             estimatedIncome: nil,
-            referralCode: nil,
+            referralCode: registrationData.referralCode,
             deviceId: APIClient.getDeviceId(),
-            isFirstLogin: true,
             faceId: registrationData.selfieBase64,
             documentImg: registrationData.idFrontBase64,
             documentImgBack: registrationData.idBackBase64
@@ -1303,7 +1399,12 @@ struct RegistrationFlowView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.registrationData.authCode = response.authCode ?? ""
+                        guard let authCode = response.authCode, !authCode.isEmpty else {
+                            self.alertMessage = "Registration succeeded but no verification code was returned. Please contact support."
+                            self.showAlert = true
+                            return
+                        }
+                        self.registrationData.authCode = authCode
                         withAnimation { self.currentStep += 1 }
                     } else {
                         if response.respCode == "018" {
@@ -1316,7 +1417,7 @@ struct RegistrationFlowView: View {
                         self.showAlert = true
                     }
                 case .failure(let error):
-                    self.alertMessage = "Network error: \(error.localizedDescription)"
+                    self.alertMessage = (error as? APIError)?.message ?? "Network error: \(error.localizedDescription)"
                     self.showAlert = true
                 }
             }
@@ -1325,7 +1426,7 @@ struct RegistrationFlowView: View {
 
     private func verifyOtpCode() {
         let request = OtpRequest(
-            phoneNumber: registrationData.phoneNumber,
+            phoneNumber: normalizedGambianPhone(registrationData.phoneNumber) ?? registrationData.phoneNumber,
             authCode: registrationData.authCode,
             otp: registrationData.otpCode,
             entityId: nil
@@ -1346,14 +1447,20 @@ struct RegistrationFlowView: View {
                         } else {
                             self.alertMessage = response.message ?? "OTP verification failed"
                         }
-                        self.showAlert = true
+                        self.otpServerError = self.alertMessage
+                        self.showOtpErrors = true
                     }
                 case .failure(let error):
-                    self.alertMessage = "Network error: \(error.localizedDescription)"
+                    self.alertMessage = (error as? APIError)?.message ?? "Network error: \(error.localizedDescription)"
                     self.showAlert = true
                 }
             }
         }
+    }
+
+    private func normalizedGambianPhone(_ rawPhone: String) -> String? {
+        let digits = rawPhone.filter(\.isNumber)
+        return digits.count == 10 ? digits : nil
     }
     
     private func canProceedToNextStep() -> Bool {
@@ -1365,6 +1472,8 @@ struct RegistrationFlowView: View {
                    !registrationData.dateOfBirth.isEmpty &&
                    !registrationData.gender.isEmpty &&
                    !registrationData.nationality.isEmpty &&
+                   !registrationData.documentId.isEmpty &&
+                   !registrationData.branchCode.isEmpty &&
                    !registrationData.address.isEmpty &&
                    !registrationData.secretQ.isEmpty &&
                    !registrationData.answer.isEmpty
@@ -1416,7 +1525,7 @@ struct SearchableNationalityPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Nationalité*")
+                Text("Nationality*")
                     .font(.system(size: 16, weight: .medium))
                 
                 if isLoading {
@@ -1430,10 +1539,10 @@ struct SearchableNationalityPicker: View {
             }) {
                 HStack {
                     Image(systemName: "flag.fill")
-                        .foregroundColor(.blueH)
+                    .foregroundColor(RegistrationTheme.teal)
                         .frame(width: 20)
                     
-                    Text(selectedNationality.isEmpty ? "Sélectionner une nationalité" : selectedNationality)
+                    Text(selectedNationality.isEmpty ? "Choose a nationality" : selectedNationality)
                         .foregroundColor(selectedNationality.isEmpty ? .gray : .primary)
                     
                     Spacer()
@@ -1443,10 +1552,8 @@ struct SearchableNationalityPicker: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 15)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                )
+                .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
+                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
             }
             .disabled(isLoading || nationalities.isEmpty)
         }
@@ -1514,11 +1621,11 @@ struct SearchableNationalityPicker: View {
                         .listStyle(PlainListStyle())
                     }
                 }
-                .navigationTitle("Sélectionner une nationalité")
+                .navigationTitle("Choose a nationality")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Fermer") {
+                        Button("Done") {
                             searchText = ""
                             showSheet = false
                         }
@@ -1535,28 +1642,59 @@ struct CustomTextField: View {
     @Binding var text: String
     var icon: String? = nil
     var keyboardType: UIKeyboardType = .default
+    var error: String? = nil
+    var digitLimit: Int? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.primary)
-            
             HStack {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .foregroundColor(.blueH)
+                        .foregroundColor(RegistrationTheme.teal)
                         .frame(width: 20)
                 }
-                TextField(title.replacingOccurrences(of: "*", with: ""), text: $text)
+                TextField(title.replacingOccurrences(of: "*", with: ""), text: Binding(
+                    get: { text },
+                    set: { newValue in
+                        guard let digitLimit else {
+                            text = newValue
+                            return
+                        }
+                        text = String(newValue.filter(\.isNumber).prefix(digitLimit))
+                    }
+                ))
                     .keyboardType(keyboardType)
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 15)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-            )
+            .padding(.vertical, 19)
+            .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
+                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.gray.opacity(0.7), lineWidth: 1.5)))
+            .overlay(alignment: .topLeading) {
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(RegistrationTheme.ink)
+                    .padding(.horizontal, 7)
+                    .background(RegistrationTheme.canvas)
+                    .offset(x: 14, y: -9)
+            }
+            inlineFieldError(error)
+        }
+    }
+
+    @ViewBuilder
+    private func inlineFieldError(_ message: String?) -> some View {
+        if let message {
+            HStack(alignment: .top, spacing: 6) {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .font(.system(size: 13))
+                Text(message)
+                    .font(.system(size: 13))
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .foregroundColor(.red)
+            .padding(.horizontal, 4)
+            .accessibilityLabel(message)
         }
     }
 }
@@ -1574,10 +1712,10 @@ struct GenderButton: View {
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(isSelected ? Color.blueH : Color.clear)
-                        .stroke(Color.blueH, lineWidth: 1)
+                        .fill(isSelected ? RegistrationTheme.teal : Color.clear)
+                        .stroke(RegistrationTheme.teal, lineWidth: 1)
                 )
-                .foregroundColor(isSelected ? .white : .blueH)
+                .foregroundColor(isSelected ? .white : RegistrationTheme.teal)
         }
     }
 }
@@ -1594,8 +1732,11 @@ class RegistrationData: ObservableObject {
     @Published var address = ""
     @Published var nationality = ""
     @Published var nationalityDisplay = ""
+    @Published var branchCode = ""
+    @Published var branchDisplay = ""
     @Published var documentId = ""
-    @Published var documentType = "NI"
+    @Published var documentCode = "NI"
+    @Published var referralCode = ""
     @Published var pin = ""
     @Published var confirmPin = ""
     
@@ -1620,13 +1761,13 @@ class RegistrationData: ObservableObject {
 private func sectionHeader(_ title: String) -> some View {
     HStack {
         Rectangle()
-            .fill(Color.blueH)
-            .frame(width: 4, height: 20)
-            .cornerRadius(2)
+            .fill(RegistrationTheme.teal)
+            .frame(width: 6, height: 32)
+            .cornerRadius(3)
         
         Text(title)
-            .font(.system(size: 16, weight: .semibold))
-            .foregroundColor(.blueH)
+            .font(.system(size: 20, weight: .semibold))
+            .foregroundColor(RegistrationTheme.teal)
         
         Spacer()
     }
@@ -1667,24 +1808,16 @@ private func identificationCard(
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(
-                isEnabled ?
-                (isCompleted ? Color.blueH : Color.blueH) :
-                Color.gray
+                isEnabled ? RegistrationTheme.teal : Color.gray
             )
-            .cornerRadius(8)
+            .cornerRadius(14)
         }
         .disabled(!isEnabled)
     }
     .padding()
-    .background(
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color(.systemGray6))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isCompleted ? Color.green : Color.clear, lineWidth: 2)
-            )
-    )
-    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+    .background(RoundedRectangle(cornerRadius: 22).fill(Color.white)
+        .overlay(RoundedRectangle(cornerRadius: 22).stroke(isCompleted ? RegistrationTheme.teal.opacity(0.45) : Color.gray.opacity(0.15), lineWidth: 1)))
+    .shadow(color: Color.black.opacity(0.12), radius: 5, x: 0, y: 3)
 }
 
 extension UIImage {

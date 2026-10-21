@@ -38,12 +38,12 @@ struct Transaction: Identifiable, Codable {
             self.date = "Date unavailable"
             self.title = "Transaction"
             self.reference = "Ref: N/A"
-            self.amount = "0 GNF"
-            self.balance = "Solde : 0 GNF"
+            self.amount = "0 GMD"
+            self.balance = "Balance: 0 GMD"
             self.isPositive = false
             self.transactionReference = nil
             self.transactionDate = nil
-            self.currency = "GNF"
+            self.currency = "GMD"
             self.sign = nil
             self.status = nil
             self.details = nil
@@ -81,7 +81,7 @@ struct Transaction: Identifiable, Codable {
         // Format amount safely
         let rawAmount = result.amount?.isEmpty == false ? result.amount! : "0"
         let formattedAmount = Transaction.formatAmount(rawAmount)
-        let currencyCode = result.currency ?? "GNF"
+        let currencyCode = result.currency ?? "GMD"
         
         if self.isDebit {
             self.amount = "-\(formattedAmount) \(currencyCode)"
@@ -93,7 +93,7 @@ struct Transaction: Identifiable, Codable {
         
         // Format balance
         let balanceValue = result.closeBal?.isEmpty == false ? result.closeBal! : "0"
-        self.balance = "Solde : \(Transaction.formatAmount(balanceValue)) \(currencyCode)"
+        self.balance = "Balance: \(Transaction.formatAmount(balanceValue)) \(currencyCode)"
     }
     
     var fees: String {
@@ -117,7 +117,7 @@ struct Transaction: Identifiable, Codable {
             if let date = formatter.date(from: dateString) {
                 let outputFormatter = DateFormatter()
                 outputFormatter.dateFormat = "dd MMM yyyy"
-                outputFormatter.locale = Locale(identifier: "fr_FR")
+                outputFormatter.locale = Locale(identifier: "en_US_POSIX")
                 return outputFormatter.string(from: date)
             }
         }
@@ -125,16 +125,17 @@ struct Transaction: Identifiable, Codable {
     }
     
     private static func extractFeesFromDetails(_ details: String) -> String {
-        // Updated to detect French "frais" instead of English "fees"
-        if let feesRange = details.range(of: "frais:") {
-            let substring = details[feesRange.upperBound...]
+        let loweredDetails = details.lowercased()
+        let feesLabel = loweredDetails.range(of: "fees:") ?? loweredDetails.range(of: "frais:")
+        if let feesRange = feesLabel {
+            let substring = loweredDetails[feesRange.upperBound...]
             let components = substring.components(separatedBy: ",")
             if let feesComponent = components.first {
                 let feesValue = feesComponent.trimmingCharacters(in: .whitespaces)
-                return "\(feesValue) GNF"
+                return "\(feesValue) GMD"
             }
         }
-        return "0 GNF"
+        return "0 GMD"
     }
 
     private static func getDisplayTitle(type: String?, details: String?) -> String {

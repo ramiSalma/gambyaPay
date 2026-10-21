@@ -24,7 +24,7 @@ struct PendingTransactionsView: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            Color(hex: "F6F8FC")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -77,14 +77,14 @@ struct PendingTransactionsView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white)
                     .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-                    .frame(width: 120, height: 120)
+                    .frame(width: 88, height: 88)
                 
                 VStack(spacing: 12) {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                         .scaleEffect(1.5)
                     
-                    Text("Chargement...")
+                    Text("Loading transactions…")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color(hex: "64748B"))
                 }
@@ -96,12 +96,12 @@ struct PendingTransactionsView: View {
     
     // MARK: - Title Card
     private var titleCard: some View {
-        Text("Transactions en attente")
-            .font(.system(size: 18, weight: .bold))
+        Text("Waiting for your approval")
+            .font(.system(size: 16, weight: .semibold))
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-            .background(RoundedRectangle(cornerRadius: 24).fill(Color.blueH))
+            .padding(.vertical, 13)
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color(hex: "174EA6")))
             .padding(.horizontal, 20)
             .padding(.top, 12)
             .padding(.bottom, 8)
@@ -142,20 +142,19 @@ struct PendingTransactionsView: View {
     
     // MARK: - Empty State View
     private var emptyStateView: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 16) {
             Spacer()
             
             Image(systemName: "tray")
-                .font(.system(size: 120))
-                .foregroundColor(Color(hex: "CBD5E1"))
-                .opacity(0.6)
+                .font(.system(size: 54, weight: .light))
+                .foregroundColor(Color(hex: "0788B9").opacity(0.65))
             
             VStack(spacing: 8) {
-                Text("Aucune transaction en attente")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color(hex: "475569"))
+                Text("No pending transactions")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(Color(hex: "174EA6"))
                 
-                Text("Toutes vos transactions sont à jour")
+                Text("You’re all caught up.")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color(hex: "94A3B8"))
             }
@@ -174,7 +173,9 @@ struct PendingTransactionsView: View {
         var request = RequestListPendingTransactions()
         request.source = "W"
         request.walletNumber = userDataManager.getWalletNumber()
+        request.phoneNumber = userDataManager.getPhoneNumber()
         request.bank = userDataManager.getBankCode()
+        request.pin = userDataManager.getPinForAPI()
         request.entityId = userDataManager.getUserCode()
         request.requestId = generateRequestId()
         request.requestDate = getCurrentTimestamp()
@@ -197,7 +198,7 @@ struct PendingTransactionsView: View {
         if response.respCode == "000" {
             parseTransactions(from: response)
         } else {
-            showErrorAlert(response.message ?? "Échec du chargement")
+            showErrorAlert(response.message ?? "Could not load pending transactions.")
         }
     }
     
@@ -205,7 +206,7 @@ struct PendingTransactionsView: View {
         if let apiError = error as? APIError {
             showErrorAlert(apiError.message)
         } else {
-            showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+            showErrorAlert("Network error: \(error.localizedDescription)")
         }
     }
     
@@ -221,20 +222,21 @@ struct PendingTransactionsView: View {
             transaction.fees = dict["fees"] as? String
             transaction.type = dict["type"] as? String
             transaction.pCode = dict["pCode"] as? String
-            transaction.details = dict["details"] as? String
+            transaction.details = dict["trxDetails"] as? String
             return transaction
         } ?? []
     }
     
     private func validateTransaction(_ transaction: PendingTransaction, action: String, pin: String) {
         guard !pin.isEmpty else {
-            showErrorAlert("PIN est obligatoire")
+            showErrorAlert("PIN is required.")
             return
         }
         
         isLoading = true
         
         var request = RequestApproval()
+        request.phoneNumber = userDataManager.getPhoneNumber()
         request.walletNumber = userDataManager.getWalletNumber()
         request.source = "W"
         request.bank = userDataManager.getBankCode()
@@ -253,14 +255,14 @@ struct PendingTransactionsView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        let actionText = action == "A" ? "approuvée" : "rejetée"
-                        showSuccessAlert("Transaction \(actionText) avec succès")
+                        let actionText = action == "A" ? "approved" : "rejected"
+                        showSuccessAlert("Transaction \(actionText) successfully.")
                         
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                             loadPendingTransactions()
                         }
                     } else {
-                        showErrorAlert("Validation échouée: \(response.message ?? "Erreur")")
+                        showErrorAlert("Could not update transaction: \(response.message ?? "Please try again.")")
                     }
                 case .failure(let error):
                     handleErrorResponse(error)
@@ -317,72 +319,89 @@ struct PendingTransactionCard: View {
                 // Header Row
                 HStack(alignment: .center, spacing: 12) {
                     Text(transaction.transactionTypeDescription)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color(hex: "1F2937"))
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color(hex: "174EA6"))
                         .lineLimit(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.bottom, 16)
+                .padding(.bottom, 10)
                 
                 // Amount Display
                 Text(transaction.formattedAmount)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.blueH)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(Color(hex: "0788B9"))
                     .tracking(-0.4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 10)
-            .background(Color(hex: "FAFBFC"))
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 12)
+            .background(Color(hex: "F4F8FD"))
             
             // Details Section
             VStack(spacing: 0) {
-                detailRow(icon: "info.circle", label: "Référence", value: transaction.trxRef ?? "N/A")
+                detailRow(icon: "info.circle", label: "Reference", value: transaction.trxRef ?? "N/A")
                 detailDivider
                 detailRow(icon: "calendar", label: "Date", value: transaction.formattedDate)
+                if let fees = transaction.fees, !fees.isEmpty, fees != "0", fees != "0.00" {
+                    detailDivider
+                    detailRow(icon: "plusminus", label: "Fees", value: fees)
+                }
+                if let tax = transaction.tax, !tax.isEmpty, tax != "0", tax != "0.00" {
+                    detailDivider
+                    detailRow(icon: "percent", label: "Tax", value: tax)
+                }
+                if let details = transaction.details, !details.isEmpty {
+                    detailDivider
+                    detailRow(icon: "text.alignleft", label: "Details", value: details)
+                }
                 
                 if transaction.shouldShowBeneficiary {
                     detailDivider
                     detailRow(icon: "person", label: transaction.beneficiaryLabel, value: transaction.beneficiaryValue)
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 10)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
             
             // Action Buttons
             HStack(spacing: 12) {
-                actionButton(title: "Rejeter", icon: "xmark", color: Color(hex: "DC2626"), isFilled: false, action: onReject)
+                actionButton(title: "Reject", icon: "xmark", color: Color(hex: "DC2626"), isFilled: false, action: onReject)
                 
                 if transaction.pCode != "43" {
-                    actionButton(title: "Approuver", icon: "checkmark", color: Color(hex: "388E3C"), isFilled: true, action: onApprove)
+                    actionButton(title: "Approve", icon: "checkmark", color: Color(hex: "174EA6"), isFilled: true, action: onApprove)
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
         .background(Color.white)
-        .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "E8E8E8"), lineWidth: 1))
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: "DCE5F1"), lineWidth: 1))
+        .shadow(color: Color(hex: "174EA6").opacity(0.08), radius: 5, x: 0, y: 2)
     }
     
     private func detailRow(icon: String, label: String, value: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(Color(hex: "9CA3AF"))
-                .frame(width: 20, height: 20)
+                .font(.system(size: 15))
+                .foregroundColor(Color(hex: "0788B9"))
+                .frame(width: 18, height: 18)
             
             Text(label)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Color(hex: "6B7280"))
+                .lineLimit(1)
             
             Spacer()
             
             Text(value)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Color(hex: "1F2937"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color(hex: "334155"))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 7)
     }
     
     private var detailDivider: some View {
@@ -396,7 +415,7 @@ struct PendingTransactionCard: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+            .font(.system(size: 16))
                 
                 Text(title)
                     .font(.system(size: 15, weight: .bold))
@@ -404,7 +423,7 @@ struct PendingTransactionCard: View {
             }
             .foregroundColor(isFilled ? .white : color)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: 42)
             .background(isFilled ? color : Color.clear)
             .overlay(isFilled ? nil : RoundedRectangle(cornerRadius: 16).stroke(color, lineWidth: 2))
             .cornerRadius(16)
@@ -422,7 +441,7 @@ struct PendingTransactionCard_Previews: PreviewProvider {
                     authDate: "2025-01-15 14:30:00",
                     amount: "1500.00",
                     agent: "621234567",
-                    currency: "GNF",
+                    currency: "GMD",
                     tax: "0",
                     fees: "0",
                     type: "Retrait",
@@ -634,7 +653,7 @@ struct PinDialogView_Previews: PreviewProvider {
                 authDate: "2025-01-15 14:30:00",
                 amount: "1500.00",
                 agent: "621234567",
-                currency: "GNF",
+                currency: "GMD",
                 tax: "0",
                 fees: "0",
                 type: "Retrait",

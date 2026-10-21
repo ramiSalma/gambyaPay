@@ -16,6 +16,8 @@ struct FeeCalculationResponse: Codable {
 }
 
 struct FeeResult: Codable {
+    var totalFees: Double { (feeAmount ?? 0) + (taxAmount ?? 0) }
+    var taxAmount: Double?
     var feeAmount: Double?
     var totalAmount: Double?
     var ruleIndex: String?

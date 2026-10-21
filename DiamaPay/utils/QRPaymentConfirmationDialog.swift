@@ -276,7 +276,7 @@ struct QRPaymentConfirmationDialog: View {
         formatter.numberStyle = .decimal
         formatter.locale = Locale(identifier: "fr_FR")
         formatter.maximumFractionDigits = 0
-        return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " GNF"
+        return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " GMD"
     }
 
     private var recipientTypeName: String {

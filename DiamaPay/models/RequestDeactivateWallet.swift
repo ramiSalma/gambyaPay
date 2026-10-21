@@ -10,6 +10,8 @@ import Foundation
 
 // MARK: - RequestDeactivateWallet
 struct RequestDeactivateWallet: Codable {
+    var bank: String? = "00100"
+
     var source: String?
     var phoneNumber: String?
     var walletNumber: String?

@@ -42,39 +42,35 @@ class APIClient {
     }
     
 
-        func calculateWithdrawalFee(
-            request: FeeCalculationRequest,
-            completion: @escaping (Result<FeeCalculationSimpleResponse, Error>) -> Void
-        ) {
-            let endpoint = "api/fees/calculate"
-        
-            
-            performRequest(
-                endpoint: endpoint,
-                method: .POST,
-                body: request,
-                requiresAuth: true,
-                completion: completion
-            )
+    func calculateWithdrawalFee(
+        request: WalletFeeQuoteRequest,
+        completion: @escaping (Result<FeeCalculationSimpleResponse, Error>) -> Void
+    ) {
+        calculateWalletFee(request: request) { result in
+            completion(result.map { response in
+                FeeCalculationSimpleResponse(
+                    respCode: response.respCode, message: response.message,
+                    feeAmount: response.result?.totalFees,
+                    ruleIndex: response.result?.ruleIndex,
+                    requestId: response.result?.requestId
+                )
+            })
         }
-    
-        func calculateTransactionFee(
-            request: FeeCalculationRequest,
-            completion: @escaping (Result<FeeCalculationResponse, Error>) -> Void
-        ) {
-            let endpoint = "api/wallet/calculate-fee"
-            
-    
-            performRequest(
-                endpoint: endpoint,
-                method: .POST,
-                body: request,
-                requiresAuth: true,
-                completion: completion
-            )
-        }
-    
-    
+    }
+
+    func calculateTransactionFee(
+        request: WalletFeeQuoteRequest,
+        completion: @escaping (Result<FeeCalculationResponse, Error>) -> Void
+    ) {
+        calculateWalletFee(request: request, completion: completion)
+    }
+
+    func calculateWalletFee(request: WalletFeeQuoteRequest,
+                            completion: @escaping (Result<FeeCalculationResponse, Error>) -> Void) {
+        performRequest(endpoint: "api/wallet/calculate-fee", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
     private func decodeResponse<T: Codable>(_ data: Data) -> Result<T, Error> {
         do {
             let result = try JSONDecoder().decode(T.self, from: data)
@@ -88,6 +84,14 @@ class APIClient {
     }
     
     
+    func getWalletProfile(
+        request: WalletProfileRequest,
+        completion: @escaping (Result<WalletProfileResponse, Error>) -> Void
+    ) {
+        performRequest(endpoint: "api/wallet/profile", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
     func getWalletLimits(
            request: RequestGetWalletLimits,
            completion: @escaping (Result<ResponseGetWalletLimits, Error>) -> Void
@@ -101,6 +105,51 @@ class APIClient {
                completion: completion
            )
        }
+
+    // MARK: - Food ordering
+    func listFoodRestaurants(request: FoodyListingRequest, completion: @escaping (Result<FoodyResponse<[FoodRestaurant]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listRestaurants", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func listFoodItems(request: FoodyItemsRequest, completion: @escaping (Result<FoodyResponse<[FoodItem]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listItems", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func listFoodCategories(request: FoodyRestaurantRequest, completion: @escaping (Result<FoodyResponse<[FoodCategory]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listCategories", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func listActiveFoodOrders(request: FoodyListingRequest, completion: @escaping (Result<FoodyResponse<[FoodOrder]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listActiveOrders", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func listClosedFoodOrders(request: FoodyListingRequest, completion: @escaping (Result<FoodyResponse<[FoodOrder]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listClosedOrders", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func cancelFoodOrder(request: FoodOrderActionRequest, completion: @escaping (Result<FoodyResponse<String>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/cancelOrder", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func addFoodComplaint(request: FoodComplaintRequest, completion: @escaping (Result<FoodyResponse<String>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/addComplaint", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func listFoodComplaints(request: FoodyListingRequest, completion: @escaping (Result<FoodyResponse<[FoodComplaintRecord]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listComplaints", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func listFoodAddresses(request: FoodyListingRequest, completion: @escaping (Result<FoodyResponse<[FoodAddress]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listAddresses", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func addFoodAddress(request: FoodAddAddressRequest, completion: @escaping (Result<FoodyResponse<String>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/addAddress", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func placeFoodOrder(request: FoodOrderRequest, completion: @escaping (Result<FoodyResponse<String>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/addOrder", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
     
     func qrTransfer(request: RequestQrPayment, completion: @escaping (Result<ResponseService, Error>) -> Void) {
         let endpoint = "api/wallet/qrtransfer"
@@ -112,9 +161,9 @@ class APIClient {
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
     }
 
-    func listSecretQuestions(request: EmptyRequest, completion: @escaping (Result<JResponseService, Error>) -> Void) {
+    func listSecretQuestions(completion: @escaping (Result<JResponseService, Error>) -> Void) {
         let endpoint = "api/wallet/list-secretQ"
-        performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: false, completion: completion)
+        performRequest(endpoint: endpoint, method: .POST, body: nil as EmptyRequest?, requiresAuth: false, completion: completion)
     }
     
     func getNationalities(completion: @escaping (Result<[Nationality], Error>) -> Void) {
@@ -179,6 +228,27 @@ class APIClient {
         let endpoint = "api/wallet/estatement"
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
     }
+
+    // MARK: - Savings wallet
+    func getSavingsBalance(request: RequestSavingBalance, completion: @escaping (Result<ResponseServiceJson, Error>) -> Void) {
+        performRequest(endpoint: "api/savings-wallet/balance", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func creditSavingsWallet(request: RequestCreditSaving, completion: @escaping (Result<ResponseService, Error>) -> Void) {
+        performRequest(endpoint: "api/savings-wallet/credit", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func debitSavingsWallet(request: RequestDebitSaving, completion: @escaping (Result<ResponseService, Error>) -> Void) {
+        performRequest(endpoint: "api/savings-wallet/debit", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func getSavingsLast5(request: RequestEStatement, completion: @escaping (Result<JResponseService, Error>) -> Void) {
+        performRequest(endpoint: "api/savings-wallet/last5", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func requestSavingsEStatement(request: RequestEStatement, completion: @escaping (Result<ResponseService, Error>) -> Void) {
+        performRequest(endpoint: "api/savings-wallet/e-statement", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
     func getPendingTransactions(request: RequestListPendingTransactions, completion: @escaping (Result<JResponseService, Error>) -> Void) {
         let endpoint = "api/wallet/transactions/pending"
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
@@ -209,6 +279,53 @@ class APIClient {
         let endpoint = "api/wallet/money-voucher"
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
     }
+
+    func transferWalletToMobileMoney(
+        request: RequestWalletToMobileMoney,
+        completion: @escaping (Result<ResponseService, Error>) -> Void
+    ) {
+        performRequest(endpoint: "api/wallet/wallet-to-mobile-money", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
+    func enquireMobileMoneyReceiver(
+        request: RequestWalletToMobileMoneyNE,
+        completion: @escaping (Result<ResponseServiceJson, Error>) -> Void
+    ) {
+        performRequest(endpoint: "api/wallet/mobile-money-enquiry", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
+    func getLoanProviders(completion: @escaping (Result<[Provider], Error>) -> Void) {
+        performRequest(endpoint: "api/loan/providers", method: .GET, body: Optional<String>.none,
+                       requiresAuth: true, completion: completion)
+    }
+
+    func getLoanPurposes(completion: @escaping (Result<[LoanOption], Error>) -> Void) {
+        performRequest(endpoint: "api/loan/purposes", method: .GET, body: Optional<String>.none,
+                       requiresAuth: true, completion: completion)
+    }
+
+    func createLoan(request: LoanRequestPayload, completion: @escaping (Result<LoanEnvelope<LoanRecord>, Error>) -> Void) {
+        performRequest(endpoint: "api/loan/add", method: .POST, body: request,
+                       requiresAuth: true, completion: completion)
+    }
+
+    func getLoans(phoneNumber: String, completion: @escaping (Result<LoanEnvelope<[LoanRecord]>, Error>) -> Void) {
+        let escapedPhone = phoneNumber.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? phoneNumber
+        performRequest(endpoint: "api/loan/phone/\(escapedPhone)", method: .GET, body: Optional<String>.none,
+                       requiresAuth: true, completion: completion)
+    }
+
+    func getLoan(id: Int64, completion: @escaping (Result<LoanEnvelope<LoanRecord>, Error>) -> Void) {
+        performRequest(endpoint: "api/loan/\(id)", method: .GET, body: Optional<String>.none,
+                       requiresAuth: true, completion: completion)
+    }
+
+    func cancelLoan(id: Int64, completion: @escaping (Result<LoanRecord, Error>) -> Void) {
+        performRequest(endpoint: "api/loan/\(id)/cancel", method: .PUT, body: Optional<String>.none,
+                       requiresAuth: true, completion: completion)
+    }
     func accountToWallet(request: RequestAccountToWallet, completion: @escaping (Result<ResponseServiceJson, Error>) -> Void) {
         let endpoint = "api/wallet/account-to-wallet"
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
@@ -230,6 +347,30 @@ class APIClient {
     }
     
     
+    func listWalletBeneficiaries(
+        request: WalletBeneficiaryListRequest,
+        completion: @escaping (Result<WalletBeneficiaryListResponse, Error>) -> Void
+    ) {
+        performRequest(endpoint: "api/wallet/ListBeneficiary", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
+    func addWalletBeneficiary(
+        request: WalletBeneficiaryAddRequest,
+        completion: @escaping (Result<ResponseServiceJson, Error>) -> Void
+    ) {
+        performRequest(endpoint: "api/wallet/AddBeneficiary", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
+    func deleteWalletBeneficiary(
+        request: WalletBeneficiaryDeleteRequest,
+        completion: @escaping (Result<ResponseServiceJson, Error>) -> Void
+    ) {
+        performRequest(endpoint: "api/wallet/DeleteBeneficiary", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
     func getWalletInfo(request: RequestNameEnquiry, completion: @escaping (Result<ResponseServiceJson, Error>) -> Void) {
         let endpoint = "api/wallet/enquiry"
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
@@ -245,6 +386,11 @@ class APIClient {
             completion: @escaping (Result<ResponseServiceJson, Error>) -> Void
         ) {
             let endpoint = "api/customer/register"
+            guard !request.documentId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                completion(.failure(APIError(success: false, message: "Enter the number shown on your National ID.", respCode: "400", details: nil)))
+                return
+            }
+            logRegistrationRequestDiagnostics(request)
             performRequest(endpoint: endpoint,
                            method: .POST,
                            body: request,
@@ -252,6 +398,63 @@ class APIClient {
                            customTimeout: uploadTimeout,
                            completion: completion)
         }
+
+    /// Logs registration field values in debug builds, with credentials and images masked.
+    private func logRegistrationRequestDiagnostics(_ request: CustomerRegistrationRequest) {
+        let requiredFields = [
+            "firstName", "lastName", "phone", "email", "birthDate", "nationality",
+            "documentCode", "documentId", "gender", "currencyCode", "bank", "branchCode",
+            "secretQ", "answer", "address", "type", "productCode", "pin", "nkinName",
+            "nkinPhone", "deviceId", "faceId",
+            "documentImg", "documentImgBack"
+        ]
+        let safeValueFields: Set<String> = [
+            "nationality", "documentCode", "gender", "currencyCode", "bank",
+            "branchCode", "secretQ", "type", "productCode"
+        ]
+
+        do {
+            let encoded = try JSONEncoder().encode(request)
+            guard let payload = try JSONSerialization.jsonObject(with: encoded) as? [String: Any] else {
+                print("[Registration] Could not inspect encoded request fields.")
+                return
+            }
+
+            let fieldAudit = payload.keys.sorted().map { field -> String in
+                guard let value = payload[field] as? String else {
+                    return "\(field)=<non-string-or-null>"
+                }
+                let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmedValue.isEmpty { return "\(field)=<blank>" }
+                if safeValueFields.contains(field) { return "\(field)=\(trimmedValue)" }
+                return "\(field)=<present,length:\(value.count)>"
+            }
+            let missingFields = requiredFields.filter { field in
+                guard let value = payload[field] as? String else { return true }
+                return value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }
+            let unexpectedFields = Set(payload.keys).subtracting(requiredFields + ["srcFunds", "occupation", "estimatedIncome", "referralCode"])
+
+            print("[Registration] Encoded JSON size: \(encoded.count) bytes")
+            print("[Registration] POST api/customer/register payload field audit (sensitive values redacted; safe codes shown): \(fieldAudit.joined(separator: ", "))")
+            print("[Registration] Required fields missing/blank: \(missingFields.isEmpty ? "none" : missingFields.joined(separator: ", "))")
+            print("[Registration] Unexpected payload fields: \(unexpectedFields.isEmpty ? "none" : unexpectedFields.sorted().joined(separator: ", "))")
+#if DEBUG
+            let maskedFields: Set<String> = ["pin", "answer", "faceId", "documentImg", "documentImgBack"]
+            for field in payload.keys.sorted() {
+                if maskedFields.contains(field) {
+                    print("[Registration] \(field)=<redacted>")
+                } else if let value = payload[field], !(value is NSNull) {
+                    print("[Registration] \(field)=\(value)")
+                } else {
+                    print("[Registration] \(field)=null")
+                }
+            }
+#endif
+        } catch {
+            print("[Registration] Could not encode request for field diagnostics: \(error.localizedDescription)")
+        }
+    }
 
         // Verify OTP (Step 4)
         func verifyOtp(
@@ -266,6 +469,14 @@ class APIClient {
                            completion: completion)
         }
 
+    func uploadCustomerDocuments(
+        request: CustomerDocumentUploadRequest,
+        completion: @escaping (Result<ResponseServiceJson, Error>) -> Void
+    ) {
+        let endpoint = "api/customer/upload-documents"
+        performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
     func getWalletBalance( request: RequestBalanceEnquiry, completion: @escaping (Result<ResponseServiceJson, Error>) -> Void ) { let endpoint = "api/wallet/balance"
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion) }
     
@@ -276,10 +487,34 @@ class APIClient {
         self.userDataManager = userDataManager
     }
     func getBalance(completion: @escaping (Result<BalanceResponse, Error>) -> Void) {
-           let endpoint = "api/wallet/balance"
-           performRequest(endpoint: endpoint, method: .GET, body: nil as String?, requiresAuth: true, completion: completion)
-       }
-       
+        let user = UserDataManager.shared
+        let wallet = user.getWalletNumber()
+        let phone = user.getPhoneNumber()
+        guard !wallet.isEmpty || !phone.isEmpty else {
+            completion(.failure(APIError(success: false, message: "Wallet details are missing. Please sign in again.", respCode: nil, details: nil)))
+            return
+        }
+        let request = RequestBalanceEnquiry(
+            walletNumber: wallet, phoneNumber: phone,
+            source: wallet.isEmpty ? "P" : "W", pin: user.getPinForAPI(),
+            bank: user.getBankCode().isEmpty ? "00100" : user.getBankCode(),
+            requestId: DateFormatter.with(format: "yyMMdd").string(from: Date()) + String(format: "%06d", Int.random(in: 0...999999)),
+            requestDate: DateFormatter.with(format: "yyyy-MM-dd HH:mm:ss").string(from: Date()),
+            entityId: phone
+        )
+        getWalletBalance(request: request) { result in
+            completion(result.flatMap { response in
+                guard response.respCode == "000", let values = response.result,
+                      let available = Double(String(describing: values["availableBalance"] ?? "")),
+                      let total = Double(String(describing: values["globalBalance"] ?? "")) else {
+                    return .failure(APIError(success: false, message: response.message ?? "Unable to read wallet balance", respCode: response.respCode, details: nil))
+                }
+                return .success(BalanceResponse(availableAmount: available, totalAmount: total,
+                                                currency: values["currencyWording"] as? String ?? "GMD"))
+            })
+        }
+    }
+
     func getSponsoringWallets(request: RequestListSponsoringWallets, completion: @escaping (Result<JResponseService, Error>) -> Void) {
         let endpoint = "api/sponsor/list-sponsoring-wallets"
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
@@ -293,6 +528,9 @@ class APIClient {
    
     func getLinkedAccounts(request: RequestListLinkedAcc, completion: @escaping (Result<JResponseService, Error>) -> Void) {
         let endpoint = "api/wallet/linked-accounts"
+#if DEBUG
+        print("[LinkedAccounts] source=\(request.source ?? "nil"), walletPresent=\(!(request.walletNumber ?? "").isEmpty), phonePresent=\(!(request.phoneNumber ?? "").isEmpty), bank=\(request.bank ?? "nil"), requestId=\(request.requestId ?? "nil")")
+#endif
         performRequest(endpoint: endpoint, method: .POST, body: request, requiresAuth: true, completion: completion)
     }
 
@@ -661,6 +899,10 @@ class APIClient {
                 encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
                 let jsonData = try encoder.encode(body)
                 request.httpBody = jsonData
+
+                if endpoint == "api/wallet/transfer-to-account" {
+                    logWalletToAccountRequest(jsonData)
+                }
                 
                 // Log payload size for debugging
                 let sizeInKB = Double(jsonData.count) / 1024.0
@@ -678,18 +920,74 @@ class APIClient {
         // Perform the request
         session.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
+                if requiresAuth,
+                   (endpoint.hasPrefix("api/wallet/") || endpoint.hasPrefix("api/pin/")),
+                   error == nil, let data,
+                   let httpResponse = response as? HTTPURLResponse,
+                   (200...299).contains(httpResponse.statusCode),
+                   let envelope = try? JSONDecoder().decode(WalletAPIResponseStatus.self, from: data),
+                   let code = envelope.respCode, code != "000" {
+                    completion(.failure(APIError(success: false, message: envelope.message ?? "Request failed", respCode: code, details: nil)))
+                    return
+                }
                 self.handleResponse(data: data, response: response, error: error, completion: completion)
             }
         }.resume()
     }
 
-
-    private func addAuthHeaders(to request: inout URLRequest) {
-        guard let userDataManager = userDataManager else {
+    /// Prints the encoded transfer payload while masking credentials and personal identifiers.
+    private func logWalletToAccountRequest(_ data: Data) {
+        guard var payload = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else {
+            print("[WalletToAccount] Could not inspect encoded request body (\(data.count) bytes).")
             return
         }
 
-        let token = userDataManager.getToken()
+        let maskedFields: Set<String> = ["walletNumber", "phoneNumber", "desAccount", "sponsorWallet", "entityId"]
+        for field in maskedFields {
+            guard let value = payload[field] as? String else { continue }
+            let suffix = String(value.suffix(4))
+            payload[field] = value.isEmpty ? "<blank>" : "<masked>…\(suffix)"
+        }
+        for field in ["pin", "authCode"] {
+            guard let value = payload[field] as? String else { continue }
+            payload[field] = value.isEmpty ? "<blank>" : "<redacted; length:\(value.count)>"
+        }
+
+        guard let safeData = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
+              let safeJSON = String(data: safeData, encoding: .utf8) else {
+            print("[WalletToAccount] Encoded request body: <unable to render sanitized JSON>; bytes=\(data.count)")
+            return
+        }
+        print("[WalletToAccount] POST api/wallet/transfer-to-account encoded request body (sensitive values masked):\n\(safeJSON)")
+    }
+
+    private func redactSensitiveLogValues(_ value: Any) -> Any {
+        let sensitiveKeys: Set<String> = [
+            "token", "accesstoken", "refreshtoken", "authorization", "pin", "authcode",
+            "walletnumber", "phonenumber", "phone", "desaccount", "accountnumber",
+            "entityid", "email", "password", "secret", "answer"
+        ]
+        if let object = value as? [String: Any] {
+            return object.reduce(into: [String: Any]()) { result, entry in
+                if sensitiveKeys.contains(entry.key.lowercased()) {
+                    result[entry.key] = "<redacted>"
+                } else {
+                    result[entry.key] = redactSensitiveLogValues(entry.value)
+                }
+            }
+        }
+        if let array = value as? [Any] {
+            return array.map(redactSensitiveLogValues)
+        }
+        return value
+    }
+
+
+    private func addAuthHeaders(to request: inout URLRequest) {
+        // Login initializes this reference, but a restored session can reach
+        // authenticated screens before LoginView has run in the current launch.
+        let dataManager = userDataManager ?? UserDataManager.shared
+        let token = dataManager.getToken()
 
         if !token.isEmpty {
             // Required headers
@@ -697,27 +995,27 @@ class APIClient {
             request.setValue(token, forHTTPHeaderField: "X-Auth-Token")
 
             // User/device headers
-            if !userDataManager.getUserCode().isEmpty {
-                request.setValue(userDataManager.getUserCode(), forHTTPHeaderField: "X-User-Code")
+            if !dataManager.getUserCode().isEmpty {
+                request.setValue(dataManager.getUserCode(), forHTTPHeaderField: "X-User-Code")
             }
 
-            var deviceId = userDataManager.getDeviceIdentifier()
+            var deviceId = dataManager.getDeviceIdentifier()
             if deviceId.isEmpty {
                 deviceId = APIClient.getDeviceId()
                 UserDefaults.standard.set(deviceId, forKey: "device_identifier")
             }
             request.setValue(deviceId, forHTTPHeaderField: "X-Device-ID")
 
-            if !userDataManager.getPhoneNumber().isEmpty {
-                request.setValue(userDataManager.getPhoneNumber(), forHTTPHeaderField: "X-Phone-Number")
+            if !dataManager.getPhoneNumber().isEmpty {
+                request.setValue(dataManager.getPhoneNumber(), forHTTPHeaderField: "X-Phone-Number")
             }
 
-            if !userDataManager.getWalletNumber().isEmpty {
-                request.setValue(userDataManager.getWalletNumber(), forHTTPHeaderField: "X-Wallet-Number")
+            if !dataManager.getWalletNumber().isEmpty {
+                request.setValue(dataManager.getWalletNumber(), forHTTPHeaderField: "X-Wallet-Number")
             }
 
-            if !userDataManager.getBankCode().isEmpty {
-                request.setValue(userDataManager.getBankCode(), forHTTPHeaderField: "X-Bank-Code")
+            if !dataManager.getBankCode().isEmpty {
+                request.setValue(dataManager.getBankCode(), forHTTPHeaderField: "X-Bank-Code")
             }
 
         } else {
@@ -766,35 +1064,28 @@ class APIClient {
 //            """)
 //        }
         
-        // 🔍 Print raw response body for debugging
-            if let rawBody = String(data: data, encoding: .utf8) {
+        // Log JSON responses with credentials and personal identifiers redacted.
+        if let json = try? JSONSerialization.jsonObject(with: data) {
+            let safeJSON = redactSensitiveLogValues(json)
+            if let safeData = try? JSONSerialization.data(withJSONObject: safeJSON, options: [.prettyPrinted, .sortedKeys]),
+               let safeBody = String(data: safeData, encoding: .utf8) {
                 print("""
-                
-                ==================== 🟢 RAW HTTP RESPONSE BODY (status \(httpResponse.statusCode)) ====================
-                \(rawBody)
+
+                ==================== HTTP RESPONSE [\(httpResponse.url?.path ?? "unknown endpoint")] (status \(httpResponse.statusCode)) ====================
+                \(safeBody)
                 ===========================================================================================
-                
+
                 """)
             } else {
-                print("⚠️ Could not decode response data as UTF-8 string. Byte count: \(data.count)")
+                print("[HTTP] Response from \(httpResponse.url?.path ?? "unknown endpoint"); status=\(httpResponse.statusCode), bytes=\(data.count)")
             }
+        } else {
+            print("[HTTP] Non-JSON response from \(httpResponse.url?.path ?? "unknown endpoint"); status=\(httpResponse.statusCode), bytes=\(data.count)")
+        }
         
         switch httpResponse.statusCode {
             
         case 200...299:
-            // 🔍 Print raw response body for debugging
-                if let rawBody = String(data: data, encoding: .utf8) {
-                    print("""
-                    
-                    ==================== 🟢 RAW HTTP RESPONSE BODY (status \(httpResponse.statusCode)) ====================
-                    \(rawBody)
-                    ===========================================================================================
-                    
-                    """)
-                } else {
-                    print("⚠️ Could not decode response data as UTF-8 string. Byte count: \(data.count)")
-                }
-            
             do {
                 let result = try JSONDecoder().decode(T.self, from: data)
                 completion(.success(result))
@@ -834,7 +1125,15 @@ class APIClient {
                 }
         case 400...499:
             // Client error
-            if let errorResponse = try? JSONDecoder().decode(APIError.self, from: data) {
+            if let wrapper = try? JSONDecoder().decode(ResponseServiceJson.self, from: data) {
+                let errorResponse = APIError(
+                    success: false,
+                    message: wrapper.message ?? "Request failed",
+                    respCode: wrapper.respCode ?? "\(httpResponse.statusCode)",
+                    details: nil
+                )
+                completion(.failure(errorResponse))
+            } else if let errorResponse = try? JSONDecoder().decode(APIError.self, from: data) {
                 completion(.failure(errorResponse))
             } else {
                 let genericError = APIError(success: false, message: "Client error", respCode: "\(httpResponse.statusCode)", details: nil)
@@ -1018,12 +1317,17 @@ class APIClient {
     static func getDeviceId() -> String {
         if let deviceId = UIDevice.current.identifierForVendor?.uuidString {
             return deviceId
-        } else {
-            // Generate a random UUID and store it
-            let deviceId = UUID().uuidString
-            UserDefaults.standard.set(deviceId, forKey: "device_id")
-            return deviceId
         }
+
+        // Keep a stable fallback identifier if the vendor identifier is unavailable.
+        let defaults = UserDefaults.standard
+        if let storedDeviceId = defaults.string(forKey: "device_id"), !storedDeviceId.isEmpty {
+            return storedDeviceId
+        }
+
+        let generatedDeviceId = UUID().uuidString
+        defaults.set(generatedDeviceId, forKey: "device_id")
+        return generatedDeviceId
     }
 }
 

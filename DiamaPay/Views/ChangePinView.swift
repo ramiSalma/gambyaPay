@@ -27,7 +27,7 @@ struct ChangePinView: View {
     
     @State private var isLoading: Bool = false
     @State private var showAlert: Bool = false
-    @State private var alertTitle: String = "Erreur"
+    @State private var alertTitle: String = "Error"
     @State private var alertMessage: String = ""
     
     @State private var showCurrentPinError: Bool = false
@@ -44,7 +44,7 @@ struct ChangePinView: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            Color(hex: "F5F8FD")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -58,7 +58,7 @@ struct ChangePinView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text("Processing...")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -87,12 +87,16 @@ struct ChangePinView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
+            AppBottomBar(
+                onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {},
+                selectedTab: "Settings",
+                onHome: { presentationMode.wrappedValue.dismiss() }
+            )
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK", role: .cancel) {
-                if alertTitle == "Code PIN modifié" {
+                if alertTitle == "PIN changed" {
                     presentationMode.wrappedValue.dismiss()
                 }
             }
@@ -111,7 +115,7 @@ struct ChangePinView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Changer votre PIN")
+                Text("Change your PIN")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -128,7 +132,7 @@ struct ChangePinView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
-                Text("Informations du Portefeuille")
+                Text("Wallet information")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -139,7 +143,7 @@ struct ChangePinView: View {
             
             // Wallet Number
             HStack {
-                Text("Portefeuille")
+                Text("Wallet")
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                 
@@ -152,7 +156,7 @@ struct ChangePinView: View {
             
             // Balance
             HStack {
-                Text("Solde")
+                Text("Balance")
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                 
@@ -165,8 +169,9 @@ struct ChangePinView: View {
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
+        .shadow(color: Color(hex: "174EA6").opacity(0.07), radius: 8, x: 0, y: 3)
     }
     
     // MARK: - Current PIN Verification Card
@@ -174,7 +179,7 @@ struct ChangePinView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
-                Text("Vérification du PIN actuel")
+                Text("Verify current PIN")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -183,18 +188,19 @@ struct ChangePinView: View {
                     .frame(width: 60, height: 2)
             }
             
-            Text("Entrer le code PIN actuel")
+            Text("Enter your current PIN")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.blueH)
             
             // PIN Input
             SecureField("****", text: $currentPin)
                 .keyboardType(.numberPad)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 16, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .background(Color(hex: "F7FAFF"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
                 .disabled(isPinVerified)
                 .onChange(of: currentPin) {
                     if currentPin.count > 6 {
@@ -215,20 +221,21 @@ struct ChangePinView: View {
             Button(action: {
                 verifyCurrentPin()
             }) {
-                Text("Vérifier le PIN")
+                Text(isPinVerified ? "PIN verified" : "Verify PIN")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(isPinVerified ? Color.gray : Color.blueH)
-                    .cornerRadius(8)
+                    .background(isPinVerified ? Color(hex: "7D8A9B") : Color(hex: "174EA6"))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isPinVerified || isLoading)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
+        .shadow(color: Color(hex: "174EA6").opacity(0.07), radius: 8, x: 0, y: 3)
     }
     
     // MARK: - New PIN Card
@@ -236,7 +243,7 @@ struct ChangePinView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
-                Text("Nouveau PIN")
+                Text("New PIN")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -246,17 +253,18 @@ struct ChangePinView: View {
             }
             
             // New PIN
-            Text("Entrer votre nouveau PIN")
+            Text("Enter your new PIN")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.blueH)
             
             SecureField("****", text: $newPin)
                 .keyboardType(.numberPad)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 16, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .background(Color(hex: "F7FAFF"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
                 .onChange(of: newPin) {
                     if newPin.count > 6 {
                         newPin = String(newPin.prefix(6))
@@ -273,18 +281,19 @@ struct ChangePinView: View {
             }
             
             // Confirm PIN
-            Text("Confirmer votre nouveau PIN")
+            Text("Confirm your new PIN")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.blueH)
                 .padding(.top, 8)
             
             SecureField("****", text: $confirmPin)
                 .keyboardType(.numberPad)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 16, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                .background(Color(hex: "F7FAFF"))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
                 .onChange(of: confirmPin) {
                     if confirmPin.count > 6 {
                         confirmPin = String(confirmPin.prefix(6))
@@ -304,20 +313,21 @@ struct ChangePinView: View {
             Button(action: {
                 showChangePinConfirmationDialog()
             }) {
-                Text("Changer le PIN")
+                Text("Change PIN")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(Color.blueH)
-                    .cornerRadius(8)
+                    .background(Color(hex: "174EA6"))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isLoading)
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
+        .shadow(color: Color(hex: "174EA6").opacity(0.07), radius: 8, x: 0, y: 3)
         .transition(.move(edge: .top).combined(with: .opacity))
     }
     
@@ -334,13 +344,13 @@ struct ChangePinView: View {
                     
                     VStack(spacing: 20) {
                         // Title
-                        Text("Confirmation de changement de PIN")
+                        Text("Confirm PIN change")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                         
                         // Message
-                        Text("Confirmez-vous le changement de votre code PIN?\n\nCette action est irréversible et vous devrez utiliser le nouveau code PIN pour vos futures transactions.")
+                        Text("Are you sure you want to change your PIN?\n\nYou will need to use the new PIN for future transactions.")
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -353,33 +363,34 @@ struct ChangePinView: View {
                             Button(action: {
                                 showConfirmationDialog = false
                             }) {
-                                Text("Annuler")
+                                Text("Cancel")
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.blueH)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
-                                    .background(Color.blueH.opacity(0.1))
-                                    .cornerRadius(8)
+                                    .background(Color(hex: "EAF3FF"))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                             
                             Button(action: {
                                 showConfirmationDialog = false
                                 changePin()
                             }) {
-                                Text("Changer le PIN")
+                                Text("Change PIN")
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
-                                    .background(Color.blueH)
-                                    .cornerRadius(8)
+                                    .background(Color(hex: "174EA6"))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                         }
                         .padding(.horizontal)
                     }
                     .padding(24)
                     .background(Color.white)
-                    .cornerRadius(16)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
                     .shadow(radius: 20)
                     .padding(.horizontal, 32)
                 }
@@ -398,13 +409,13 @@ struct ChangePinView: View {
     
     private func validateCurrentPin(_ pin: String) -> Bool {
         if pin.isEmpty {
-            currentPinError = "Le code PIN est requis"
+            currentPinError = "PIN is required."
             showCurrentPinError = true
             return false
         }
         
         if pin.count < 4 {
-            currentPinError = "Le code PIN doit contenir au moins 4 chiffres"
+            currentPinError = "PIN must contain at least 4 digits."
             showCurrentPinError = true
             return false
         }
@@ -417,11 +428,11 @@ struct ChangePinView: View {
         var isValid = true
         
         if newPin.isEmpty {
-            newPinError = "Le code PIN est requis"
+            newPinError = "PIN is required."
             showNewPinError = true
             isValid = false
         } else if newPin.count < 4 {
-            newPinError = "Le code PIN doit contenir au moins 4 chiffres"
+            newPinError = "PIN must contain at least 4 digits."
             showNewPinError = true
             isValid = false
         } else {
@@ -429,11 +440,11 @@ struct ChangePinView: View {
         }
         
         if confirmPin.isEmpty {
-            confirmPinError = "La confirmation du code PIN est requise"
+            confirmPinError = "Please confirm your new PIN."
             showConfirmPinError = true
             isValid = false
         } else if newPin != confirmPin {
-            confirmPinError = "Les codes PIN ne correspondent pas"
+            confirmPinError = "The PINs do not match."
             showConfirmPinError = true
             isValid = false
         } else {
@@ -476,13 +487,13 @@ struct ChangePinView: View {
                     if response.respCode == "000" {
                         self.handlePinVerificationSuccess()
                     } else {
-                        self.showErrorAlert(response.message ?? "Échec de la vérification. Code: \(response.respCode ?? "N/A")")
+                        self.showErrorAlert(response.message ?? "PIN verification failed. Code: \(response.respCode ?? "N/A")")
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert("Error: \(apiError.message)")
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert("Network error: \(error.localizedDescription)")
                     }
                 }
             }
@@ -495,14 +506,14 @@ struct ChangePinView: View {
             isPinVerified = true
         }
         
-        alertTitle = "Vérification réussie"
-        alertMessage = "Votre code PIN actuel a été vérifié avec succès. Vous pouvez maintenant définir un nouveau code PIN."
+        alertTitle = "Verification successful"
+        alertMessage = "Your current PIN has been verified. You can now set a new PIN."
         showAlert = true
     }
     
     private func showChangePinConfirmationDialog() {
         guard isPinVerified else {
-            showErrorAlert("Veuillez d'abord vérifier votre code PIN actuel")
+            showErrorAlert("Verify your current PIN first.")
             return
         }
         
@@ -523,10 +534,10 @@ struct ChangePinView: View {
         request.confPinCode = confirmPin
         request.bank = "00100"
         
-        // ❌ DO NOT SET source field - Android doesn't set it either
-        // ❌ DO NOT SET phoneNumber - Android doesn't set it either
-        // ❌ DO NOT SET entityId - Android doesn't set it either
-        
+        request.phoneNumber = userDataManager.getPhoneNumber()
+        request.source = request.walletNumber.isEmpty ? "P" : "W"
+        request.entityId = userDataManager.getPhoneNumber()
+
         // Generate requestId
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyMMdd"
@@ -548,13 +559,13 @@ struct ChangePinView: View {
                     if response.respCode == "000" {
                         self.handlePinChangeSuccess()
                     } else {
-                        self.showErrorAlert(response.message ?? "Transfert échoué: Erreur inconnue")
+                        self.showErrorAlert(response.message ?? "Unable to change PIN. Please try again.")
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert("Error: \(apiError.message)")
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert("Network error: \(error.localizedDescription)")
                     }
                 }
             }
@@ -568,8 +579,8 @@ struct ChangePinView: View {
         clearAllFields()
         
         // Show success message
-        alertTitle = "Code PIN modifié"
-        alertMessage = "Votre code PIN a été modifié avec succès. Utilisez ce nouveau code PIN pour vos prochaines transactions."
+        alertTitle = "PIN changed"
+        alertMessage = "Your PIN was changed successfully. Use your new PIN for future transactions."
         showAlert = true
     }
     
@@ -582,7 +593,7 @@ struct ChangePinView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = "Error"
         alertMessage = message
         showAlert = true
     }

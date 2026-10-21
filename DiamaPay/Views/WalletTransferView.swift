@@ -1,716 +1,460 @@
-//
-//  WalletTransferView.swift
-//  DiamaPay
-//
-//  Created by Bits on 28/9/2025.
-//  Updated: Auto-verify recipient on 9 digits and UI optimizations
-//
-
 import Contacts
 import ContactsUI
 import SwiftUI
 
 struct WalletTransferView: View {
     @Environment(\.presentationMode) var presentationMode
-    
-    // MARK: - State Variables
+    var onOpenSettings: () -> Void = {}
     @State private var selectedSource: SourceOfFunds = .wallet
-    @State private var selectedWallet: SponsoringWallet? = nil
-    @State private var currentBalance: String = ""
-    
-    @State private var destinationPhone: String = ""
-    @State private var bankCode: String = ""
-    @State private var recipientName: String = ""
-    @State private var amount: String = ""
-    @State private var paymentDetails: String = ""
-    @State private var pin: String = ""
-    
+    @State private var selectedWallet: SponsoringWallet?
+    @State private var destinationPhone = ""
+    @State private var recipientKind: WalletTransferRecipientKind = .phoneOrCustomerID
+    @State private var selectedBeneficiary: WalletBeneficiary?
+    @State private var recipientName = ""
+    @State private var verifiedRecipientKey = ""
+    @State private var amount = ""
+    @State private var paymentDetails = ""
     @State private var showContactPicker = false
+    @State private var showSavedRecipients = false
+    @State private var showSponsors = false
+    @State private var showQR = false
+    @State private var showLimits = false
+    @State private var verificationID = UUID()
     @State private var isVerifying = false
+    @State private var verificationError: String?
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var alertTitle = "Error"
-    
-    // Transfer management
-    @State private var destinationBank = ""
-    @State private var calculatedFee: Double = 0.0
-    @State private var totalAmountWithFee: Double = 0.0
-    @State private var feeRuleIndex = ""
-    
-    // Withdrawal Fee
-    @State private var withdrawalFee: Double = 0.0
-    @State private var isWithdrawalFeeEnabled: Bool = false
-    @State private var isCalculatingWithdrawalFee = false
-    @State private var withdrawalFeeError: String? = nil
-    
-    // Success dialog state
+    @State private var isSavingBeneficiary = false
+    @State private var calculatedFee = 0.0
+    @State private var totalAmountWithFee = 0.0
+    @State private var confirmedQuoteKey = ""
+    @State private var showConfirmationDialog = false
     @State private var showSuccessDialog = false
     @State private var transactionId = ""
     @State private var transactionDate = ""
-    @State private var transactionReference = ""
-    
-    private let userDataManager = UserDataManager.shared
-    private let defaultCurrency = "GNF"
-    private let numericCurrency = "324"
-    
-    @State private var showConfirmationDialog = false
-    
+
+    private let user = UserDataManager.shared
+    private let blue = Color(hex: "174EA6")
+    private let cyan = Color(hex: "0788B9")
+    private var recipientIdentifier: String { WalletTransferRecipient.normalize(destinationPhone) }
+    private var recipientBank: String {
+        if let saved = selectedBeneficiary,
+           WalletTransferRecipient.normalize(saved.destination ?? "") == recipientIdentifier,
+           let bank = saved.destBankCode, !bank.isEmpty { return bank }
+        return "00100"
+    }
+    private var recipientKey: String { recipientKind.rawValue + "|" + recipientIdentifier + "|" + recipientBank }
+    private var quoteKey: String {
+        recipientKey + "|" + amount + "|" + (selectedSource == .wallet ? "wallet" : "sponsor") + "|" + (selectedWallet?.walletNumber ?? "")
+    }
+    private var amountValue: Double? { Double(amount) }
+
     var body: some View {
         ZStack {
-            Color.white
-                .ignoresSafeArea()
-            
+            Color.white.ignoresSafeArea()
             VStack(spacing: 0) {
-                // Header
-                DiamaPayHeader(title: "Wallet to Wallet", headerColor: Color(hex: "174EA6"))
-
-                if isLoading {
-                    Spacer()
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
-                            .scaleEffect(1.5)
-                        
-                        Text("Processing...")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                } else {
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            // Source of Funds View
-                            SourceOfFundsView(
-                                onSourceChanged: { source in
-                                    selectedSource = source
-                                    calculateTransferFee()
-                                },
-                                onWalletChanged: { wallet in
-                                    selectedWallet = wallet
-                                },
-                                onBalanceChanged: { balance in
-                                    currentBalance = balance
-                                },
-                                walletTransferStyle: true
-                            )
-                            
-                            // Recipient Details Card
-                            recipientDetailsCard
-                            
-                            // Withdrawal Fee Card
-                            withdrawalFeeCard
-                            
-                            // Reference Card
-                            referenceCard
-                            
-                            // Submit Button
-                            submitButton
+                DiamaPayHeader(title: "Wallet to Wallet", headerColor: blue)
+                ScrollView {
+                    VStack(spacing: 24) {
+                        SourceOfFundsView(
+                            onSourceChanged: { source in
+                                selectedSource = source
+                                if source == .wallet { selectedWallet = nil }
+                            },
+                            onWalletChanged: { selectedWallet = $0 },
+                            walletTransferStyle: true
+                        )
+                        recipientDetailsCard
+                        referenceCard
+                        Button(action: prepareConfirmation) {
+                            Text("Submit")
+                                .font(.system(size: 19, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 170, height: 54)
+                                .background(blue)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 18)
+                        .disabled(isLoading || isVerifying)
+                        .opacity(isLoading || isVerifying ? 0.6 : 1)
+                        .padding(.vertical, 8)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 44)
                 }
+                .scrollDismissesKeyboard(.interactively)
+                .disabled(isLoading || showConfirmationDialog)
+            }
+            if isLoading {
+                Color.black.opacity(0.15).ignoresSafeArea()
+                ProgressView("Processing...")
+                    .padding(28)
+                    .background(.regularMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AppBottomBar(
-                onSponsors: {},
-                onQR: {},
-                onLimits: {},
-                onSettings: {}
+                onSponsors: { showSponsors = true }, onQR: { showQR = true },
+                onLimits: { showLimits = true },
+                onSettings: { presentationMode.wrappedValue.dismiss(); onOpenSettings() },
+                onHome: { presentationMode.wrappedValue.dismiss() }
             )
+            .disabled(isLoading || showConfirmationDialog)
+        }
+        .background {
+            NavigationLink("", destination: SponsoringWalletListView(), isActive: $showSponsors).hidden()
+            NavigationLink("", destination: QRPaymentView(), isActive: $showQR).hidden()
+            NavigationLink("", destination: CheckLimitView(onOpenSettings: onOpenSettings), isActive: $showLimits).hidden()
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(alertMessage)
-        }
+            if alertTitle == "Save recipient?" {
+                Button("Save") { saveCurrentBeneficiary() }
+                Button("Not now", role: .cancel) { presentationMode.wrappedValue.dismiss() }
+            } else {
+                Button("OK", role: .cancel) { }
+            }
+        } message: { Text(alertMessage) }
         .sheet(isPresented: $showContactPicker) {
-            ContactPickerView(selectedPhone: $destinationPhone)
+            ContactPickerView(selectedPhone: $destinationPhone, normalizePhone: WalletTransferRecipient.normalize)
+        }
+        .sheet(isPresented: $showSavedRecipients) {
+            SavedWalletRecipientsView { beneficiary in
+                selectedBeneficiary = beneficiary
+                destinationPhone = WalletTransferRecipient.normalize(beneficiary.destination ?? "")
+            }
         }
         .sheet(isPresented: $showSuccessDialog) {
             TransactionSuccessView(
-                transactionId: transactionId,
-                transactionDate: transactionDate,
-                amount: amount,
-                recipientName: recipientName,
-                recipientPhone: destinationPhone,
-                senderName: userDataManager.getUserName(),
-                senderPhone: userDataManager.getPhoneNumber(),
-                withdrawalFee: isWithdrawalFeeEnabled ? withdrawalFee : 0.0,
-                fee: calculatedFee,
-                total: totalAmountWithFee,
-                currency: defaultCurrency,
-                paymentDetails: paymentDetails,
+                transactionId: transactionId, transactionDate: transactionDate,
+                amount: amount, recipientName: recipientName, recipientPhone: recipientIdentifier,
+                senderName: user.getUserName(), senderPhone: user.getPhoneNumber(),
+                withdrawalFee: 0, fee: calculatedFee, total: totalAmountWithFee,
+                currency: "GMD", paymentDetails: paymentDetails,
                 onClose: {
                     showSuccessDialog = false
-                    presentationMode.wrappedValue.dismiss()
+                    alertTitle = "Save recipient?"
+                    alertMessage = "Would you like to save \(recipientName) for future transfers?"
+                    showAlert = true
                 }
             )
         }
-        .overlay(confirmationDialogOverlay)
-    }
-    
-    private var confirmationDialogOverlay: some View {
-        Group {
+        .overlay {
             if showConfirmationDialog {
                 TransferConfirmationDialog(
-                    amount: amount,
-                    withdrawalFee: isWithdrawalFeeEnabled ? withdrawalFee : 0.0,
-                    transferFee: calculatedFee,
-                    total: totalAmountWithFee,
-                    currency: defaultCurrency,
-                    recipientName: recipientName,
-                    recipientPhone: destinationPhone,
-                    paymentDetails: paymentDetails,
-                    sourceType: selectedSource,
-                    selectedWallet: selectedWallet,
+                    amount: amount, withdrawalFee: 0, transferFee: calculatedFee,
+                    total: totalAmountWithFee, currency: "GMD", recipientName: recipientName,
+                    recipientPhone: recipientIdentifier, paymentDetails: paymentDetails,
+                    sourceType: selectedSource, selectedWallet: selectedWallet,
                     isPresented: $showConfirmationDialog,
-                    onConfirm: { pinCode in
-                        showConfirmationDialog = false
-                        processTransfer(with: pinCode)
-                    },
-                    onCancel: {
-                        showConfirmationDialog = false
-                    }
+                    onConfirm: { pin in showConfirmationDialog = false; processTransfer(pin: pin) },
+                    onCancel: { showConfirmationDialog = false }
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.opacity)
+                .zIndex(1)
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: showConfirmationDialog)
+        .onChange(of: recipientKey) {
+            verificationID = UUID()
+            recipientName = ""
+            verifiedRecipientKey = ""
+            verificationError = nil
+            isVerifying = false
+        }
+        .task(id: recipientKey) {
+            let key = recipientKey
+            guard WalletTransferRecipient.isValid(destinationPhone) else { return }
+            do { try await Task.sleep(nanoseconds: 500_000_000) } catch { return }
+            guard !Task.isCancelled, key == recipientKey else { return }
+            verifyRecipient(key: key)
+        }
     }
-    
-    // MARK: - Recipient Details Card (Optimized with Auto-Verify)
+
     private var recipientDetailsCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Recipient Details")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color(hex: "174EA6"))
-                
-                Rectangle()
-                    .fill(Color(hex: "0788B9"))
-                    .frame(width: 120, height: 2)
-            }
-            
-            HStack(alignment: .top, spacing: 10) {
-                HStack(spacing: 8) {
-                    TextField("Recipient Number", text: $destinationPhone)
-                        .keyboardType(.numberPad)
-                        .font(.system(size: 17, weight: .medium))
-                        .padding(.leading, 16)
-                        .onChange(of: destinationPhone) {
-                            // Limit to 9 digits
-                            if destinationPhone.count > 9 {
-                                destinationPhone = String(destinationPhone.prefix(9))
-                            }
-                            
-                            // Auto-verify when 9 digits are entered
-                            if destinationPhone.count == 9 {
-                                verifyRecipient()
-                            } else if destinationPhone.count < 9 {
-                                // Reset recipient info if digits are deleted
-                                resetVerificationFields()
-                            }
-                        }
-                    
-                    if isVerifying {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
-                            .scaleEffect(0.8)
-                            .padding(.trailing, 12)
-                    } else if !recipientName.isEmpty && destinationPhone.count == 9 {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.blueH)
-                            .padding(.trailing, 12)
-                    }
-                }
-                .frame(height: 60)
-                .background(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "505A69"), lineWidth: 1.2))
-                .cornerRadius(14)
-                
-                Button(action: { showContactPicker = true }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: "person.crop.circle.badge.plus")
-                            .font(.system(size: 24))
-                            .foregroundColor(Color(hex: "0788B9"))
-                            .frame(width: 60, height: 60)
-                            .background(Color.white)
-                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "0788B9"), lineWidth: 1.2))
-                            .cornerRadius(14)
-                        Text("Contacts")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color(hex: "174EA6"))
-                    }
+        VStack(alignment: .leading, spacing: 20) {
+            sectionTitle("Recipient Details")
+            Picker("Recipient identifier", selection: $recipientKind) {
+                ForEach(WalletTransferRecipientKind.allCases, id: \.self) { kind in
+                    Text(kind.title).tag(kind)
                 }
             }
-            
-            HStack(spacing: 8) {
-                Text(recipientName.isEmpty ? "Recipient Name" : recipientName)
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundColor(recipientName.isEmpty ? Color.secondary : Color.primary)
-                Spacer()
+            .pickerStyle(.segmented)
+            HStack(alignment: .top, spacing: 8) {
+                HStack(spacing: 4) {
+                    TextField(recipientKind == .wallet ? "Wallet Number" : "Phone or Customer ID", text: $destinationPhone)
+                        .keyboardType(.default)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .font(.system(size: 15))
+                        .accessibilityLabel("Recipient number")
+                    if isVerifying { ProgressView().scaleEffect(0.8) }
+                    else if verifiedRecipientKey == recipientKey && !recipientName.isEmpty {
+                        Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 52)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
+                recipientButton("Saved", icon: "book.closed.fill") { showSavedRecipients = true }
+                recipientButton("Contacts", icon: "person.crop.rectangle.fill") { recipientKind = .phoneOrCustomerID; showContactPicker = true }
             }
-            .padding(.horizontal, 16)
-            .frame(height: 60)
-            .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "505A69"), lineWidth: 1.2))
-            .cornerRadius(14)
-
-            amountCard
+            Text(recipientName.isEmpty ? "Recipient Name" : recipientName)
+                .foregroundColor(recipientName.isEmpty ? .secondary : .primary)
+                .font(.system(size: 16))
+                .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+                .padding(.horizontal, 12)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
+            if let verificationError {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(verificationError).font(.caption).foregroundColor(.red)
+                    Button("Verify Again") { verifyRecipient(key: recipientKey) }.font(.caption)
+                }
+            }
+            TextField("Amount *", text: $amount)
+                .keyboardType(.decimalPad)
+                .font(.system(size: 16))
+                .padding(.horizontal, 12)
+                .frame(height: 52)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
+                .onChange(of: amount) {
+                    let cleaned = amount.replacingOccurrences(of: ",", with: ".").filter { $0.isASCII && ($0.isNumber || $0 == ".") }
+                    if cleaned != amount { amount = cleaned }
+                }
         }
-        .padding(22)
-        .background(Color.white)
-        .cornerRadius(22)
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.gray.opacity(0.12), lineWidth: 1))
-        .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 5)
-    }
-    
-    // MARK: - Amount Card
-    private var amountCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Amount")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color(hex: "174EA6"))
-                
-                Rectangle()
-                    .fill(Color(hex: "0788B9"))
-                    .frame(width: 120, height: 2)
-            }
-            
-            TextField("Amount *", text: Binding(
-                get: {
-                    formatAmountInput(amount)
-                },
-                set: { newValue in
-                    let clean = newValue.replacingOccurrences(of: " ", with: "")
-                        .replacingOccurrences(of: ",", with: ".")
-                        .components(separatedBy: CharacterSet(charactersIn: "0123456789.").inverted)
-                        .joined()
-
-                    if clean.components(separatedBy: ".").count > 2 {
-                        return
-                    }
-
-                    amount = clean
-                }
-            ))
-            .keyboardType(.decimalPad)
-            .font(.system(size: 17, weight: .medium))
-            .padding(.horizontal, 16)
-            .frame(height: 60)
-            .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "505A69"), lineWidth: 1.2))
-            .cornerRadius(14)
-            .onChange(of: amount) {
-                NSObject.cancelPreviousPerformRequests(withTarget: self)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.calculateWithdrawalFee()
-                }
-            }
-        }
-    }
-    
-    private func formatAmountInput(_ value: String) -> String {
-        let clean = value.replacingOccurrences(of: " ", with: "")
-        guard let number = Double(clean) else { return value }
-
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 0
-        formatter.locale = Locale(identifier: "fr_FR")
-
-        return formatter.string(from: NSNumber(value: number)) ?? value
+        .padding(18)
+        .background(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.12), lineWidth: 1))
+        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 4)
     }
 
-    // MARK: - Withdrawal Fee Card
-    private var withdrawalFeeCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Add withdrawal fee")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.primary)
-                    
-                    if isCalculatingWithdrawalFee {
-                        HStack(spacing: 4) {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
-                                .scaleEffect(0.7)
-                            Text("Calculating...")
-                                .font(.system(size: 11))
-                                .foregroundColor(.secondary)
-                        }
-                    } else if let error = withdrawalFeeError {
-                        Text(error)
-                            .font(.system(size: 11))
-                            .foregroundColor(.red)
-                    } else if withdrawalFee > 0 {
-                        Text("Fee: \(formatAmount(withdrawalFee))")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    } else if !amount.isEmpty {
-                        Text("No fee applies")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    } else {
-                        Text("Enter an amount to see the fee")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Spacer()
-                
-                Toggle("", isOn: $isWithdrawalFeeEnabled)
-                    .labelsHidden()
-                    .disabled(withdrawalFee == 0.0 || amount.isEmpty)
-                    .onChange(of: isWithdrawalFeeEnabled) {
-                        calculateTransferFee()
-                    }
-            }
-        }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(22)
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.gray.opacity(0.12), lineWidth: 1))
-        .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 5)
-    }
-    
-    // MARK: - Reference Card
     private var referenceCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Reason (optional)")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color(hex: "174EA6"))
-                
-                Rectangle()
-                    .fill(Color(hex: "0788B9"))
-                    .frame(width: 120, height: 2)
-            }
-            
+        VStack(alignment: .leading, spacing: 18) {
+            sectionTitle("Reason (optional)")
             TextField("Enter reason", text: $paymentDetails)
-            .font(.system(size: 17, weight: .medium))
-            .padding(.horizontal, 16)
-            .frame(height: 60)
-            .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "505A69"), lineWidth: 1.2))
-            .cornerRadius(14)
+                .padding(.horizontal, 12)
+                .frame(height: 52)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
+                .onChange(of: paymentDetails) { paymentDetails = String(paymentDetails.prefix(25)) }
         }
-        .padding(22)
-        .background(Color.white)
-        .cornerRadius(22)
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.gray.opacity(0.12), lineWidth: 1))
-        .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 5)
+        .padding(18)
+        .background(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gray.opacity(0.12), lineWidth: 1))
+        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 4)
     }
-    
-    // MARK: - Submit Button
-    private var submitButton: some View {
-        Button(action: {
-            validateAndShowConfirmation()
-        }) {
-            Text("Submit")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(Color(hex: "174EA6"))
-                .cornerRadius(14)
+
+    private func sectionTitle(_ title: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.system(size: 17, weight: .bold)).foregroundColor(blue)
+            Rectangle().fill(cyan).frame(width: 64, height: 2)
         }
-        .padding(.vertical, 20)
     }
-    
-    // MARK: - Helper Functions
-    
-    private func calculateWithdrawalFee() {
-        let cleanAmount = amount.cleanCurrencyValue()
-        
-        guard !cleanAmount.isEmpty,
-              let amountValue = Double(cleanAmount),
-              amountValue > 0 else {
-            withdrawalFee = 0.0
-            withdrawalFeeError = nil
-            isWithdrawalFeeEnabled = false
-            calculatedFee = 0.0
-            totalAmountWithFee = 0.0
-            return
-        }
-        
-        isCalculatingWithdrawalFee = true
-        withdrawalFeeError = nil
-        
-        var request = FeeCalculationRequest()
-        request.processingCode = "22"
-        request.bankCode = "00100"
-        request.actionCode = "DEB"
-        request.currencyCode = "324"
-        request.transactionAmount = amountValue
-        request.walletProductCode = "001"
-        request.walletType = "P"
-        request.origin = "W"
-        request.messageType = "ON_US"
-        
-        APIClient.shared.calculateWithdrawalFee(request: request) { result in
-            DispatchQueue.main.async {
-                self.isCalculatingWithdrawalFee = false
-                
-                switch result {
-                case .success(let response):
-                    if response.respCode == "000" || response.respCode == "001" {
-                        self.withdrawalFee = response.feeAmount ?? 0.0
-                        if self.withdrawalFee == 0 {
-                            self.isWithdrawalFeeEnabled = false
-                        }
-                        self.calculateTransferFee()
-                    } else {
-                        self.withdrawalFee = 0.0
-                        self.isWithdrawalFeeEnabled = false
-                        self.withdrawalFeeError = response.message
-                        self.calculateTransferFee()
-                    }
-                    
-                case .failure(_):
-                    self.withdrawalFee = 0.0
-                    self.isWithdrawalFeeEnabled = false
-                    self.withdrawalFeeError = "Impossible de calculer"
-                    self.calculateTransferFee()
-                }
+
+    private func recipientButton(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 23))
+                    .frame(width: 46, height: 52)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(cyan, lineWidth: 1.2))
+                Text(title).font(.system(size: 11, weight: .medium))
             }
+            .foregroundColor(cyan)
         }
+        .accessibilityLabel(title == "Saved" ? "Choose saved recipient" : "Choose phone contact")
     }
-    
-    private func calculateTransferFee() {
-        let cleanAmount = amount.cleanCurrencyValue()
-        
-        guard !cleanAmount.isEmpty,
-              let amountValue = Double(cleanAmount),
-              amountValue > 0 else {
-            calculatedFee = 0.0
-            totalAmountWithFee = 0.0
-            return
-        }
-        
-        let withdrawalFeeValue = isWithdrawalFeeEnabled ? withdrawalFee : 0.0
-        let amountWithWithdrawalFee = amountValue + withdrawalFeeValue
-        
-        let processingCode = selectedSource == .wallet ? "41" : "10"
-        
-        var request = FeeCalculationRequest()
-        request.processingCode = processingCode
-        request.bankCode = destinationBank.isEmpty ? "00100" : destinationBank
-        request.actionCode = "DEB"
-        request.currencyCode = "324"
-        request.transactionAmount = amountWithWithdrawalFee
-        request.walletProductCode = "001"
-        request.walletType = "P"
-        request.origin = "W"
-        request.messageType = (destinationBank.isEmpty || destinationBank == "00100") ? "ON_US" : "OFF_US"
-        
-        APIClient.shared.calculateTransactionFee(request: request) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let response):
-                    if response.respCode == "000" || response.respCode == "001" {
-                        self.calculatedFee = response.result?.feeAmount ?? 0.0
-                        self.feeRuleIndex = response.result?.ruleIndex ?? ""
-                        self.totalAmountWithFee = amountValue + withdrawalFeeValue + self.calculatedFee
-                    } else {
-                        self.calculatedFee = 0.0
-                        self.totalAmountWithFee = amountValue + withdrawalFeeValue
-                    }
-                    
-                case .failure(_):
-                    self.calculatedFee = 0.0
-                    self.totalAmountWithFee = amountValue + withdrawalFeeValue
-                }
-            }
-        }
-    }
-    
-    private func verifyRecipient() {
-        guard destinationPhone.count == 9 else {
-            return
-        }
-        
+
+    private func verifyRecipient(key: String) {
+        guard WalletTransferRecipient.isValid(destinationPhone), key == recipientKey else { return }
+        let currentVerificationID = UUID()
+        verificationID = currentVerificationID
         isVerifying = true
-        
+        verificationError = nil
+        verifiedRecipientKey = ""
+        recipientName = ""
+        let identifier = recipientIdentifier
         var request = RequestNameEnquiry()
-        request.source = "P"
-        request.phoneNumber = destinationPhone
-        request.bank = "00100"
-        request.pin = userDataManager.getPinForAPI()
-        request.requestId = generateRequestId()
-        request.requestDate = formatCurrentDate()
-        request.entityId = userDataManager.getUserCode()
-        
+        request.source = recipientKind.source
+        request.walletNumber = request.source == "W" ? identifier : ""
+        request.phoneNumber = request.source == "P" ? identifier : ""
+        request.bank = recipientBank
+        request.entityId = user.getUserCode()
+        request.requestId = requestId()
+        request.requestDate = timestamp()
         APIClient.shared.getWalletInfo(request: request) { result in
             DispatchQueue.main.async {
-                self.isVerifying = false
-                
+                guard key == recipientKey, currentVerificationID == verificationID else { return }
+                isVerifying = false
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" {
-                        if let resultData = response.result {
-                            self.recipientName = resultData["walletHolder"] as? String ?? ""
-                            self.bankCode = resultData["bankCode"] as? String ?? "00100"
-                            self.destinationBank = self.bankCode
-                            self.calculateTransferFee()
-                        }
-                    } else {
-                        self.showError(message: response.message ?? "Recipient verification failed")
-                        self.resetVerificationFields()
+                    guard response.respCode == "000",
+                          let name = response.result?["walletHolder"] as? String,
+                          !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                        verificationError = response.message ?? "Unable to verify this recipient."
+                        return
                     }
-                    
+                    recipientName = name
+                    verifiedRecipientKey = key
                 case .failure(let error):
-                    self.showError(message: error.localizedDescription)
-                    self.resetVerificationFields()
+                    verificationError = (error as? APIError)?.message ?? "Unable to verify the recipient. Please try again."
                 }
             }
         }
     }
-    
-    private func validateAndShowConfirmation() {
-        guard !destinationPhone.isEmpty else {
-            showError(message: "The recipient's phone number is required")
-            return
+
+    private func validateTransfer() -> Bool {
+        guard WalletTransferRecipient.isValid(destinationPhone) else {
+            showError("Enter the recipient phone number, customer ID, or wallet number."); return false
         }
-        
-        guard !recipientName.isEmpty else {
-            showError(message: "Please verify the recipient")
-            return
+        guard verifiedRecipientKey == recipientKey, !recipientName.isEmpty, !isVerifying else {
+            showError("Please verify the recipient first."); return false
         }
-        
-        guard !amount.isEmpty else {
-            showError(message: "The amount is required")
-            return
+        guard recipientIdentifier != WalletTransferRecipient.normalize(user.getPhoneNumber()),
+              recipientIdentifier != user.getWalletNumber() else {
+            showError("Please choose another recipient."); return false
         }
-        
-        let cleanAmount = amount.replacingOccurrences(of: ",", with: ".")
-        guard let amountValue = Double(cleanAmount), amountValue > 0 else {
-            showError(message: "Invalid amount")
-            return
+        guard let value = amountValue, value.isFinite, value > 0,
+              amount.components(separatedBy: ".").count <= 2,
+              (amount.split(separator: ".", omittingEmptySubsequences: false).last?.count ?? 0) <= (amount.contains(".") ? 2 : amount.count) else {
+            showError("Enter a valid amount with up to two decimal places."); return false
         }
-        
-        calculateTransferFee()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.showConfirmationDialog = true
+        if selectedSource == .sponsor && (selectedWallet?.walletNumber.isEmpty != false) {
+            showError("Select a sponsor first."); return false
+        }
+        return true
+    }
+
+    private func prepareConfirmation() {
+        guard !isLoading, validateTransfer(), let value = amountValue else { return }
+        isLoading = true
+        let key = quoteKey
+        let request = WalletFeeQuoteRequest.current(
+            amount: value, destination: recipientIdentifier,
+            transactionType: selectedSource == .wallet ? "41" : "10", destinationBank: recipientBank
+        )
+        APIClient.shared.calculateWalletFee(request: request) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                guard key == quoteKey else { return }
+                switch result {
+                case .success(let response):
+                    guard response.respCode == "000", let quote = response.result,
+                          let fee = quote.feeAmount, fee.isFinite, fee >= 0,
+                          (quote.taxAmount ?? 0).isFinite, (quote.taxAmount ?? 0) >= 0 else {
+                        showError(response.message ?? "Unable to calculate fees."); return
+                    }
+                    let total = quote.totalAmount ?? (value + quote.totalFees)
+                    guard total.isFinite, total >= value else { showError("Invalid fee quote. Please try again."); return }
+                    calculatedFee = quote.totalFees
+                    totalAmountWithFee = total
+                    confirmedQuoteKey = key
+                    showConfirmationDialog = true
+                case .failure(let error):
+                    showError((error as? APIError)?.message ?? "Unable to calculate fees. Please try again.")
+                }
+            }
         }
     }
-    
-    private func processTransfer(with pinCode: String) {
-        isLoading = true
-        
-        var request = RequestWalletToWallet()
-        request.source = "P"
-        request.srcWalletNumber = userDataManager.getWalletNumber()
-        request.srcPhoneNumber = userDataManager.getPhoneNumber()
-        request.srcBank = "00100"
-        
-        if selectedSource == .sponsor, let wallet = selectedWallet {
-            request.sponsorWallet = wallet.walletNumber
+
+    private func processTransfer(pin: String) {
+        guard !isLoading, validateTransfer(), let value = amountValue else { return }
+        guard confirmedQuoteKey == quoteKey else {
+            showError("Transfer details changed. Please submit again."); return
         }
-        
-        let baseAmount = Double(amount.cleanCurrencyValue()) ?? 0.0
-        let withdrawalFeeValue = isWithdrawalFeeEnabled ? withdrawalFee : 0.0
-        let finalAmount = baseAmount + withdrawalFeeValue
-        request.amount = String(finalAmount)
-        
-        request.currency = numericCurrency
-        request.desWalletNumber = ""
-        request.desPhoneNumber = destinationPhone
-        request.desBank = destinationBank
+        guard !pin.isEmpty else { showError("Enter your PIN."); return }
+        isLoading = true
+        var request = RequestWalletToWallet()
+        request.srcWalletNumber = user.getWalletNumber()
+        request.srcPhoneNumber = user.getPhoneNumber()
+        request.source = request.srcWalletNumber.isEmpty ? "P" : "W"
+        request.srcBank = user.getBankCode().isEmpty ? "00100" : user.getBankCode()
+        request.desWalletNumber = recipientKind == .wallet ? recipientIdentifier : ""
+        request.desPhoneNumber = request.desWalletNumber.isEmpty ? recipientIdentifier : ""
+        request.desBank = recipientBank
+        request.amount = String(format: "%.2f", locale: Locale(identifier: "en_US_POSIX"), value)
+        request.currency = "270"
         request.reason = String(paymentDetails.prefix(25))
-        request.pin = pinCode
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyMMdd"
-        let datePrefix = dateFormatter.string(from: Date())
-        let randomDigits = String(format: "%06d", Int.random(in: 0...999999))
-        let requestId = String((datePrefix + randomDigits).prefix(12))
-        request.requestId = requestId
-        
-        let fullDateFormatter = DateFormatter()
-        fullDateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        request.requestDate = fullDateFormatter.string(from: Date())
-        request.entityId = UserDataManager.shared.getUserCode()
-        
+        request.pin = pin
+        request.sponsorWallet = selectedSource == .sponsor ? selectedWallet?.walletNumber : nil
+        request.requestId = requestId()
+        request.requestDate = timestamp()
+        request.entityId = user.getUserCode()
+        let sentRequestId = request.requestId
         APIClient.shared.transferWalletToWallet(request: request) { result in
             DispatchQueue.main.async {
-                self.isLoading = false
-                
+                isLoading = false
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" {
-                        self.handleTransferSuccess(response, requestId: requestId)
-                    } else {
-                        self.showError(message: "Transfer failed: \(response.message ?? "Unknown error")")
-                    }
+                    guard response.respCode == "000" else { showError(response.message ?? "Transfer failed."); return }
+                    transactionId = response.resultString ?? (response.result?["transactionReference"] as? String) ?? response.authCode ?? sentRequestId
+                    transactionDate = DateFormatter.with(format: "dd/MM/yyyy HH:mm").string(from: Date())
+                    confirmedQuoteKey = ""
+                    showSuccessDialog = true
                 case .failure(let error):
-                    self.showError(message: error.localizedDescription)
+                    showError((error as? APIError)?.message ?? "Transfer could not be confirmed. Check transaction history before trying again.")
                 }
             }
         }
     }
-    
-    private func handleTransferSuccess(_ response: ResponseServiceJson, requestId: String) {
-        transactionId = requestId
-        transactionReference = response.result?["transactionReference"] as? String ?? requestId
-        transactionDate = formatCurrentDateTime()
-        showSuccessDialog = true
+
+    private func requestId() -> String {
+        DateFormatter.with(format: "yyMMdd").string(from: Date()) + String(format: "%06d", Int.random(in: 0...999999))
     }
-    
-    private func resetVerificationFields() {
-        recipientName = ""
-        bankCode = ""
-        destinationBank = ""
-        calculatedFee = 0.0
-        totalAmountWithFee = 0.0
+    private func timestamp() -> String { DateFormatter.with(format: "yyyy-MM-dd HH:mm:ss").string(from: Date()) }
+    private func saveCurrentBeneficiary() {
+        guard !isSavingBeneficiary else { return }
+        let phoneNumber = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !phoneNumber.isEmpty, !recipientIdentifier.isEmpty else {
+            showError("Recipient details are unavailable. Please try again.")
+            return
+        }
+
+        isSavingBeneficiary = true
+        let request = WalletBeneficiaryAddRequest(
+            phoneNumber: phoneNumber,
+            destination: recipientIdentifier,
+            institutionCode: recipientBank,
+            transactionType: selectedSource == .sponsor ? "10" : "41",
+            name: recipientName,
+            requestId: requestId(),
+            requestDate: timestamp(),
+            entityId: user.getUserCode().isEmpty ? phoneNumber : user.getUserCode()
+        )
+        APIClient.shared.addWalletBeneficiary(request: request) { result in
+            DispatchQueue.main.async {
+                isSavingBeneficiary = false
+                switch result {
+                case .success(let response) where response.respCode == "000":
+                    presentationMode.wrappedValue.dismiss()
+                case .success(let response):
+                    alertTitle = "Unable to save recipient"
+                    alertMessage = response.message ?? "Please try again later."
+                    showAlert = true
+                case .failure(let error):
+                    alertTitle = "Unable to save recipient"
+                    alertMessage = (error as? APIError)?.message ?? "Please check your connection and try again."
+                    showAlert = true
+                }
+            }
+        }
     }
-    
-    private func formatAmount(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
-        return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + defaultCurrency
-    }
-    
-    private func generateRequestId() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyMMdd"
-        let datePrefix = dateFormatter.string(from: Date())
-        let randomDigits = String(format: "%06d", Int.random(in: 0...999999))
-        return datePrefix + randomDigits
-    }
-    
-    private func formatCurrentDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        return formatter.string(from: Date())
-    }
-    
-    private func formatCurrentDateTime() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM/yyyy HH:mm"
-        return formatter.string(from: Date())
-    }
-    
-    private func showError(message: String) {
+
+    private func showError(_ message: String) {
         alertTitle = "Error"
         alertMessage = message
         showAlert = true
     }
 }
 
-
 struct ContactPickerView: UIViewControllerRepresentable {
     @Binding var selectedPhone: String
+    var normalizePhone: (String) -> String = { String($0.suffix(9)) }
     @Environment(\.presentationMode) var presentationMode
     
     func makeUIViewController(context: Context) -> CNContactPickerViewController {
@@ -736,7 +480,7 @@ struct ContactPickerView: UIViewControllerRepresentable {
         func contactPicker(_ picker: CNContactPickerViewController, didSelect contactProperty: CNContactProperty) {
             if let phoneNumber = contactProperty.value as? CNPhoneNumber {
                 let cleanedNumber = phoneNumber.stringValue.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
-                parent.selectedPhone = String(cleanedNumber.suffix(9))
+                parent.selectedPhone = parent.normalizePhone(cleanedNumber)
             }
             parent.presentationMode.wrappedValue.dismiss()
         }
@@ -769,15 +513,32 @@ struct TransactionSuccessView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                        .padding(.top, 20)
-                    
-                    Text("Transfer Successful")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                    HStack(alignment: .top, spacing: 14) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 34, weight: .medium))
+                            .foregroundColor(Color(hex: "16845B"))
+                            .frame(width: 54, height: 54)
+                            .background(Color(hex: "E8F5EF"))
+                            .clipShape(Circle())
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Transfer successful")
+                                .font(.system(size: 21, weight: .bold))
+                                .foregroundColor(Color(hex: "172B4D"))
+                            Text("Your transfer is complete.")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: "667085"))
+                            Text((Double(amount.cleanCurrencyValue()) ?? 0).formatAsCurrency() + " " + currency)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Color(hex: "174EA6"))
+                                .padding(.top, 4)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(18)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "E5E9EF"), lineWidth: 1))
                     
                     VStack(alignment: .leading, spacing: 16) {
                         Group {
@@ -805,7 +566,7 @@ struct TransactionSuccessView: View {
                                             .foregroundColor(.orange)
                                         Text("Withdrawal fee:")
                                             .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(Color(hex: "667085"))
                                     }
                                     Spacer()
                                     Text(formatAmount(withdrawalFee))
@@ -826,7 +587,7 @@ struct TransactionSuccessView: View {
                                             .foregroundColor(.blueH)
                                         Text("Transfer fee:")
                                             .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(Color(hex: "667085"))
                                     }
                                     Spacer()
                                     Text(formatAmount(fee))
@@ -845,7 +606,7 @@ struct TransactionSuccessView: View {
                                             .foregroundColor(.green)
                                         Text("Transfer fee:")
                                             .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(Color(hex: "667085"))
                                     }
                                     Spacer()
                                     Text("Free")
@@ -861,7 +622,7 @@ struct TransactionSuccessView: View {
                             HStack {
                                 Text("Total debited:")
                                     .font(.system(size: 16, weight: .bold))
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(Color(hex: "263445"))
                                 Spacer()
                                 Text(formatAmount(total))
                                     .font(.system(size: 18, weight: .bold))
@@ -908,18 +669,18 @@ struct TransactionSuccessView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(Color.blueH)
-                            .cornerRadius(8)
+                            .background(Color(hex: "174EA6"))
+                            .cornerRadius(10)
                         }
                         
                         Button(action: onClose) {
                             Text("Close")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.blueH)
+                                .foregroundColor(Color(hex: "174EA6"))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
-                                .background(Color.blueH.opacity(0.1))
-                                .cornerRadius(8)
+                                .background(Color(hex: "EAF1FB"))
+                                .cornerRadius(10)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -928,7 +689,7 @@ struct TransactionSuccessView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button("Close", action: onClose))
+            .navigationBarItems(trailing: Button("Close", action: onClose).foregroundColor(Color(hex: "174EA6")))
             .navigationBarTitle("Transfer Receipt", displayMode: .inline)
         }
     }
@@ -1107,7 +868,7 @@ struct SectionHeader: View {
     var body: some View {
         Text(title)
             .font(.system(size: 15, weight: .bold))
-            .foregroundColor(.blueH)
+            .foregroundColor(Color(hex: "174EA6"))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, 8)
     }
@@ -1122,7 +883,7 @@ struct DetailRow: View {
         HStack(alignment: .top) {
             Text(label)
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color(hex: "667085"))
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             Text(value)

@@ -44,6 +44,7 @@ struct FormattedTextField: View {
     @Binding var text: String
     var maxLength: Int = 15
     var walletTransferStyle = false
+    var sponsorFormStyle = false
     
     @State private var displayText: String = ""
     @FocusState private var isFocused: Bool
@@ -51,16 +52,18 @@ struct FormattedTextField: View {
     var body: some View {
         TextField(placeholder, text: $displayText)
             .keyboardType(.decimalPad)
-            .font(.system(size: walletTransferStyle ? 16 : 12, weight: .medium))
-            .padding(.horizontal, walletTransferStyle ? 16 : 12)
-            .frame(height: 48)
-            .background(walletTransferStyle ? Color.white : Color(red: 0.96, green: 0.96, blue: 0.96))
+            .font(.system(size: walletTransferStyle || sponsorFormStyle ? 14 : 12, weight: .medium))
+            .padding(.horizontal, 12)
+            .frame(height: sponsorFormStyle ? 44 : (walletTransferStyle ? 42 : 48))
+            .background(walletTransferStyle || sponsorFormStyle ? Color.white : Color(red: 0.96, green: 0.96, blue: 0.96))
             .overlay {
                 if walletTransferStyle {
                     RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "505A69"), lineWidth: 1.5)
+                } else if sponsorFormStyle {
+                    RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "4B5563"), lineWidth: 1.5)
                 }
             }
-            .cornerRadius(walletTransferStyle ? 14 : 8)
+            .cornerRadius(walletTransferStyle ? 14 : (sponsorFormStyle ? 12 : 8))
             .focused($isFocused)
             .onChange(of: displayText) {
                 handleTextChange(displayText)

@@ -750,7 +750,7 @@ struct WalletDeactivationView: View {
                 
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "00" {
+                    if response.respCode == "000" {
                         self.parseLinkedAccounts(response)
                     } else {
                         self.showErrorAlert("Erreur: \(response.message ?? "Impossible de charger les comptes")")
@@ -946,7 +946,7 @@ struct WalletDeactivationView: View {
                     //print("Response Message: \(response.message ?? "nil")")
                     //print("Response Auth Code: \(response.authCode ?? "nil")")
                     
-                    if response.respCode == "000" || response.status == "OK" {
+                    if response.respCode == "000" {
                         self.deactivationAuthCode = response.authCode ?? ""
                         //print("Deactivation request successful")
                         

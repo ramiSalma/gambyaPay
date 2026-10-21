@@ -17,6 +17,7 @@ struct SponsoredWalletsListView: View {
     @State private var selectedWallet: SponsoredWallet?
     @State private var showPinDialog = false
     @State private var showUnlinkAlert = false
+    @State private var showSponsorForm = false
     @State private var pinDialogAction: PinDialogAction = .unlink
     
     private let userDataManager = UserDataManager.shared
@@ -27,7 +28,7 @@ struct SponsoredWalletsListView: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            Color(hex: "F6F8FC")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -40,6 +41,8 @@ struct SponsoredWalletsListView: View {
                     contentView
                 }
             }
+            NavigationLink("", destination: SponsorWalletView(), isActive: $showSponsorForm)
+                .hidden()
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
@@ -76,6 +79,19 @@ struct SponsoredWalletsListView: View {
             }
         }
         .overlay(pinDialogOverlay)
+        .overlay(alignment: .bottomTrailing) {
+            Button { showSponsorForm = true } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 23, weight: .medium))
+                    .foregroundColor(.white)
+                    .frame(width: 62, height: 62)
+                    .background(Color(hex: "0788B9"), in: Circle())
+                    .shadow(color: .black.opacity(0.18), radius: 7, x: 0, y: 4)
+            }
+            .accessibilityLabel("Sponsor a wallet")
+            .padding(.trailing, 24)
+            .padding(.bottom, 92)
+        }
     }
     
     // MARK: - PIN Dialog Overlay
@@ -104,8 +120,8 @@ struct SponsoredWalletsListView: View {
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
             
-            Text("Loading...")
-                .font(.system(size: 16, weight: .medium))
+            Text("Loading wallets…")
+                .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -136,20 +152,6 @@ struct SponsoredWalletsListView: View {
                     }
                 }
                 
-                // Add Button
-                NavigationLink(destination: SponsorWalletView()) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 20))
-                        Text("Sponsor a wallet")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 13)
-                    .background(Color(hex: "174EA6"))
-                    .cornerRadius(14)
-                }
             }
             .padding(.horizontal, 18)
             .padding(.top, 16)
@@ -371,91 +373,50 @@ struct SponsoredWalletCard: View {
     @State private var showMenu = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Header with name, phone and menu
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Beneficiary: \(wallet.userNameSponsored)")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(Color(hex: "174EA6"))
-                    
-                    if !wallet.phoneNumberSponsored.isEmpty {
-                        Text(wallet.phoneNumberSponsored)
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Spacer()
-                
-                Button(action: {
-                    showMenu = true
-                }) {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color(hex: "174EA6"))
-                        .frame(width: 32, height: 32)
-                }
-            }
-            
-            Divider()
-            
-            // Limits
+        VStack(spacing: 0) {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Daily limit")
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                    
-                    Text(formatCurrency(wallet.dailyLimit))
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primary)
+                Text(initials(for: wallet.userNameSponsored))
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(Color(hex: "174EA6"))
+                    .frame(width: 42, height: 42)
+                    .background(Color(hex: "E8F1FA"), in: Circle())
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(wallet.userNameSponsored.isEmpty ? "Sponsored wallet" : wallet.userNameSponsored)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color(hex: "17212F"))
+                        .lineLimit(1)
+                    Text(wallet.phoneNumberSponsored)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Color(hex: "586273"))
                 }
-                
-                Spacer()
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Monthly limit")
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                    
-                    Text(formatCurrency(wallet.monthlyLimit))
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primary)
+                Spacer(minLength: 4)
+                Button { showMenu = true } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(hex: "174EA6"))
+                        .frame(width: 30, height: 34)
+                        .contentShape(Rectangle())
                 }
-                
-                Spacer()
+                .accessibilityLabel("Wallet options")
             }
-            
-            // Date range
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Validity period")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-                
-                Text(formatDateRange(start: wallet.startDate, end: wallet.endDate))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+
+            Divider().overlay(Color(hex: "E8EDF3"))
+
+            HStack(alignment: .top, spacing: 0) {
+                statColumn(title: "Daily limit", value: formatCurrency(wallet.dailyLimit))
+                statDivider
+                statColumn(title: "Monthly limit", value: formatCurrency(wallet.monthlyLimit))
+                statDivider
+                statColumn(title: "Validity", value: compactDateRange(start: wallet.startDate, end: wallet.endDate))
             }
-            
-            // Bank
-            if !wallet.bankWording.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Bank")
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                    
-                    Text(wallet.bankWording)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primary)
-                }
-            }
+            .padding(.vertical, 12)
         }
-        .padding(14)
         .background(Color.white)
-        .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.black.opacity(0.06), lineWidth: 1))
-        .shadow(color: .black.opacity(0.07), radius: 5, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color(hex: "E2E7ED"), lineWidth: 1))
+        .shadow(color: Color(hex: "13253A").opacity(0.06), radius: 5, x: 0, y: 2)
         .actionSheet(isPresented: $showMenu) {
             ActionSheet(
                 title: Text("Options"),
@@ -482,7 +443,34 @@ struct SponsoredWalletCard: View {
         formatter.locale = Locale(identifier: "fr_FR")
         formatter.maximumFractionDigits = 0
         
-        return (formatter.string(from: NSNumber(value: value)) ?? amount) + " GNF"
+        return (formatter.string(from: NSNumber(value: value)) ?? amount) + " GMD"
+    }
+
+    private var statDivider: some View {
+        Rectangle().fill(Color(hex: "EEF1F5")).frame(width: 1, height: 44)
+    }
+
+    private func statColumn(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title).font(.system(size: 11, weight: .medium)).foregroundColor(Color(hex: "586273"))
+                .lineLimit(1).minimumScaleFactor(0.8)
+            Text(value).font(.system(size: 12, weight: .semibold)).foregroundColor(Color(hex: "17212F"))
+                .lineLimit(2).minimumScaleFactor(0.78)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+    }
+
+    private func initials(for name: String) -> String {
+        let parts = name.split(whereSeparator: \.isWhitespace)
+        let letters = parts.prefix(2).compactMap(\.first)
+        return letters.isEmpty ? "SW" : String(letters).uppercased()
+    }
+
+    private func compactDateRange(start: String, end: String) -> String {
+        let from = start.isEmpty || start == "null" ? "—" : formatDate(start)
+        let to = end.isEmpty || end == "null" ? "—" : formatDate(end)
+        return "\(from) to \(to)"
     }
     
     private func formatDateRange(start: String, end: String) -> String {
@@ -504,7 +492,7 @@ struct SponsoredWalletCard: View {
     }
     
     private func formatDate(_ dateStr: String) -> String {
-        let inputFormats = ["yyyyMMdd", "MM-dd-yyyy", "yyyy-MM-dd", "yyyyMMddHHmm"]
+        let inputFormats = ["yyyyMMdd", "MM-dd-yyyy", "yyyy-MM-dd", "dd/MM/yyyy", "dd-MM-yyyy", "yyyyMMddHHmm", "yyyy-MM-dd HH:mm:ss"]
         
         for format in inputFormats {
             let formatter = DateFormatter()

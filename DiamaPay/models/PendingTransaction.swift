@@ -21,23 +21,24 @@ struct PendingTransaction: Identifiable, Codable {
     var details: String?
     
     enum CodingKeys: String, CodingKey {
-        case trxRef, authDate, amount, agent, currency, tax, fees, type, pCode, details
+        case trxRef, authDate, amount, agent, currency, tax, fees, type, pCode
+        case details = "trxDetails"
     }
     
     var formattedAmount: String {
         guard let amountStr = amount,
               let amountValue = Double(amountStr) else {
-            return "0 GNF"
+            return "0 GMD"
         }
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = " "
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 0
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
         
         let formattedNumber = formatter.string(from: NSNumber(value: amountValue)) ?? "0"
-        return "\(formattedNumber) \(currency ?? "GNF")"
+        return "\(formattedNumber) \(currency ?? "GMD")"
     }
     
     var transactionTypeDescription: String {

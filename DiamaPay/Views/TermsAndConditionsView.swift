@@ -3,49 +3,59 @@ import SwiftUI
 struct TermsAndConditionsView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var expandedSections: Set<String> = []
+    var registrationAcceptance: Binding<Bool>? = nil
+    var onAccept: (() -> Void)? = nil
+    var onRefuse: (() -> Void)? = nil
+
+    private var isRegistrationMode: Bool {
+        if case .some = registrationAcceptance { return true }
+        return false
+    }
     
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
             
             VStack(spacing: 0) {
-                ZStack {
-                    Color(hex: "174EA6")
-                    HStack(spacing: 14) {
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                            Image(systemName: "arrow.left")
-                                .font(.system(size: 21, weight: .medium))
+                if !isRegistrationMode {
+                    ZStack {
+                        Color(hex: "174EA6")
+                        HStack(spacing: 14) {
+                            Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                                Image(systemName: "arrow.left")
+                                    .font(.system(size: 21, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .frame(width: 42, height: 48, alignment: .leading)
+                            }
+                            Spacer(minLength: 0)
+                            Text("Conditions Générales")
+                                .font(.system(size: 19, weight: .medium))
                                 .foregroundColor(.white)
-                                .frame(width: 42, height: 48, alignment: .leading)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                            Spacer(minLength: 0)
+                            Color.clear.frame(width: 42, height: 48)
                         }
-                        Spacer(minLength: 0)
-                        Text("Conditions Générales")
-                            .font(.system(size: 19, weight: .medium))
-                            .foregroundColor(.white)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                        Spacer(minLength: 0)
-                        Color.clear.frame(width: 42, height: 48)
+                        .padding(.horizontal, 22)
                     }
-                    .padding(.horizontal, 22)
+                    .frame(height: 58)
+                    .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
                 }
-                .frame(height: 58)
-                .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
 
                 // Header
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Conditions Générales d'Utilisation")
-                        .font(.system(size: 27, weight: .bold))
-                        .foregroundColor(.gray)
+                    Text(isRegistrationMode ? "Terms and Conditions" : "Conditions Générales d'Utilisation")
+                        .font(.system(size: isRegistrationMode ? 22 : 20, weight: .bold))
+                        .foregroundColor(Color(hex: "263445"))
                     
-                    Text("DIAMACASH - DIAMA BANK SA")
-                        .font(.system(size: 16, weight: .semibold))
+                    Text(isRegistrationMode ? "GambiaPay - Moneya" : "DIAMACASH - DIAMA BANK SA")
+                        .font(.system(size: isRegistrationMode ? 14 : 13, weight: .semibold))
                         .foregroundColor(Color(hex: "0788B9"))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
-                .padding(.top, 26)
-                .padding(.bottom, 30)
+                .padding(.top, isRegistrationMode ? 20 : 14)
+                .padding(.bottom, isRegistrationMode ? 12 : 14)
                 .background(Color.white)
                 .overlay(alignment: .bottom) {
                     Rectangle().fill(Color.orange.opacity(0.25)).frame(height: 2)
@@ -53,7 +63,7 @@ struct TermsAndConditionsView: View {
                 
                 // Modern Terms Content ScrollView
                 ScrollView {
-                    LazyVStack(spacing: 14) {
+                    LazyVStack(spacing: 10) {
                         // Definitions Section
                         modernSection(
                             icon: "book.fill",
@@ -89,13 +99,51 @@ struct TermsAndConditionsView: View {
                         // Footer
                         footerView
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 18)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                }
+                if let registrationAcceptance {
+                    VStack(spacing: 14) {
+                        Button {
+                            registrationAcceptance.wrappedValue.toggle()
+                        } label: {
+                            HStack(alignment: .top, spacing: 12) {
+                                Image(systemName: registrationAcceptance.wrappedValue ? "checkmark.square.fill" : "square")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(registrationAcceptance.wrappedValue ? Color(hex: "0788B9") : .gray)
+                                Text("I have read and accept the terms and conditions")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.primary)
+                                    .multilineTextAlignment(.leading)
+                                Spacer(minLength: 0)
+                            }
+                        }
+                        .buttonStyle(.plain)
+
+                        HStack(spacing: 14) {
+                            Button("Refuse", action: { onRefuse?() })
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .foregroundColor(Color(hex: "0788B9"))
+                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "0788B9"), lineWidth: 2))
+                            Button("Accept", action: { onAccept?() })
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .foregroundColor(.white)
+                                .background(Color(hex: "174EA6"), in: RoundedRectangle(cornerRadius: 12))
+                                .disabled(!registrationAcceptance.wrappedValue)
+                                .opacity(registrationAcceptance.wrappedValue ? 1 : 0.55)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 14)
                 }
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
+            if !isRegistrationMode {
+                AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
+            }
         }
         .navigationBarHidden(true)
     }
@@ -122,38 +170,38 @@ struct TermsAndConditionsView: View {
                 HStack {
                     Image(systemName: icon)
                         .foregroundColor(Color(hex: "174EA6"))
-                        .font(.system(size: 24, weight: .semibold))
-                        .frame(width: 46, height: 46)
+                        .font(.system(size: isRegistrationMode ? 19 : 17, weight: .semibold))
+                        .frame(width: isRegistrationMode ? 36 : 34, height: isRegistrationMode ? 36 : 34)
                     
                     Text(title)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.gray)
+                        .font(.system(size: isRegistrationMode ? 15 : 15, weight: .semibold))
+                        .foregroundColor(Color(hex: "263445"))
 
                     Spacer()
                     
                     Image(systemName: "chevron.right")
                         .foregroundColor(Color(hex: "174EA6"))
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: isRegistrationMode ? 15 : 14, weight: .semibold))
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
+                .padding(.horizontal, isRegistrationMode ? 14 : 14)
+                .padding(.vertical, isRegistrationMode ? 12 : 12)
                 .background(Color.white)
             }
             
             if isExpanded {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: isRegistrationMode ? 8 : 12) {
                     content()
                 }
-                .padding(20)
+                .padding(isRegistrationMode ? 14 : 20)
                 .background(Color.white)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .background(Color.white)
-        .cornerRadius(23)
-        .overlay(RoundedRectangle(cornerRadius: 23).stroke(Color.black.opacity(0.06), lineWidth: 1))
-        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 3)
+        .cornerRadius(14)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.black.opacity(0.06), lineWidth: 1))
+        .shadow(color: .black.opacity(0.06), radius: 3, x: 0, y: 2)
     }
     
     // MARK: - Definitions Content
@@ -235,50 +283,50 @@ struct TermsAndConditionsView: View {
                     ZStack {
                         Circle()
                             .fill(Color(hex: "F1F8F2"))
-                            .frame(width: 52, height: 52)
+                            .frame(width: isRegistrationMode ? 40 : 34, height: isRegistrationMode ? 40 : 34)
                         
                         Text("\(article.number)")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: isRegistrationMode ? 15 : 14, weight: .bold))
                             .foregroundColor(Color(hex: "174EA6"))
                     }
                     
                     Text(article.title)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.gray)
+                        .font(.system(size: isRegistrationMode ? 15 : 15, weight: .semibold))
+                        .foregroundColor(Color(hex: "263445"))
                         .multilineTextAlignment(.leading)
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
                         .foregroundColor(Color(hex: "174EA6"))
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: isRegistrationMode ? 15 : 14, weight: .semibold))
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
                 .background(Color.white)
             }
             
             if isExpanded {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: isRegistrationMode ? 8 : 12) {
                     article.content()
                 }
-                .padding(20)
+                .padding(isRegistrationMode ? 14 : 14)
                 .background(Color.white)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .background(Color.white)
-        .cornerRadius(23)
-        .overlay(RoundedRectangle(cornerRadius: 23).stroke(Color.black.opacity(0.06), lineWidth: 1))
-        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 3)
+        .cornerRadius(14)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.black.opacity(0.06), lineWidth: 1))
+        .shadow(color: .black.opacity(0.06), radius: 3, x: 0, y: 2)
     }
     
     // MARK: - Helper Views
     private func modernParagraph(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 14))
-            .foregroundColor(.black.opacity(0.85))
+            .font(.system(size: isRegistrationMode ? 12 : 13))
+            .foregroundColor(Color(hex: "344054"))
             .fixedSize(horizontal: false, vertical: true)
     }
     
@@ -291,12 +339,12 @@ struct TermsAndConditionsView: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.black)
+                    .font(.system(size: isRegistrationMode ? 12 : 13, weight: .semibold))
+                    .foregroundColor(Color(hex: "263445"))
                 
                 Text(definition)
-                    .font(.system(size: 13))
-                    .foregroundColor(.black.opacity(0.7))
+                    .font(.system(size: isRegistrationMode ? 11 : 12))
+                    .foregroundColor(Color(hex: "475467"))
             }
         }
     }
@@ -304,29 +352,29 @@ struct TermsAndConditionsView: View {
     private func modernBulletPoint(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 12))
+                .font(.system(size: isRegistrationMode ? 11 : 12))
                 .foregroundColor(.green)
                 .padding(.top, 3)
             
             Text(text)
-                .font(.system(size: 14))
-                .foregroundColor(.black.opacity(0.85))
+                .font(.system(size: isRegistrationMode ? 12 : 13))
+                .foregroundColor(Color(hex: "344054"))
         }
     }
     
     private var footerView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 6) {
             
-            Text("2025")
-                .font(.system(size: 13, weight: .medium))
+            Text(String(Calendar(identifier: .gregorian).component(.year, from: Date())))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.black)
             
             Text("DIAMA BANK SA")
-                .font(.system(size: 12))
+                .font(.system(size: 11))
                 .foregroundColor(.gray)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, 14)
         .padding(.horizontal, 16)
         .overlay(alignment: .top) {
             Rectangle().fill(Color.orange.opacity(0.25)).frame(height: 2)

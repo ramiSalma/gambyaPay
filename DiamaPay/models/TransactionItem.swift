@@ -37,9 +37,9 @@ struct TransactionItem: Identifiable, Codable {
         case currency
         case sign
         case type
-        case details
-        case openingBalance = "openBal"
-        case closingBalance = "closeBal"
+        case details = "trxDetails"
+        case openingBalance = "openBalance"
+        case closingBalance = "closeBalance"
     }
     
     // Computed properties

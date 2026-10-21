@@ -97,7 +97,7 @@ struct FAQView: View {
                         }
                         Spacer(minLength: 0)
                         Text("Frequently Asked Questions")
-                            .font(.system(size: 19, weight: .bold))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
@@ -106,21 +106,21 @@ struct FAQView: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .frame(height: 64)
+                .frame(height: 54)
                 .background(Color(hex: "174EA6").ignoresSafeArea(edges: .top))
 
                 
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 14) {
                         
                         // Search
                         HStack(spacing: 12) {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
-                                .font(.system(size: 19))
+                                .font(.system(size: 17))
                             
                             TextField("Search...", text: $searchText)
-                                .font(.system(size: 16))
+                                .font(.system(size: 15))
                             
                             if !searchText.isEmpty {
                                 Button(action: { searchText = "" }) {
@@ -130,20 +130,20 @@ struct FAQView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 15)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 11)
                         .background(Color.white)
-                        .cornerRadius(18)
-                        .shadow(color: Color.black.opacity(0.14), radius: 6, x: 0, y: 3)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 18)
+                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.07), lineWidth: 1))
+                        .padding(.horizontal, 14)
+                        .padding(.top, 12)
                         
                         // Quick help cards
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Need help?")
-                                .font(.system(size: 22, weight: .bold))
+                                .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.black)
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, 14)
                             
                             HStack(spacing: 12) {
                                 // Contact Card
@@ -151,99 +151,97 @@ struct FAQView: View {
                                     ZStack {
                                         Circle()
                                             .fill(Color(hex: "F1F8F2"))
-                                            .frame(width: 64, height: 64)
+                                            .frame(width: 42, height: 42)
                                         
                                         Image(systemName: "phone.fill")
-                                            .font(.system(size: 21))
+                                            .font(.system(size: 17))
                                             .foregroundColor(Color(hex: "0788B9"))
                                     }
                                     
                                     VStack(spacing: 3) {
                                         Text("Contact Us")
-                                            .font(.system(size: 16, weight: .semibold))
+                                            .font(.system(size: 14, weight: .semibold))
                                             .foregroundColor(.black)
                                         
                                         Text("+224 612 00 86 99")
-                                            .font(.system(size: 14, weight: .semibold))
+                                            .font(.system(size: 12, weight: .semibold))
                                             .foregroundColor(Color(hex: "0788B9"))
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
+                                .padding(.vertical, 11)
                                 .background(Color.white)
-                                .cornerRadius(22)
-                                .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.black.opacity(0.07), lineWidth: 1))
-                                .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
+                                .cornerRadius(14)
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.black.opacity(0.07), lineWidth: 1))
                                 
                                 // Commentaires Card
                                 VStack(spacing: 12) {
                                     ZStack {
                                         Circle()
                                             .fill(Color(hex: "F1F8F2"))
-                                            .frame(width: 64, height: 64)
+                                            .frame(width: 42, height: 42)
                                         
                                         Image(systemName: "bubble.left.fill")
-                                            .font(.system(size: 21))
+                                            .font(.system(size: 17))
                                             .foregroundColor(Color(hex: "174EA6"))
                                     }
                                     
                                     VStack(spacing: 3) {
                                         Text("Feedback")
-                                            .font(.system(size: 16, weight: .semibold))
+                                            .font(.system(size: 14, weight: .semibold))
                                             .foregroundColor(.black)
                                         
                                         Text("Give your opinion")
-                                            .font(.system(size: 14, weight: .semibold))
+                                            .font(.system(size: 12, weight: .semibold))
                                             .foregroundColor(Color(hex: "174EA6"))
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
+                                .padding(.vertical, 11)
                                 .background(Color.white)
-                                .cornerRadius(22)
-                                .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.black.opacity(0.07), lineWidth: 1))
-                                .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
+                                .cornerRadius(14)
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.black.opacity(0.07), lineWidth: 1))
                             }
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 14)
                         }
                         
                         // Questions and answers
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Text("Questions & Answers")
-                                    .font(.system(size: 22, weight: .bold))
+                                    .font(.system(size: 18, weight: .bold))
                                     .foregroundColor(.black)
                                 
                                 Spacer()
                                 
                                 if !filteredFaqs.isEmpty {
                                     Text("\(filteredFaqs.count)")
-                                        .font(.system(size: 16, weight: .bold))
+                                        .font(.system(size: 13, weight: .bold))
                                         .foregroundColor(.white)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 4)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
                                         .background(Color.blueH)
                                         .cornerRadius(18)
                                 }
                             }
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 14)
                             
                             if filteredFaqs.isEmpty {
                                 VStack(spacing: 12) {
                                     Image(systemName: "magnifyingglass")
-                                        .font(.system(size: 40))
+                                        .font(.system(size: 30))
                                         .foregroundColor(.gray.opacity(0.5))
                                     
                                     Text("No results found")
-                                        .font(.system(size: 16, weight: .medium))
+                                        .font(.system(size: 14, weight: .medium))
                                         .foregroundColor(.gray)
                                     
                                     Text("Try another search")
-                                        .font(.system(size: 13))
+                                        .font(.system(size: 12))
                                         .foregroundColor(.gray.opacity(0.7))
                                 }
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 40)
+                                .padding(.vertical, 24)
                             } else {
                                 VStack(spacing: 10) {
                                     ForEach(filteredFaqs.indices, id: \.self) { index in
@@ -254,52 +252,51 @@ struct FAQView: View {
                                             )
                                         ) {
                                             Text(filteredFaqs[index].answer)
-                                                .font(.system(size: 13))
-                                                .foregroundColor(.secondary)
+                                                .font(.system(size: 14))
+                                                .foregroundColor(Color(hex: "475467"))
                                                 .padding(.top, 8)
                                                 .padding(.bottom, 12)
                                                 .fixedSize(horizontal: false, vertical: true)
                                         } label: {
                                             HStack {
                                                 Text(filteredFaqs[index].question)
-                                                    .font(.system(size: 17, weight: .medium))
-                                                    .foregroundColor(Color(UIColor.darkGray))
+                                                    .font(.system(size: 15, weight: .semibold))
+                                                    .foregroundColor(Color(hex: "263445"))
                                                     .multilineTextAlignment(.leading)
                                                     .fixedSize(horizontal: false, vertical: true)
                                                 
                                                 Spacer()
                                             }
                                         }
-                                        .padding(.horizontal, 18)
-                                        .padding(.vertical, 18)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 12)
                                         .background(Color.white)
-                                        .cornerRadius(20)
-                                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.black.opacity(0.06), lineWidth: 1))
-                                        .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
+                                        .cornerRadius(12)
+                                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.07), lineWidth: 1))
                                     }
                                 }
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, 14)
                             }
                         }
                         
                         // Help footer
                         VStack(spacing: 12) {
                             Image(systemName: "questionmark.circle.fill")
-                                .font(.system(size: 34))
+                                .font(.system(size: 26))
                                 .foregroundColor(Color(hex: "174EA6"))
                             
                             Text("Need additional help?")
-                                .font(.system(size: 19, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.primary)
                             
                             Text("Our team is available 24/7 to help you")
-                                .font(.system(size: 15))
+                                .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 40)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 24)
+                        .padding(.vertical, 16)
                         .padding(.bottom, 16)
                     }
                 }

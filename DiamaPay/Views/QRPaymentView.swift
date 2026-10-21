@@ -223,16 +223,9 @@ final class QRViewModel: ObservableObject {
         //print("🔄 Starting fee calculation...")
         isProcessing = true
         
-        let req = FeeCalculationRequest(
-            processingCode: "44",
-            bankCode: "00100",
-            actionCode: "DEB",
-            currencyCode: "324",
-            transactionAmount: paymentAmount,
-            walletProductCode: "001",
-            walletType: "P",
-            origin: "W",
-            messageType: ""
+        let req = WalletFeeQuoteRequest.current(
+            amount: paymentAmount, destination: dynamicData?.merchantWallet ?? merchantData?.merchantWallet ?? "",
+            transactionType: "44", destinationBank: dynamicData?.bankCode ?? merchantData?.bankCode ?? "00100"
         )
         
         APIClient.shared.calculateTransactionFee(request: req) { [weak self] result in
@@ -242,10 +235,11 @@ final class QRViewModel: ObservableObject {
                 switch result {
                 case .success(let resp):
                     if resp.respCode == "000",
-                       let feeResult = resp.result as? FeeResult,
-                       let fee = feeResult.feeAmount {
+                       let feeResult = resp.result,
+                       let _ = feeResult.feeAmount {
+                        let fee = feeResult.totalFees
                         self.sendingFee = fee
-                        //print("💰 Sending fee calculated: \(fee) GNF")
+                        //print("💰 Sending fee calculated: \(fee) GMD")
                         
                         // ✅ For dynamic QR with agent or client, calculate withdrawal fee
                         if self.isDynamic && (self.recipientType == .agent || self.recipientType == .client) {
@@ -253,8 +247,8 @@ final class QRViewModel: ObservableObject {
                         } else {
                             // Merchant or static QR - show dialog immediately
                             self.isProcessing = false
-                            //print("💰 Withdrawal fee: \(self.withdrawalFee) GNF")
-                            //print("💰 Payment amount: \(self.paymentAmount) GNF")
+                            //print("💰 Withdrawal fee: \(self.withdrawalFee) GMD")
+                            //print("💰 Payment amount: \(self.paymentAmount) GMD")
                             self.showPinDialog = true
                         }
                     } else {
@@ -278,16 +272,9 @@ final class QRViewModel: ObservableObject {
         let processingCode = recipientType == .agent ? "01" : "22" // AGENT CASHOUT vs P2P CASHOUT
         let origin = recipientType == .agent ? "V" : "W"
         
-        let req = FeeCalculationRequest(
-            processingCode: processingCode,
-            bankCode: "00100",
-            actionCode: "DEB",
-            currencyCode: "324",
-            transactionAmount: paymentAmount,
-            walletProductCode: "001",
-            walletType: "P",
-            origin: origin,
-            messageType: "ON_US"
+        let req = WalletFeeQuoteRequest.current(
+            amount: paymentAmount, destination: dynamicData?.merchantWallet ?? merchantData?.merchantWallet ?? "",
+            transactionType: processingCode, destinationBank: dynamicData?.bankCode ?? merchantData?.bankCode ?? "00100"
         )
         
         //print("  Processing Code: \(processingCode) (\(recipientType == .agent ? "AGENT CASHOUT" : "P2P CASHOUT"))")
@@ -299,10 +286,10 @@ final class QRViewModel: ObservableObject {
                 
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "001" {
+                    if response.respCode == "000" {
                         if let feeAmount = response.feeAmount {
                             self.withdrawalFee = feeAmount
-                            //print("💰 Withdrawal fee calculated: \(feeAmount) GNF")
+                            //print("💰 Withdrawal fee calculated: \(feeAmount) GMD")
                         } else {
                             self.withdrawalFee = 0.0
                             //print("💰 No withdrawal fee")
@@ -313,7 +300,7 @@ final class QRViewModel: ObservableObject {
                     }
                     
                     //print("💰 Final fees - Sending: \(self.sendingFee), Withdrawal: \(self.withdrawalFee)")
-                    //print("💰 Payment amount: \(self.paymentAmount) GNF")
+                    //print("💰 Payment amount: \(self.paymentAmount) GMD")
                     self.showPinDialog = true
                     
                 case .failure(let error):
@@ -321,7 +308,7 @@ final class QRViewModel: ObservableObject {
                     //print("❌ Withdrawal fee calculation failed: \(error.localizedDescription)")
                     // Still show dialog even if withdrawal fee calc fails
                     //print("💰 Final fees - Sending: \(self.sendingFee), Withdrawal: \(self.withdrawalFee)")
-                    //print("💰 Payment amount: \(self.paymentAmount) GNF")
+                    //print("💰 Payment amount: \(self.paymentAmount) GMD")
                     self.showPinDialog = true
                 }
             }
@@ -361,7 +348,7 @@ final class QRViewModel: ObservableObject {
         req.walletNumber = user.getWalletNumber()
         req.phoneNumber = user.getPhoneNumber()
         req.amount = String(format: "%.2f", finalAmount)
-        req.currency = "324"
+        req.currency = "270"
         req.qrData = qrData
         req.reason = String("Payment to \(merchantName)".prefix(25))
         req.pin = pin
@@ -383,7 +370,7 @@ final class QRViewModel: ObservableObject {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     switch result {
                     case .success(let resp):
-                        if resp.status == "OK" && resp.respCode == "000" {
+                        if resp.respCode == "000" {
                             self.handleSuccess(resp, merchantName: merchantName)
                         } else {
                             self.showError("Paiement échoué: \(resp.message ?? "")")
@@ -651,7 +638,7 @@ struct QRPaymentView: View {
                     tokenId: "", originalQrCode: merchant.originalQrCode,
                     merchantWallet: merchant.merchantWallet, merchantNumber: merchant.merchantNumber,
                     merchantName: merchant.merchantName, bankCode: merchant.bankCode,
-                    amount: vm.paymentAmount, currency: "GNF", expiresAt: nil
+                    amount: vm.paymentAmount, currency: "GMD", expiresAt: nil
                 ),
                 sendingFee: vm.sendingFee,
                 withdrawalFee: vm.withdrawalFee,
@@ -679,7 +666,7 @@ struct QRPaymentView: View {
             sendingFee: data.sendingFee,  // ✅ Already filtered
             withdrawalFee: data.withdrawalFee,  // ✅ Already filtered
             total: data.total,
-            currency: "GNF",
+            currency: "GMD",
             paymentDetails: "Paiement QR Code EMV",
             recipientType: vm.recipientType,
             onClose: {

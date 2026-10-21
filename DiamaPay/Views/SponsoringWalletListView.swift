@@ -26,7 +26,7 @@ struct SponsoringWalletListView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showEmptyState = false
-    @State private var emptyStateMessage = "Aucun portefeuille sponsor trouvé"
+    @State private var emptyStateMessage = "No sponsoring wallets found."
     
     // Selected wallet for actions
     @State private var selectedWallet: SponsoringWallet?
@@ -37,12 +37,12 @@ struct SponsoringWalletListView: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            Color(hex: "F6F8FC")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Sponsored Wallets", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: "Sponsoring Wallets", headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -72,8 +72,8 @@ struct SponsoringWalletListView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Portefeuilles parrains")
-                    .font(.system(size: 20, weight: .bold))
+                Text("Wallets sponsoring you")
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                 
                 Rectangle()
@@ -82,9 +82,9 @@ struct SponsoringWalletListView: View {
             }
             .padding(.vertical, 8)  // Reduce from 16 to 8
         }
-        .frame(height: 80)  // Add this line to set fixed height
-        .padding(.horizontal, 16)  // Add horizontal padding
-        .padding(.vertical, 10)  // Add horizontal padding
+        .frame(height: 64)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
 
     }
     // MARK: - Wallet List View
@@ -120,8 +120,8 @@ struct SponsoringWalletListView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                 .scaleEffect(1.5)
             
-            Text("Chargement en cours...")
-                .font(.system(size: 16, weight: .medium))
+            Text("Loading wallets…")
+                .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.secondary)
             Spacer()
         }
@@ -135,11 +135,11 @@ struct SponsoringWalletListView: View {
                 Spacer()
                 
                 Image(systemName: "tray")
-                    .font(.system(size: 60))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundColor(Color(hex: "0788B9"))
                 
                 Text(emptyStateMessage)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
@@ -164,7 +164,7 @@ struct SponsoringWalletListView: View {
         
         if phoneNumber.isEmpty && walletNumber.isEmpty {
             showEmptyState = true
-            emptyStateMessage = "Informations du portefeuille non disponibles"
+            emptyStateMessage = "Wallet information is unavailable."
             return
         }
         
@@ -209,14 +209,14 @@ struct SponsoringWalletListView: View {
                         self.processResponse(response)
                     } else {
                         self.showEmptyState = true
-                        self.emptyStateMessage = response.message ?? "Aucun portefeuille sponsor trouvé"
+                        self.emptyStateMessage = response.message ?? "No sponsoring wallets found."
                     }
                 case .failure(let error):
                     self.showEmptyState = true
                     if let apiError = error as? APIError {
                         self.emptyStateMessage = apiError.message
                     } else {
-                        self.emptyStateMessage = "Vérifiez votre connexion Internet"
+                        self.emptyStateMessage = "Check your internet connection."
                     }
                 }
             }
@@ -226,7 +226,7 @@ struct SponsoringWalletListView: View {
     private func processResponse(_ response: JResponseService) {
         guard let resultList = response.result, !resultList.isEmpty else {
             showEmptyState = true
-            emptyStateMessage = "Aucun portefeuille sponsor trouvé"
+            emptyStateMessage = "No sponsoring wallets found."
             return
         }
         
@@ -238,8 +238,8 @@ struct SponsoringWalletListView: View {
             var wallet = SponsoringWallet()
             wallet.walletNumber = dict["walletNumber"] as? String ?? ""
             wallet.walletNumberSponsored = dict["walletNumberSponsored"] as? String ?? ""
-            wallet.userName = dict["userName"] as? String ?? dict["walletHolder"] as? String ?? "Non spécifié"
-            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? "Non spécifié"
+            wallet.userName = dict["userName"] as? String ?? dict["walletHolder"] as? String ?? "Not specified"
+            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? "Not specified"
             wallet.phoneNumber = dict["phoneNumber"] as? String ?? ""
             wallet.phoneNumberSponsored = dict["phoneNumberSponsored"] as? String ?? ""
             
@@ -280,7 +280,7 @@ struct SponsoringWalletListView: View {
         
         if parsedWallets.isEmpty {
             showEmptyState = true
-            emptyStateMessage = "Aucun portefeuille sponsor trouvé"
+            emptyStateMessage = "No sponsoring wallets found."
         } else {
             wallets = parsedWallets
             showEmptyState = false
@@ -313,25 +313,25 @@ struct WalletRowView: View {
                 ZStack {
                     Circle()
                         .fill(Color.blueH.opacity(0.1))
-                        .frame(width: 48, height: 48)
+                        .frame(width: 40, height: 40)
                     
                     Text(wallet.userName.prefix(1).uppercased())
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.blueH)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(Color(hex: "174EA6"))
                 }
                 
                 // Wallet Info (sponsor / parrain)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(wallet.userName)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.primary)
                     
                     Text(wallet.phoneNumber)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.secondary)
                     
-                    Text("Exp: \(formattedExpiryDate)")
-                        .font(.system(size: 12, weight: .medium))
+                    Text("Valid until: \(formattedExpiryDate)")
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.secondary)
                 }
                 
@@ -340,29 +340,29 @@ struct WalletRowView: View {
                 // Limits
                 VStack(alignment: .trailing, spacing: 4) {
                     HStack(spacing: 4) {
-                        Text("Limite J:")
-                            .font(.system(size: 11, weight: .medium))
+                        Text("Daily")
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundColor(.secondary)
                         
                         Text(formatAmount(wallet.dailyLimit))
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.blueH)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Color(hex: "174EA6"))
                     }
                     
                     HStack(spacing: 4) {
-                        Text("Limite M:")
-                            .font(.system(size: 11, weight: .medium))
+                        Text("Monthly")
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundColor(.secondary)
                         
                         Text(formatAmount(wallet.monthlyLimit))
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.blueH)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Color(hex: "174EA6"))
                     }
                 }
                 
        
             }
-            .padding(16)
+            .padding(12)
         }
         .background(Color.white)
     }
@@ -400,9 +400,9 @@ struct WalletRowView: View {
             formatter.numberStyle = .decimal
             formatter.locale = Locale(identifier: "fr_FR")
             formatter.maximumFractionDigits = 0
-            return (formatter.string(from: NSNumber(value: amountDouble)) ?? "0") + " GNF"
+            return (formatter.string(from: NSNumber(value: amountDouble)) ?? "0") + " GMD"
         }
-        return "0 GNF"
+        return "0 GMD"
     }
 }
 

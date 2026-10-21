@@ -15,6 +15,8 @@ struct ResponseServiceJson: Codable {
     let message: String?
     let requestId: String?
     let result: [String: Any]?
+    let resultString: String?
+    let accountName: String?
 
     var isSuccessful: Bool {
         return respCode == "000"
@@ -32,7 +34,7 @@ struct ResponseServiceJson: Codable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case status, authCode, respCode, message, requestId, result
+        case status, authCode, respCode, message, requestId, result, accountName, receiverName, name
     }
     
     init(from decoder: Decoder) throws {
@@ -42,7 +44,12 @@ struct ResponseServiceJson: Codable {
         respCode = try container.decodeIfPresent(String.self, forKey: .respCode)
         message = try container.decodeIfPresent(String.self, forKey: .message)
         requestId = try container.decodeIfPresent(String.self, forKey: .requestId)
+        accountName = try container.decodeIfPresent(String.self, forKey: .accountName)
+            ?? container.decodeIfPresent(String.self, forKey: .receiverName)
+            ?? container.decodeIfPresent(String.self, forKey: .name)
         
+        resultString = try? container.decode(String.self, forKey: .result)
+
         // Handle result as flexible dictionary
         if let resultData = try? container.decode([String: AnyCodable].self, forKey: .result) {
             result = resultData.mapValues { $0.value }
@@ -58,8 +65,11 @@ struct ResponseServiceJson: Codable {
         try container.encodeIfPresent(respCode, forKey: .respCode)
         try container.encodeIfPresent(message, forKey: .message)
         try container.encodeIfPresent(requestId, forKey: .requestId)
+        try container.encodeIfPresent(accountName, forKey: .accountName)
         
-        if let result = result {
+        if let resultString = resultString {
+            try container.encode(resultString, forKey: .result)
+        } else if let result = result {
             let encodableResult = result.mapValues { AnyCodable($0) }
             try container.encode(encodableResult, forKey: .result)
         }

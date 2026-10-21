@@ -175,8 +175,8 @@ struct LoginView: View {
                 disabled: isLoading
             )
             .onChange(of: phoneNumber) {
-                if phoneNumber.count > 9 {
-                    phoneNumber = String(phoneNumber.prefix(9))
+                if phoneNumber.count > 10 {
+                    phoneNumber = String(phoneNumber.prefix(10))
                 }
             }
             
@@ -361,13 +361,6 @@ struct LoginView: View {
     }
     
     private func handleLoginResponse(_ result: Result<AuthResponse, Error>, pin: String, phoneNumber: String) {
-        print("""
-        
-        ==================== 🟣 AUTH RESPONSE OBJECT  before ====================
-        \(result)
-        ==================================================================
-        
-        """)
         switch result {
             
         case .success(let authResponse):
@@ -381,20 +374,6 @@ struct LoginView: View {
 
                 print("➡️ Going to handleAuthResponse")
             
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-
-            if let jsonData = try? encoder.encode(authResponse),
-               let jsonString = String(data: jsonData, encoding: .utf8) {
-                
-                print("""
-                
-                ==================== 🟣 AUTH RESPONSE OBJECT ====================
-                \(jsonString)
-                ==================================================================
-                
-                """)
-            }
             handleAuthResponse(authResponse, pin: pin)
             
         case .failure(let error):
@@ -420,8 +399,7 @@ struct LoginView: View {
                 // CHECK 2: OTP VERIFICATION REQUIRED (MOST COMMON)
                 // ============================================================
 //                if (apiError.respCode == "403" || apiError.respCode == "831") &&
-                if (apiError.respCode == "831") &&
-                   (message.contains("OTP") || message.contains("verification required")) {
+                if apiError.respCode == "831" {
                     
                     let deviceId = APIClient.getDeviceId()
                     
@@ -561,9 +539,6 @@ struct LoginView: View {
     }
   
     private func handleAuthResponse(_ authResponse: AuthResponse, pin: String) {
-        print("🔵 handleAuthResponse:", authResponse)
-
-        
         if let requiresPinChange = authResponse.requiresPinChange, requiresPinChange {
             if authResponse.respCode == "PIN_EXPIRED" ||
                authResponse.respCode == "PIN_CHANGE_REQUIRED" {
@@ -618,9 +593,9 @@ struct LoginView: View {
         let message = authResponse.message
         print("🔵1 respCode:", authResponse.respCode ?? "nil")
 
-        if respCode == "OTP_REQUIRED" || message == "OTP verification required" {
+        if respCode == "831" || respCode == "OTP_REQUIRED" || message == "OTP verification required" {
             let deviceId = APIClient.getDeviceId()
-            otpData = (phoneNumber: phoneNumber, deviceId: deviceId)
+            otpDataObject.set(phoneNumber: phoneNumber, deviceId: deviceId)
             navigateToOtp = true
             return
         }

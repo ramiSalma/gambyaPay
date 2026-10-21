@@ -262,16 +262,9 @@ struct AmountInputView: View {
         let processingCode = isDestinationAgent ? "01" : "22" // AGENT CASHOUT vs P2P CASHOUT
         let origin = isDestinationAgent ? "V" : "W"
         
-        var request = FeeCalculationRequest(
-            processingCode: processingCode,
-            bankCode: "00100",
-            actionCode: "DEB",
-            currencyCode: "324",
-            transactionAmount: rawAmount,  // ✅ Use raw amount for API
-            walletProductCode: "001",
-            walletType: "P",
-            origin: origin,
-            messageType: "ON_US"
+        let request = WalletFeeQuoteRequest.current(
+            amount: rawAmount, destination: merchantData.merchantWallet,
+            transactionType: processingCode, destinationBank: merchantData.bankCode
         )
         
    
@@ -282,7 +275,7 @@ struct AmountInputView: View {
                 
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "001" {
+                    if response.respCode == "000" {
                         if let feeAmount = response.feeAmount {
                             currentWithdrawalFee = feeAmount
                             withdrawalFeeRuleIndex = response.ruleIndex ?? ""
@@ -294,7 +287,7 @@ struct AmountInputView: View {
                                 formatter.maximumFractionDigits = 0
                                 
                                 if let formattedFee = formatter.string(from: NSNumber(value: feeAmount)) {
-                                    feeMessage = "Frais: \(formattedFee) GNF"
+                                    feeMessage = "Frais: \(formattedFee) GMD"
                                 }
                             } else if response.respCode == "001" {
                                 feeMessage = "Aucun frais applicable"

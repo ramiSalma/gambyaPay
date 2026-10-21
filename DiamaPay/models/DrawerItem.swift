@@ -20,13 +20,13 @@ struct DrawerItem: View {
                     Image(systemName: BiometricHelper.getBiometricType().icon)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 22, height: 22)
+                        .frame(width: 21, height: 21)
                         .foregroundColor(Color(hex: "174EA6"))
                 }
                 // Try to load system icon first, otherwise fallback to asset
                 else if UIImage(systemName: icon) != nil {
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .regular))
+                        .font(.system(size: 19, weight: .regular))
                         .frame(width: 22, height: 22)
                         .foregroundColor(Color(hex: "174EA6"))
                 } else {
@@ -44,13 +44,13 @@ struct DrawerItem: View {
                     .padding(.leading, 12)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
-                    .minimumScaleFactor(0.85)
+                    .minimumScaleFactor(0.9)
                 
                 Spacer()
                 
             }
-            .frame(minHeight: 54)
-            .padding(.vertical, 3)
+            .frame(minHeight: 46)
+            .padding(.vertical, 1)
             .padding(.horizontal, 22)
         }
         .buttonStyle(.plain)

@@ -143,7 +143,9 @@ struct AccountToWalletSuccessView: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: "en_GM")
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
     }
     
@@ -222,6 +224,9 @@ struct AccountToWalletSuccessView: View {
             drawText("Frais: \(fee > 0 ? formatAmount(fee) : "Gratuit")", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing + 10
             
+            drawText("Total débité: \(formatAmount(total))", at: CGPoint(x: margin, y: yPosition), attributes: boldAttributes, context: context)
+            yPosition += lineSpacing
+
             // Separator
             context.cgContext.move(to: CGPoint(x: margin, y: yPosition))
             context.cgContext.addLine(to: CGPoint(x: pageWidth - margin, y: yPosition))
@@ -348,7 +353,7 @@ struct AccountToWalletSuccessView_Previews: PreviewProvider {
             withdrawalFee: 100,
             fee: 500,
             total: 50500,
-            currency: "GNF",
+            currency: "GMD",
             paymentDetails: "Test transfer",
             onClose: {}
         )

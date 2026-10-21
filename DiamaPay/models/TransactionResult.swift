@@ -28,9 +28,9 @@ struct TransactionResult: Codable {
         self.currency = dict["currency"] as? String
         self.sign = dict["sign"] as? String
         self.status = dict["status"] as? String
-        self.details = dict["details"] as? String
-        self.openBal = dict["openBal"] as? String
-        self.closeBal = dict["closeBal"] as? String
+        self.details = dict["trxDetails"] as? String
+        self.openBal = dict["openBalance"] as? String
+        self.closeBal = dict["closeBalance"] as? String
         self.type = dict["type"] as? String
         self.amount = dict["amount"] as? String
     }

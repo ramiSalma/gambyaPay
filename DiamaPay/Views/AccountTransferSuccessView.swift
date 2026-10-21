@@ -26,105 +26,114 @@ struct AccountTransferSuccessView: View {
     let onClose: () -> Void
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Success Icon
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                        .padding(.top, 20)
-                    
-                    Text("Transfert vers compte réussi")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    
-                    // Transaction Details Card
-                    VStack(alignment: .leading, spacing: 16) {
-                        Group {
-                            DetailRow(label: "ID Transaction:", value: transactionId)
-                            DetailRow(label: "Date:", value: transactionDate)
-                            DetailRow(label: "Montant:", value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
-                            if withdrawalFee > 0 {
-                                DetailRow(label: "Frais d'envoi:", value: formatAmount(withdrawalFee))
-                            }
-                            
-                            DetailRow(label: "Frais:", value: fee > 0 ? formatAmount(fee) : "Gratuit")
-                            DetailRow(label: "Total débité:", value: formatAmount(total))
+        GeometryReader { geometry in
+            ZStack {
+                Color.black.opacity(0.58).ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 70, height: 70)
+                        .background(Color(hex: "4CAF50"), in: Circle())
+                        .padding(.top, 22)
+
+                    Text("Transfer to account successful")
+                        .font(.system(size: 21, weight: .bold))
+                        .foregroundColor(Color(hex: "4CAF50"))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 18)
+                        .padding(.top, 14)
+                        .padding(.bottom, 12)
+
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("ID: \(transactionId)")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(Color(hex: "263238"))
+                            receiptLine("Date", transactionDate)
+                            Text("Amount: \(formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0))")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(Color(hex: "174EA6"))
+
+                            Divider().padding(.vertical, 2)
+                            sectionTitle("SENDER")
+                            receiptLine("Sender", senderName)
+                            receiptLine("Wallet", senderWallet)
+                            if !senderPhone.isEmpty { receiptLine("Phone", senderPhone) }
+
+                            Divider().padding(.vertical, 2)
+                            sectionTitle("RECIPIENT")
+                            receiptLine("Account", accountName)
+                            receiptLine("Account No", accountNumber)
+                            if !bankName.isEmpty { receiptLine("Bank", bankName) }
+                            receiptLine("Details", paymentDetails.isEmpty ? "Transfer to account" : paymentDetails)
+                            if withdrawalFee > 0 { receiptLine("Withdrawal fee", formatAmount(withdrawalFee)) }
+                            if fee > 0 { receiptLine("Fee", formatAmount(fee)) }
+                            if total > 0 { receiptLine("Total debited", formatAmount(total)) }
                         }
-                        
-                        Divider()
-                            .padding(.vertical, 8)
-                        
-                        Group {
-                            DetailRow(label: "Expéditeur:", value: senderName)
-                            DetailRow(label: "Portefeuille:", value: senderWallet)
-                            DetailRow(label: "Téléphone:", value: senderPhone)
-                        }
-                        
-                        Divider()
-                            .padding(.vertical, 8)
-                        
-                        Group {
-                            DetailRow(label: "Compte:", value: accountName)
-                            DetailRow(label: "N° Compte:", value: accountNumber)
-                            DetailRow(label: "Banque:", value: bankName)
-                            
-                            if !paymentDetails.isEmpty {
-                                DetailRow(label: "Détails:", value: paymentDetails)
-                            } else {
-                                DetailRow(label: "Détails:", value: "Transfert vers compte bancaire")
-                            }
-                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 3)
                     }
-                    .padding(20)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-                    
-                    // Action Buttons
-                    VStack(spacing: 12) {
-                        Button(action: {
-                            shareReceipt()
-                        }) {
-                            HStack {
-                                Image(systemName: "square.and.arrow.up")
-                                Text("Partager le reçu")
-                            }
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color.blueH)
-                            .cornerRadius(8)
+                    .padding(.horizontal, 18)
+
+                    HStack(spacing: 12) {
+                        Button(action: shareReceipt) {
+                            Label("SHARE", systemImage: "square.and.arrow.up")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .background(Color(hex: "174EA6"), in: RoundedRectangle(cornerRadius: 11))
                         }
-                        
                         Button(action: onClose) {
-                            Text("Fermer")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.blueH)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.blueH.opacity(0.1))
-                                .cornerRadius(8)
+                            Text("CLOSE")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(Color(hex: "0788B9"))
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .overlay(RoundedRectangle(cornerRadius: 11).stroke(Color(hex: "174EA6"), lineWidth: 1.5))
                         }
                     }
-                    .padding(.horizontal, 20)
-                    
-                    Spacer()
+                    .padding(16)
                 }
+                .frame(maxWidth: 460)
+                .frame(maxHeight: min(geometry.size.height * 0.92, 760))
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Color.gray.opacity(0.12), lineWidth: 1))
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button("Fermer", action: onClose))
-            .navigationBarTitle("Reçu de transfert", displayMode: .inline)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .ignoresSafeArea()
+    }
+
+    private func sectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 13, weight: .bold))
+            .foregroundColor(Color(hex: "0788B9"))
+    }
+
+    private func receiptLine(_ label: String, _ value: String) -> some View {
+        HStack(alignment: .top, spacing: 5) {
+            Text("\(label):")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color(hex: "69727E"))
+            Text(value.isEmpty ? "—" : value)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color(hex: "263238"))
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
     
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: "en_GM")
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
     }
     

@@ -8,6 +8,8 @@
 import Foundation
 
 struct RequestCheckPin: Codable {
+    var phoneNumber: String? = nil
+
     var pin: String = ""
     var walletNumber: String = ""
     var source: String = ""

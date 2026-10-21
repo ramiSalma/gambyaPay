@@ -33,6 +33,13 @@ struct DiamaPayHomeView: View {
                     isBalanceVisible: $viewModel.isBalanceVisible,
                     onTransactionsTap: { viewModel.navigate(to: .transactions) }
                 )
+
+                OrderFoodHomeBanner {
+                    viewModel.navigateToOrderFood = true
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+                .padding(.bottom, 26)
                 
                 VStack(spacing: 26) {
                     TransfersSection(onTransferTap: viewModel.navigate)
@@ -53,7 +60,7 @@ struct DiamaPayHomeView: View {
                 onSponsors: { viewModel.navigateToSponsoring = true },
                 onQR: { viewModel.navigate(to: .qr) },
                 onLimits: { viewModel.navigate(to: .limits) },
-                onSettings: { withAnimation { showDrawer = true } }
+                onSettings: { viewModel.navigateToSettings = true }
             )
         }
         .onAppear(perform: viewModel.onAppear)
@@ -121,11 +128,15 @@ struct DiamaPayHomeView: View {
     // MARK: - Navigation Links
     private var navigationLinks: some View {
         Group {
-            NavigationLink("", destination: WalletTransferView(), isActive: $viewModel.navigateToWalletTransfer)
+            NavigationLink("", destination: MyProfileView(), isActive: $viewModel.navigateToProfile)
+            NavigationLink("", destination: AllBeneficiariesView(), isActive: $viewModel.navigateToBeneficiaries)
+            NavigationLink("", destination: SettingsView(), isActive: $viewModel.navigateToSettings)
+            NavigationLink("", destination: WalletTransferView(onOpenSettings: { showDrawer = true }), isActive: $viewModel.navigateToWalletTransfer)
             NavigationLink("", destination: WalletToAccountTransferView(), isActive: $viewModel.navigateToWalletToAccountTransfer)
             NavigationLink("", destination: TransactionHistoryView(), isActive: $viewModel.navigateToTransactions)
             NavigationLink("", destination: AccountToWalletTransferView(), isActive: $viewModel.navigateToAccountToWalletTransfer)
             NavigationLink("", destination: MoneyVoucherView(), isActive: $viewModel.navigateToMoneyVoucher)
+            NavigationLink("", destination: MobileMoneyView(), isActive: $viewModel.navigateToMobileMoney)
             NavigationLink("", destination: LinkedAccountsListView(), isActive: $viewModel.navigateToLinkedAccounts)
             NavigationLink("", destination: StandingInstructionListView(), isActive: $viewModel.navigateToSI)
             NavigationLink("", destination: SponsoredWalletsListView(), isActive: $viewModel.navigateToSponsored)
@@ -140,11 +151,68 @@ struct DiamaPayHomeView: View {
             NavigationLink("", destination: QRPaymentView(), isActive: $viewModel.navigateToQR)
             NavigationLink("", destination: WalletDeactivationView(), isActive: $viewModel.navigateToDeactivate)
             NavigationLink("", destination: BiometricSettingsView(), isActive: $viewModel.navigateToBiometric)
-            NavigationLink("", destination: CheckLimitView(), isActive: $viewModel.navigateToLimits)
+            NavigationLink("", destination: CheckLimitView(onOpenSettings: { showDrawer = true }), isActive: $viewModel.navigateToLimits)
             NavigationLink("", destination: TermsAndConditionsView(), isActive: $viewModel.navigateToTerms)
             NavigationLink("", destination: BillPayProvidersView(), isActive: $viewModel.navigateToBills)
+            NavigationLink("", destination: OrderFoodView(), isActive: $viewModel.navigateToOrderFood)
+            NavigationLink("", destination: OrderFoodView(initiallyShowingHistory: true), isActive: $viewModel.navigateToFoodHistory)
+            NavigationLink("", destination: FoodComplaintsView(), isActive: $viewModel.navigateToFoodComplaints)
+            NavigationLink("", destination: LoanRequestView(), isActive: $viewModel.navigateToLoanRequest)
+            NavigationLink("", destination: LoanRequestsView(), isActive: $viewModel.navigateToLoanRequests)
+            NavigationLink("", destination: LoanHelpView(), isActive: $viewModel.navigateToLoanHelp)
+            NavigationLink("", destination: SavingsWalletView(), isActive: $viewModel.navigateToSavings)
+            NavigationLink("", destination: SavingsWalletStatementView(), isActive: $viewModel.navigateToSavingsStatement)
 
         }
+    }
+}
+
+private struct OrderFoodHomeBanner: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(LinearGradient(colors: [Color(hex: "245DAA"), Color(hex: "9BAFC8")], startPoint: .leading, endPoint: .trailing))
+
+                HStack(spacing: 16) {
+                    Image(systemName: "fork.knife")
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundColor(Color(hex: "174EA6"))
+                        .frame(width: 46, height: 46)
+                        .background(Color.white.opacity(0.94), in: Circle())
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Order Food")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.white)
+                        Text("Fast local delivery")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.95))
+                }
+                .padding(.horizontal, 18)
+
+                HStack(spacing: 28) {
+                    Image(systemName: "fork.knife")
+                    Image(systemName: "birthday.cake")
+                    Image(systemName: "cup.and.saucer")
+                }
+                .font(.system(size: 42, weight: .light))
+                .foregroundColor(.white.opacity(0.07))
+                .offset(x: 225, y: -29)
+                .allowsHitTesting(false)
+            }
+            .frame(height: 92)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Order Food. Fast local delivery")
     }
 }
 
@@ -153,7 +221,7 @@ struct DiamaPayHomeView: View {
 class HomeViewModel: ObservableObject {
     @Published var userName = ""
     @Published var balance = "000.00"
-    @Published var currency = "GNF"
+    @Published var currency = "GMD"
     @Published var isBalanceVisible = false
     @Published var ads: [Advertisement] = []
     @Published var showAdPopup = false
@@ -165,6 +233,7 @@ class HomeViewModel: ObservableObject {
     @Published var navigateToAccountToWalletTransfer = false
     @Published var navigateToTransactions = false
     @Published var navigateToMoneyVoucher = false
+    @Published var navigateToMobileMoney = false
     @Published var navigateToLinkedAccounts = false
     @Published var navigateToSI = false
     @Published var navigateToSponsored = false
@@ -181,7 +250,18 @@ class HomeViewModel: ObservableObject {
     @Published var navigateToBiometric = false
     @Published var navigateToLimits = false
     @Published var navigateToTerms = false
+    @Published var navigateToProfile = false
+    @Published var navigateToBeneficiaries = false
     @Published var navigateToBills = false
+    @Published var navigateToSettings = false
+    @Published var navigateToOrderFood = false
+    @Published var navigateToFoodHistory = false
+    @Published var navigateToFoodComplaints = false
+    @Published var navigateToLoanRequest = false
+    @Published var navigateToLoanRequests = false
+    @Published var navigateToLoanHelp = false
+    @Published var navigateToSavings = false
+    @Published var navigateToSavingsStatement = false
 
     
     private var hasShownAdThisSession = false
@@ -222,11 +302,15 @@ class HomeViewModel: ObservableObject {
     
     func handleMenuSelection(_ selected: String, authManager: AuthenticationManager) {
         switch selected {
+        case "profile": navigateToProfile = true
+        case "beneficiaries": navigateToBeneficiaries = true
+        case "transactions": navigateToTransactions = true
         case "walletTransfer": navigateToWalletTransfer = true
         case "limits": navigateToLimits = true
         case "walletToAccountTransfer": navigateToWalletToAccountTransfer = true
         case "accountToWalletTransfer": navigateToAccountToWalletTransfer = true
         case "moneyVoucher": navigateToMoneyVoucher = true
+        case "mobileMoney": navigateToMobileMoney = true
         case "sponsored": navigateToSponsored = true
         case "terms": navigateToTerms = true
         case "qr": navigateToQR = true
@@ -238,10 +322,20 @@ class HomeViewModel: ObservableObject {
         case "statement": navigateToStatement = true
         case "comment": navigateToComment = true
         case "complaint": navigateToComplaint = true
+        case "foodComplaints": navigateToFoodComplaints = true
+        case "loanRequest": navigateToLoanRequest = true
+        case "loanRequests": navigateToLoanRequests = true
+        case "loanHelp": navigateToLoanHelp = true
         case "deactivate": navigateToDeactivate = true
         case "biometric": navigateToBiometric = true
         case "FAQ": navigateToFAQ = true
         case "billPayment": navigateToBills = true
+        case "phoneCredit", "buyData": navigateToBills = true
+        case "settings": navigateToSettings = true
+        case "orderFood": navigateToOrderFood = true
+        case "orderHistory": navigateToFoodHistory = true
+        case "savings": navigateToSavings = true
+        case "savingsStatement": navigateToSavingsStatement = true
 
         case "logout":
             authManager.logout()
@@ -319,7 +413,7 @@ class HomeViewModel: ObservableObject {
                     
                     let availableAmount = Double(resultObj["availableBalance"] as? String ?? "0") ?? 0
                     let globalAmount = Double(resultObj["globalBalance"] as? String ?? "0") ?? 0
-                    let currency = "GNF"
+                    let currency = resultObj["currencyWording"] as? String ?? "GMD"
                     
                     UserDataManager.shared.saveWalletBalance(
                         availableAmount: availableAmount,
@@ -606,17 +700,19 @@ struct AppBottomBar: View {
     let onQR: () -> Void
     let onLimits: () -> Void
     let onSettings: () -> Void
+    var selectedTab = "Home"
+    var onHome: () -> Void = {}
 
     var body: some View {
         ZStack(alignment: .top) {
             HStack {
-                item("house.fill", "Home", selected: true) {}
+                item("house.fill", "Home", selected: selectedTab == "Home", action: onHome)
                 Spacer()
-                item("hand.thumbsup", "Sponsors", selected: false, action: onSponsors)
+                item("hand.thumbsup", "Sponsors", selected: selectedTab == "Sponsors", action: onSponsors)
                 Spacer(minLength: 76)
-                item("speedometer", "Limits", selected: false, action: onLimits)
+                item("speedometer", "Limits", selected: selectedTab == "Limits", action: onLimits)
                 Spacer()
-                item("gearshape.fill", "Settings", selected: false, action: onSettings)
+                item("gearshape.fill", "Settings", selected: selectedTab == "Settings", action: onSettings)
             }
             .padding(.horizontal, 20)
             .padding(.top, 22)

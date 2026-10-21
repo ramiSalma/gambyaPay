@@ -166,7 +166,7 @@ struct LinkedAccountsListView: View {
                 
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "00" {
+                    if response.respCode == "000" {
                         self.parseAccounts(response)
                     } else {
                         self.showError(response.message ?? "Erreur lors de la récupération des comptes")
@@ -195,9 +195,9 @@ struct LinkedAccountsListView: View {
             account.accountHolder = dict["accountHolder"] as? String ?? ""
             account.accountName = dict["accountName"] as? String ?? ""
             account.bankCode = dict["bankCode"] as? String ?? ""
-            account.bankName = dict["bankName"] as? String ?? ""
+            account.bankName = dict["bankWording"] as? String ?? ""
             account.accountType = dict["accountType"] as? String ?? ""
-            account.currency = dict["currency"] as? String ?? "GNF"
+            account.currency = dict["currency"] as? String ?? "GMD"
             account.balance = dict["balance"] as? String ?? "0.00"
             
             if !account.accountNumber.isEmpty {

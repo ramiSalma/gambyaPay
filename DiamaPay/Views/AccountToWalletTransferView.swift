@@ -14,6 +14,7 @@ struct AccountToWalletTransferView: View {
     // MARK: - State Variables
     @State private var linkedAccounts: [Account] = []
     @State private var selectedAccount: Account? = nil
+    @State private var showLinkedAccounts = false
     @State private var accountNameVerified: String = ""
     
     @State private var amount: String = ""
@@ -28,12 +29,11 @@ struct AccountToWalletTransferView: View {
     // Fee calculation
     @State private var calculatedFee: Double = 0.0
     @State private var totalAmountWithFee: Double = 0.0
-    @State private var feeRuleIndex = ""
+    @State private var feeQuoteID = UUID()
+    @State private var isCalculatingTransferFee = false
     
     @State private var withdrawalFee: Double = 0.0
     @State private var isWithdrawalFeeEnabled: Bool = false
-    @State private var isCalculatingWithdrawalFee = false
-    @State private var withdrawalFeeError: String? = nil
     
     
     // Success dialog
@@ -46,8 +46,8 @@ struct AccountToWalletTransferView: View {
     @State private var showConfirmationDialog = false
     
     private let userDataManager = UserDataManager.shared
-    private let defaultCurrency = "GNF"
-    private let numericCurrency = "324"
+    private let defaultCurrency = "GMD"
+    private let numericCurrency = "270"
     
     var body: some View {
         ZStack {
@@ -111,7 +111,7 @@ struct AccountToWalletTransferView: View {
                 transactionDate: transactionDate,
                 amount: transactionAmount,
                 sourceAccountNumber: selectedAccount?.accountNumber ?? "",
-                sourceAccountHolder: selectedAccount?.accountHolder ?? "",
+                sourceAccountHolder: accountNameVerified.isEmpty ? (selectedAccount?.accountHolder ?? "") : accountNameVerified,
                 sourceBankName: selectedAccount?.bankName ?? "",
                 recipientName: userDataManager.getUserName(),
                 recipientWallet: userDataManager.getWalletNumber(),
@@ -126,6 +126,13 @@ struct AccountToWalletTransferView: View {
                     presentationMode.wrappedValue.dismiss()
                 }
             )
+        }
+        .sheet(isPresented: $showLinkedAccounts) {
+            SavedLinkedAccountsView(accounts: linkedAccounts) { account in
+                selectAccount(account)
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .overlay(confirmationDialogOverlay)
         .onAppear {
@@ -193,38 +200,35 @@ struct AccountToWalletTransferView: View {
                     .frame(width: 60, height: 2)
             }
             
-            // Account Picker
-            if linkedAccounts.isEmpty {
-                Text("Aucun compte lié trouvé")
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
-                    .padding()
-            } else {
-                Menu {
-                    ForEach(linkedAccounts) { account in
-                        Button(action: {
-                            selectAccount(account)
-                        }) {
-                            Text(account.displayName)
-                        }
-                    }
-                } label: {
+            HStack(spacing: 10) {
+                Button { showLinkedAccounts = true } label: {
                     HStack {
-                        Text(selectedAccount?.displayName ?? "Sélectionner un compte")
+                        Text(selectedAccount?.accountNumber ?? "Sélectionner un compte")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(selectedAccount == nil ? .secondary : .primary)
-                        
-                        Spacer()
-                        
+                            .lineLimit(1)
+                        Spacer(minLength: 4)
                         Image(systemName: "chevron.down")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(Color(hex: "0788B9"))
                     }
                     .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(height: 48)
-                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                    .cornerRadius(8)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
                 }
+
+                Button { showLinkedAccounts = true } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: "book.closed.fill")
+                            .font(.system(size: 21))
+                            .frame(width: 46, height: 48)
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "0788B9"), lineWidth: 1.2))
+                        Text("Enregistrés").font(.system(size: 11, weight: .medium))
+                    }
+                    .foregroundColor(Color(hex: "0788B9"))
+                }
+                .disabled(isVerifying)
             }
             
             // Account Holder Name
@@ -265,7 +269,7 @@ struct AccountToWalletTransferView: View {
                     .frame(width: 60, height: 2)
             }
             
-            TextField("Entrer le montant (GNF)", text: $amount)
+            TextField("Entrer le montant (GMD)", text: $amount)
                 .keyboardType(.decimalPad)
                 .font(.system(size: 12, weight: .medium))
                 .padding(.horizontal, 12)
@@ -273,12 +277,7 @@ struct AccountToWalletTransferView: View {
                 .background(Color(red: 0.96, green: 0.96, blue: 0.96))
                 .cornerRadius(8)
                 .onChange(of: amount) {
-                    amount = formatAmountWithThousandSeparator(amount)
-                       
-                    NSObject.cancelPreviousPerformRequests(withTarget: self)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.calculateWithdrawalFee()
-                    }
+                    calculateTransferFee()
                 }
         }
         .padding(16)
@@ -287,116 +286,60 @@ struct AccountToWalletTransferView: View {
         .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
     
-    private func calculateWithdrawalFee() {
-        let cleanAmount = amount.cleanCurrencyValue()
-        
-        guard !cleanAmount.isEmpty,
-              let amountValue = Double(cleanAmount),
-              amountValue > 0 else {
-            withdrawalFee = 0.0
-            withdrawalFeeError = nil
-            isWithdrawalFeeEnabled = false
-            calculatedFee = 0.0
-            totalAmountWithFee = 0.0
+    private func calculateTransferFee(completion: ((Bool) -> Void)? = nil) {
+        let quoteID = UUID()
+        feeQuoteID = quoteID
+        calculatedFee = 0
+        totalAmountWithFee = 0
+        withdrawalFee = 0
+        isWithdrawalFeeEnabled = false
+        guard let account = selectedAccount,
+              let value = Double(getCleanAmount(amount)), value.isFinite, value > 0 else {
+            isCalculatingTransferFee = false
+            completion?(false)
             return
         }
-        
-        isCalculatingWithdrawalFee = true
-        withdrawalFeeError = nil
-        
-        var request = FeeCalculationRequest()
-        request.processingCode = "22"
-        request.bankCode = "00100"
-        request.actionCode = "DEB"
-        request.currencyCode = "324"
-        request.transactionAmount = amountValue
-        request.walletProductCode = "001"
-        request.walletType = "P"
-        request.origin = "W"
-        request.messageType = "ON_US"
-        
-        APIClient.shared.calculateWithdrawalFee(request: request) { result in
+        isCalculatingTransferFee = true
+        let bank = userDataManager.getBankCode().isEmpty ? "00100" : userDataManager.getBankCode()
+        let request = WalletFeeQuoteRequest(
+            walletNumber: userDataManager.getWalletNumber(),
+            phoneNumber: userDataManager.getPhoneNumber(), source: "W", bank: bank,
+            currency: "270", amount: getCleanAmount(amount), destination: userDataManager.getWalletNumber(),
+            transactionType: "45", destinationBank: bank,
+            requestId: DateFormatter.with(format: "yyMMdd").string(from: Date()) + String(format: "%06d", Int.random(in: 0...999999)),
+            requestDate: DateFormatter.with(format: "yyyy-MM-dd HH:mm:ss").string(from: Date()),
+            entityId: userDataManager.getUserCode())
+        APIClient.shared.calculateWalletFee(request: request) { result in
             DispatchQueue.main.async {
-                self.isCalculatingWithdrawalFee = false
-                
+                guard self.feeQuoteID == quoteID,
+                      self.selectedAccount?.accountNumber == account.accountNumber else { return }
+                self.isCalculatingTransferFee = false
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "001" {
-                        self.withdrawalFee = response.feeAmount ?? 0.0
-                        if self.withdrawalFee == 0 {
-                            self.isWithdrawalFeeEnabled = false
-                        }
-                        // Calculate transfer fee after withdrawal fee is obtained
-                        self.calculateTransferFee()
-                    } else {
-                        self.withdrawalFee = 0.0
-                        self.isWithdrawalFeeEnabled = false
-                        self.withdrawalFeeError = response.message
-                        self.calculateTransferFee()
+                    guard response.respCode == "000", let quote = response.result,
+                          let fee = quote.feeAmount, fee.isFinite, fee >= 0 else {
+                        if completion != nil { self.showErrorAlert(response.message ?? "Unable to calculate fees.") }
+                        completion?(false)
+                        return
                     }
-                    
-                case .failure(_):
-                    self.withdrawalFee = 0.0
-                    self.isWithdrawalFeeEnabled = false
-                    self.withdrawalFeeError = "Impossible de calculer"
-                    self.calculateTransferFee()
+                    let tax = quote.taxAmount ?? 0
+                    let total = quote.totalAmount ?? (value + fee + tax)
+                    guard tax.isFinite, tax >= 0, total.isFinite, total >= value else {
+                        if completion != nil { self.showErrorAlert("Invalid fee quote. Please try again.") }
+                        completion?(false)
+                        return
+                    }
+                    self.calculatedFee = fee + tax
+                    self.totalAmountWithFee = total
+                    completion?(true)
+                case .failure(let error):
+                    if completion != nil { self.showErrorAlert((error as? APIError)?.message ?? error.localizedDescription) }
+                    completion?(false)
                 }
             }
         }
     }
-    
-    private func calculateTransferFee() {
-        let cleanAmount = amount.cleanCurrencyValue()
-        
-        guard !cleanAmount.isEmpty,
-              let amountValue = Double(cleanAmount),
-              amountValue > 0,
-              selectedAccount != nil else {
-            calculatedFee = 0.0
-            totalAmountWithFee = 0.0
-            return
-        }
-        
-        // Calculate the amount including withdrawal fee if enabled
-        let withdrawalFeeValue = isWithdrawalFeeEnabled ? withdrawalFee : 0.0
-        let amountWithWithdrawalFee = amountValue + withdrawalFeeValue
-        
-        var request = FeeCalculationRequest()
-        request.processingCode = "45"
-        request.bankCode = selectedAccount?.bankCode ?? "00100"
-        request.actionCode = "CRD"
-        request.currencyCode = "324"
-        request.transactionAmount = amountWithWithdrawalFee
-        request.walletProductCode = "001"
-        request.walletType = "P"
-        request.origin = "W"
-        request.messageType = (selectedAccount?.bankCode ?? "00100") == "00100" ? "ON_US" : "OFF_US"
-        
-        APIClient.shared.calculateTransactionFee(request: request) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let response):
-                    if response.respCode == "000" || response.respCode == "001" {
-                        // Get feeAmount from result object
-                        self.calculatedFee = response.result?.feeAmount ?? 0.0
-                        self.feeRuleIndex = response.result?.ruleIndex ?? ""
-                        
-                        // Calculate total: base amount + withdrawal fee + transfer fee
-                        self.totalAmountWithFee = amountValue + withdrawalFeeValue + self.calculatedFee
-                    } else {
-                        self.calculatedFee = 0.0
-                        self.totalAmountWithFee = amountValue + withdrawalFeeValue
-                    }
-                    
-                case .failure(_):
-                    self.calculatedFee = 0.0
-                    self.totalAmountWithFee = amountValue + withdrawalFeeValue
-                }
-            }
-        }
-    }
-    
-  
+
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -443,7 +386,7 @@ struct AccountToWalletTransferView: View {
                     .background(Color.blueH)
                     .cornerRadius(8)
             }
-            .disabled(isLoading)
+            .disabled(isLoading || isCalculatingTransferFee || selectedAccount == nil)
         }
         .padding(16)
     }
@@ -451,72 +394,67 @@ struct AccountToWalletTransferView: View {
     // MARK: - Helper Methods
     private func fetchLinkedAccounts() {
         isLoading = true
-        
         var request = RequestListLinkedAcc()
         request.source = "W"
         request.walletNumber = userDataManager.getWalletNumber()
         request.phoneNumber = userDataManager.getPhoneNumber()
-        
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyMMdd"
-        let datePrefix = dateFormatter.string(from: Date())
-        let randomDigits = String(format: "%06d", Int.random(in: 0...999999))
-        request.requestId = datePrefix + randomDigits
-        
+        request.requestId = dateFormatter.string(from: Date()) + String(format: "%06d", Int.random(in: 0...999999))
+
         let fullDateFormatter = DateFormatter()
         fullDateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         request.requestDate = fullDateFormatter.string(from: Date())
-        
         request.bank = userDataManager.getBankCode().isEmpty ? "00100" : userDataManager.getBankCode()
-        request.entityId = UserDataManager.shared.getUserCode()
-        
+        request.entityId = userDataManager.getUserCode()
+
         APIClient.shared.getLinkedAccounts(request: request) { result in
             DispatchQueue.main.async {
-                self.isLoading = false
-                
+                isLoading = false
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "00" {
-                        self.parseLinkedAccounts(response)
+                    if response.respCode == "000" {
+                        parseLinkedAccounts(response)
                     } else {
-                        self.showErrorAlert("Erreur: \(response.message ?? "Erreur lors de la récupération des comptes")")
+                        showErrorAlert("Erreur: \(response.message ?? "Erreur lors de la récupération des comptes")")
                     }
                 case .failure(let error):
-                    if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
-                    } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
-                    }
+                    showErrorAlert((error as? APIError)?.message ?? "Erreur réseau: \(error.localizedDescription)")
                 }
             }
         }
     }
-    
+
     private func parseLinkedAccounts(_ response: JResponseService) {
         linkedAccounts.removeAll()
-        
-        guard let resultList = response.result else { return }
-        
-        for accountData in resultList {
+        selectedAccount = nil
+        accountNameVerified = ""
+        feeQuoteID = UUID()
+        isCalculatingTransferFee = false
+        calculatedFee = 0
+        totalAmountWithFee = 0
+
+        for accountData in response.result ?? [] {
             guard let dict = accountData as? [String: Any] else { continue }
-            
             var account = Account()
             account.accountNumber = dict["accountNumber"] as? String ?? ""
             account.accountHolder = dict["accountHolder"] as? String ?? ""
             account.bankCode = dict["bankCode"] as? String ?? ""
-            account.bankName = dict["bankName"] as? String ?? ""
+            account.bankName = dict["bankWording"] as? String ?? ""
             account.accountType = dict["accountType"] as? String ?? ""
             account.currency = dict["currency"] as? String ?? ""
             account.balance = dict["balance"] as? String ?? ""
-            
-            linkedAccounts.append(account)
+            if !account.accountNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                linkedAccounts.append(account)
+            }
         }
-        
+
         if linkedAccounts.isEmpty {
-            showErrorAlert("Aucun compte bancaire lié trouvé")
+            showErrorAlert("No linked bank accounts were returned. Link a bank account before transferring to your wallet.")
         }
     }
-    
+
     private func selectAccount(_ account: Account) {
         selectedAccount = account
         accountNameVerified = ""
@@ -532,6 +470,7 @@ struct AccountToWalletTransferView: View {
         
         var request = RequestWalletToBankAccountNE()
         request.walletNumber = userDataManager.getWalletNumber()
+        request.phoneNumber = userDataManager.getPhoneNumber()
         request.source = "W"
         request.desBank = account.bankCode.isEmpty ? "00100" : account.bankCode
         request.srcBank = "00100"
@@ -554,9 +493,9 @@ struct AccountToWalletTransferView: View {
                 
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "00" {
+                    if response.respCode == "000" {
                         if let result = response.result,
-                           let nameToCredit = result["NameToCredit"] as? String {
+                           let nameToCredit = result["accountHolder"] as? String {
                             self.accountNameVerified = nameToCredit
                             self.selectedAccount?.accountName = nameToCredit
                         } else {
@@ -583,18 +522,21 @@ struct AccountToWalletTransferView: View {
             return
         }
         
-        // Recalculate fees one more time before showing confirmation
-        calculateTransferFee()
-        
-        // Small delay to ensure calculation completes
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.showConfirmationDialog = true
+        guard let value = Double(getCleanAmount(amount)), value.isFinite, value > 0 else {
+            showErrorAlert("Enter a valid amount greater than zero.")
+            return
+        }
+        guard !isCalculatingTransferFee else { return }
+        calculateTransferFee { success in
+            if success { self.showConfirmationDialog = true }
         }
     }
     
     private func processTransfer(with pinCode: String) {
+        guard !isLoading, let account = selectedAccount, !account.accountNumber.isEmpty,
+              let value = Double(getCleanAmount(amount)), value.isFinite, value > 0 else { return }
         isLoading = true
-        
+
         let cleanAmount = getCleanAmount(amount)
         transactionAmount = cleanAmount
         transactionReference = reference
@@ -608,13 +550,11 @@ struct AccountToWalletTransferView: View {
         request.phoneNumber = userDataManager.getPhoneNumber()
         request.source = "W"
         request.srcAccount = selectedAccount?.accountNumber
-        request.srcBank = selectedAccount?.bankCode
-        request.accountHolder = selectedAccount?.accountHolder
+        request.srcBank = account.bankCode.isEmpty ? "00100" : account.bankCode
+        request.accountHolder = accountNameVerified.isEmpty ? account.accountHolder : accountNameVerified
         request.desBank = userDataManager.getBankCode().isEmpty ? "00100" : userDataManager.getBankCode()
-        let baseAmount = Double(amount.cleanCurrencyValue()) ?? 0.0
-        let withdrawalFeeValue = isWithdrawalFeeEnabled ? withdrawalFee : 0.0
-        let finalAmount = baseAmount + withdrawalFeeValue
-        request.amount = String(finalAmount)
+        request.amount = cleanAmount
+        request.otp = ""
         request.pin = pinCode
         request.reason = reference
         request.currency = numericCurrency
@@ -637,13 +577,15 @@ struct AccountToWalletTransferView: View {
                 
                 switch result {
                 case .success(let response):
-                    if response.respCode == "000" || response.respCode == "00" {
-                        if let result = response.result {
+                    if response.respCode == "000" {
+                        if let reference = response.resultString, !reference.isEmpty {
+                            self.transactionId = reference
+                        } else if let result = response.result {
                             self.transactionId = result["transactionId"] as? String ??
                                                result["reference"] as? String ??
                                                requestId
                         } else {
-                            self.transactionId = requestId
+                            self.transactionId = response.requestId ?? requestId
                         }
                         
                         self.showSuccessDialog = true
@@ -659,20 +601,6 @@ struct AccountToWalletTransferView: View {
                 }
             }
         }
-    }
-    
-    private func formatAmountWithThousandSeparator(_ value: String) -> String {
-        let cleanValue = value.replacingOccurrences(of: " ", with: "")
-        
-        guard let number = Double(cleanValue) else { return value }
-        
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.decimalSeparator = "."
-        formatter.maximumFractionDigits = 2
-        
-        return formatter.string(from: NSNumber(value: number)) ?? value
     }
     
     private func getCleanAmount(_ value: String) -> String {
