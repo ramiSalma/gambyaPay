@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct BillPayProvidersView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
-    @State private var navigateToDSD = false
     
     var body: some View {
         ZStack {
@@ -17,46 +17,69 @@ struct BillPayProvidersView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Bill Payments", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.rechargeBillProviders, headerColor: Color(hex: "174EA6"))
                 
                 ScrollView {
-                    VStack(spacing: 16) {
-                        // DSD Payment Provider Card
-                        ProviderCard(
-                            title: "DSD",
-                            subtitle: "Direction de la Sécurité Douanière",
-                            icon: "dsd",
-                            color: .blueH
-                        ) {
-                            navigateToDSD = true
+                    VStack(spacing: 34) {
+                        NavigationLink(destination: NawecServiceView(service: .water)) {
+                            nawecRow("NAWEC Water")
                         }
-                        
-                        // Add more providers here as needed
-                        // ProviderCard(title: "Provider 2", ...)
+                        NavigationLink(destination: NawecServiceView(service: .cashPower)) {
+                            nawecRow("NAWEC Cash Power")
+                        }
+                        NavigationLink(destination: DSDBillTypesView()) {
+                            nawecRow("DSD")
+                        }
+                        Text(AppStrings.rechargeMoreBillers)
+                            .font(.system(size: 14, weight: .medium))
+                            .italic()
+                            .foregroundColor(Color(hex: "545D69"))
+                            .padding(.top, 24)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 20)
+                    .padding(.horizontal, 23)
+                    .padding(.top, 21)
+                    .padding(.bottom, 24)
                 }
+                .background(Color(hex: "F5F5F5"))
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
-        .background(
-            NavigationLink(
-                destination: DSDBillTypesView(),  // Navigate to bill types first
-                isActive: $navigateToDSD
-            ) {
-                EmptyView()
-            }
-            .hidden()
-        )
+
     }
+    private func nawecRow(_ title: String) -> some View {
+        HStack(spacing: 20) {
+            Text("BITS")
+                .font(.system(size: 13, weight: .heavy))
+                .foregroundColor(Color(hex: "174EA6"))
+                .frame(width: 42, height: 42)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.gray)
+                Text(AppStrings.rechargePayBills)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(hex: "545D69"))
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color(hex: "545D69"))
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, minHeight: 84)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.16), radius: 3, x: 0, y: 2)
+    }
+
 }
 
 // MARK: - Provider Card Component
 struct ProviderCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     let subtitle: String
     let icon: String  // Can be SF Symbol name, image URL, or asset name

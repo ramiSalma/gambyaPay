@@ -10,6 +10,7 @@ import Contacts
 import ContactsUI
 
 struct SponsorWalletView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     @State private var navigationPath = NavigationPath()
     
@@ -44,7 +45,7 @@ struct SponsorWalletView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Sponsor a Wallet", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.sponsorAWallet, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -79,9 +80,9 @@ struct SponsorWalletView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .sheet(isPresented: $showContactPicker) {
             ContactPickerView(selectedPhone: $recipientPhone)
@@ -90,7 +91,7 @@ struct SponsorWalletView: View {
             DatePickerSheetz(
                 selectedDate: $startDate,
                 minimumDate: Date(),
-                title: "Start Date",
+                title: AppStrings.startDate2,
                 onSave: {
                     showStartDatePicker = false
                     validateDateRange()
@@ -101,7 +102,7 @@ struct SponsorWalletView: View {
             DatePickerSheetz(
                 selectedDate: $endDate,
                 minimumDate: Calendar.current.date(byAdding: .day, value: 1, to: startDate) ?? Date(),
-                title: "End Date",
+                title: AppStrings.endDate2,
                 onSave: {
                     showEndDatePicker = false
                 }
@@ -116,7 +117,7 @@ struct SponsorWalletView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                 .scaleEffect(1.5)
             
-            Text("Processing…")
+            Text(AppStrings.processing2)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.secondary)
         }
@@ -131,7 +132,7 @@ struct SponsorWalletView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Sponsoriser un portefeuille")
+                Text(AppStrings.sponsoriserUnPortefeuille)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -147,7 +148,7 @@ struct SponsorWalletView: View {
     private var pinEntryCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Authentication")
+                Text(AppStrings.authentication2)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color.blueH)
 
@@ -180,7 +181,7 @@ struct SponsorWalletView: View {
     private var sourceDetailsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Source des Fonds")
+                Text(AppStrings.sourceDesFonds)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -190,7 +191,7 @@ struct SponsorWalletView: View {
             }
             
             HStack {
-                Text("Numéro de Téléphone")
+                Text(AppStrings.numeroDeTelephone)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                 
@@ -202,7 +203,7 @@ struct SponsorWalletView: View {
             }
             
             HStack {
-                Text("Wallet number")
+                Text(AppStrings.walletNumber2)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                 
@@ -223,7 +224,7 @@ struct SponsorWalletView: View {
     private var recipientDetailsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Recipient Details")
+                Text(AppStrings.recipientDetails)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -234,7 +235,7 @@ struct SponsorWalletView: View {
             
             HStack(alignment: .top, spacing: 10) {
                 HStack(spacing: 8) {
-                    TextField("Recipient Number", text: $recipientPhone)
+                    TextField(AppStrings.recipientNumber2, text: $recipientPhone)
                         .keyboardType(.numberPad)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.leading, 12)
@@ -276,7 +277,7 @@ struct SponsorWalletView: View {
                             .font(.system(size: 25, weight: .medium))
                             .frame(width: 46, height: 44)
                             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.blueH, lineWidth: 1.5))
-                        Text("Contacts")
+                        Text(AppStrings.contacts)
                             .font(.system(size: 12, weight: .medium))
                     }
                     .foregroundColor(.blueH)
@@ -311,7 +312,7 @@ struct SponsorWalletView: View {
     private var limitsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Limits")
+                Text(AppStrings.limits)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -320,9 +321,9 @@ struct SponsorWalletView: View {
                     .frame(width: 96, height: 3)
             }
             
-            limitField(placeholder: "Daily Limit", text: $dailyLimit)
+            limitField(placeholder: AppStrings.dailyLimit2, text: $dailyLimit)
             
-            limitField(placeholder: "Monthly Limit", text: $monthlyLimit)
+            limitField(placeholder: AppStrings.monthlyLimit, text: $monthlyLimit)
         }
         .padding(16)
         .background(Color.white)
@@ -334,7 +335,7 @@ struct SponsorWalletView: View {
     private var periodCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Period")
+                Text(AppStrings.period)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -344,7 +345,7 @@ struct SponsorWalletView: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("Start date")
+                Text(AppStrings.startDate)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.blueH)
                 
@@ -371,7 +372,7 @@ struct SponsorWalletView: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("End date")
+                Text(AppStrings.endDate)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.blueH)
                 
@@ -408,7 +409,7 @@ struct SponsorWalletView: View {
         Button(action: {
             validateAndPrepare()
         }) {
-            Text("Send")
+            Text(AppStrings.send)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 150)
@@ -429,7 +430,7 @@ struct SponsorWalletView: View {
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yyyy"
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return formatter.string(from: date)
     }
     
@@ -450,7 +451,7 @@ struct SponsorWalletView: View {
         if endDate <= startDate {
             let newEndDate = Calendar.current.date(byAdding: .month, value: 3, to: startDate) ?? Date()
             endDate = newEndDate
-            showError("Date adjusted", "The end date was moved after the start date.")
+            showError(AppStrings.dateAdjusted, AppStrings.theEndDateWasMovedAfterTheStartDate)
         }
     }
     
@@ -492,9 +493,9 @@ struct SponsorWalletView: View {
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError("Error", apiError.message)
+                        self.showError(AppStrings.error, apiError.message)
                     } else {
-                        self.showError("Error", error.localizedDescription)
+                        self.showError(AppStrings.error, error.localizedDescription)
                     }
                     self.resetVerificationFields()
                 }
@@ -508,7 +509,7 @@ struct SponsorWalletView: View {
             let phoneConfirmed = result["phoneNumber"] as? String ?? ""
             
             if !recipientPhone.hasSuffix(phoneConfirmed.suffix(9)) && recipientPhone != phoneConfirmed {
-                showError("Error", "The verified number does not match the number entered.")
+                showError(AppStrings.error, AppStrings.theVerifiedNumberDoesNotMatchTheNumberEntered)
                 resetVerificationFields()
                 return
             }
@@ -517,7 +518,7 @@ struct SponsorWalletView: View {
             recipientName = clientName
             isRecipientVerified = true
         } else {
-            showError("Error", "Recipient information is unavailable.")
+            showError(AppStrings.error, AppStrings.recipientInformationIsUnavailable)
             resetVerificationFields()
         }
     }
@@ -525,16 +526,16 @@ struct SponsorWalletView: View {
     private func handleVerificationError(_ response: ResponseServiceJson) {
         let errorMessage = response.message ?? {
             switch response.respCode {
-            case "001": return "Wallet not found."
-            case "003": return "Required request details are missing."
-            case "005": return "Incorrect PIN."
-            case "006": return "PIN is blocked."
-            case "021": return "User is not authorized."
-            default: return "Verification failed. Code: \(response.respCode ?? "N/A")"
+            case "001": return AppStrings.walletNotFound
+            case "003": return AppStrings.requiredRequestDetailsAreMissing
+            case "005": return AppStrings.incorrectPin
+            case "006": return AppStrings.pinIsBlocked
+            case "021": return AppStrings.userIsNotAuthorized
+            default: return AppStrings.verificationFailedCodeValue(String(describing: response.respCode ?? "N/A"))
             }
         }()
         
-        showError("Error", errorMessage)
+        showError(AppStrings.error, errorMessage)
         resetVerificationFields()
     }
     
@@ -547,38 +548,38 @@ struct SponsorWalletView: View {
     
     private func validateInputs() -> Bool {
         if recipientPhone.isEmpty {
-            showError("Error", "Recipient phone number is required.")
+            showError(AppStrings.error, AppStrings.recipientPhoneNumberIsRequired2)
             return false
         }
         
         if !isRecipientVerified || recipientName.isEmpty {
-            showError("Error", "Please verify the recipient first.")
+            showError(AppStrings.error, AppStrings.pleaseVerifyTheRecipientFirst)
             return false
         }
         
         if dailyLimit.isEmpty {
-            showError("Error", "Daily limit is required.")
+            showError(AppStrings.error, AppStrings.dailyLimitIsRequired)
             return false
         }
         
         if monthlyLimit.isEmpty {
-            showError("Error", "Monthly limit is required.")
+            showError(AppStrings.error, AppStrings.monthlyLimitIsRequired)
             return false
         }
         
         guard let daily = Double(dailyLimit.cleanCurrencyValue()),
               let monthly = Double(monthlyLimit.cleanCurrencyValue()) else {
-            showError("Error", "Enter valid limit amounts.")
+            showError(AppStrings.error, AppStrings.enterValidLimitAmounts)
             return false
         }
         
         if monthly < daily {
-            showError("Error", "Monthly limit must be at least the daily limit.")
+            showError(AppStrings.error, AppStrings.monthlyLimitMustBeAtLeastTheDailyLimit)
             return false
         }
         
         if showPinEntry && pin.isEmpty {
-            showError("Error", "Enter your PIN to continue.")
+            showError(AppStrings.error, AppStrings.enterYourPinToContinue)
             return false
         }
         
@@ -629,15 +630,15 @@ struct SponsorWalletView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccessAndDismiss("Wallet sponsored successfully.")
+                        self.showSuccessAndDismiss(AppStrings.walletSponsoredSuccessfully)
                     } else {
-                        self.showError("Error", response.message ?? "Could not sponsor this wallet.")
+                        self.showError(AppStrings.error, response.message ?? AppStrings.couldNotSponsorThisWallet)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError("Error", apiError.message)
+                        self.showError(AppStrings.error, apiError.message)
                     } else {
-                        self.showError("Error", error.localizedDescription)
+                        self.showError(AppStrings.error, error.localizedDescription)
                     }
                 }
             }
@@ -651,17 +652,17 @@ struct SponsorWalletView: View {
     }
     
     private func showSuccess(_ message: String) {
-        alertTitle = "Success"
+        alertTitle = AppStrings.success
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAndDismiss(_ message: String) {
-        alertTitle = "Success"
+        alertTitle = AppStrings.success
         alertMessage = message
         
         let alert = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: AppStrings.ok, style: .default) { _ in
             self.dismiss()
         })
         
@@ -675,6 +676,7 @@ struct SponsorWalletView: View {
 
 // MARK: - Date Picker Sheet
 struct DatePickerSheetz: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var selectedDate: Date
     let minimumDate: Date
     let title: String
@@ -699,12 +701,12 @@ struct DatePickerSheetz: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(AppStrings.cancel) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(AppStrings.save) {
                         onSave()
                     }
                 }

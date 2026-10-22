@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct SponsoredWalletsListView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @State private var sponsoredWallets: [SponsoredWallet] = []
     @State private var isLoading = false
@@ -33,7 +34,7 @@ struct SponsoredWalletsListView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Sponsored Wallets", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.sponsoredWallets, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -52,19 +53,19 @@ struct SponsoredWalletsListView: View {
             loadSponsoredWallets()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
-        .alert("Unlink Wallet", isPresented: $showUnlinkAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Unlink", role: .destructive) {
+        .alert(AppStrings.unlinkWallet, isPresented: $showUnlinkAlert) {
+            Button(AppStrings.cancel, role: .cancel) { }
+            Button(AppStrings.unlink, role: .destructive) {
                 pinDialogAction = .unlink
                 showPinDialog = true
             }
         } message: {
             if let wallet = selectedWallet {
-                Text("Are you sure you want to unlink the wallet for \(wallet.userNameSponsored)?\n\nThis action cannot be undone.")
+                Text(AppStrings.areYouSureYouWantToUnlinkTheWalletFor(String(describing: wallet.userNameSponsored)))
             }
         }
         .sheet(isPresented: $showUpdateDialog) {
@@ -88,7 +89,7 @@ struct SponsoredWalletsListView: View {
                     .background(Color(hex: "0788B9"), in: Circle())
                     .shadow(color: .black.opacity(0.18), radius: 7, x: 0, y: 4)
             }
-            .accessibilityLabel("Sponsor a wallet")
+            .accessibilityLabel(AppStrings.sponsorAWallet2)
             .padding(.trailing, 24)
             .padding(.bottom, 92)
         }
@@ -100,8 +101,8 @@ struct SponsoredWalletsListView: View {
             if showPinDialog, let wallet = selectedWallet {
                 PinDialogView(
                     isPresented: $showPinDialog,
-                    title: pinDialogAction == .unlink ? "Unlink Wallet" : "",
-                    message: pinDialogAction == .unlink ? "Enter your PIN to confirm" : "",
+                    title: pinDialogAction == .unlink ? AppStrings.unlinkWallet : "",
+                    message: pinDialogAction == .unlink ? AppStrings.enterYourPinToConfirm : "",
                     onConfirm: { pin in
                         showPinDialog = false
                         if pinDialogAction == .unlink {
@@ -120,7 +121,7 @@ struct SponsoredWalletsListView: View {
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
             
-            Text("Loading wallets…")
+            Text(AppStrings.loadingWallets)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.secondary)
         }
@@ -167,11 +168,11 @@ struct SponsoredWalletsListView: View {
                 .foregroundColor(Color(hex: "174EA6").opacity(0.75))
                 .padding(.top, 24)
             
-            Text("No sponsored wallets")
+            Text(AppStrings.noSponsoredWallets)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.primary)
             
-            Text("You have not sponsored any wallets yet.")
+            Text(AppStrings.youHaveNotSponsoredAnyWalletsYet)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -217,13 +218,13 @@ struct SponsoredWalletsListView: View {
                     if response.respCode == "000" {
                         self.processSponsoredWallets(response)
                     } else {
-                        self.showError("Error", response.message ?? "Unable to load wallets")
+                        self.showError(AppStrings.error, response.message ?? AppStrings.unableToLoadWallets)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError("Error", apiError.message)
+                        self.showError(AppStrings.error, apiError.message)
                     } else {
-                        self.showError("Error", error.localizedDescription)
+                        self.showError(AppStrings.error, error.localizedDescription)
                     }
                 }
             }
@@ -242,7 +243,7 @@ struct SponsoredWalletsListView: View {
             wallet.walletNumber = dict["walletNumber"] as? String ?? ""
             wallet.walletNumberSponsored = dict["walletNumberSponsored"] as? String ?? ""
             wallet.userName = dict["userName"] as? String ?? ""
-            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? "Not specified"
+            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? AppStrings.notSpecified
             wallet.phoneNumber = dict["phoneNumber"] as? String ?? ""
             wallet.phoneNumberSponsored = dict["phoneNumberSponsored"] as? String ?? ""
             
@@ -335,16 +336,16 @@ struct SponsoredWalletsListView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccess("Wallet unlinked successfully")
+                        self.showSuccess(AppStrings.walletUnlinkedSuccessfully)
                         self.loadSponsoredWallets()
                     } else {
-                        self.showError("Error", response.message ?? "Failed to unlink wallet")
+                        self.showError(AppStrings.error, response.message ?? AppStrings.failedToUnlinkWallet)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError("Error", apiError.message)
+                        self.showError(AppStrings.error, apiError.message)
                     } else {
-                        self.showError("Error", error.localizedDescription)
+                        self.showError(AppStrings.error, error.localizedDescription)
                     }
                 }
             }
@@ -358,7 +359,7 @@ struct SponsoredWalletsListView: View {
     }
     
     private func showSuccess(_ message: String) {
-        alertTitle = "Success"
+        alertTitle = AppStrings.success
         alertMessage = message
         showAlert = true
     }
@@ -366,6 +367,7 @@ struct SponsoredWalletsListView: View {
 
 // MARK: - Sponsored Wallet Card
 struct SponsoredWalletCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let wallet: SponsoredWallet
     let onUpdate: () -> Void
     let onUnlink: () -> Void
@@ -381,7 +383,7 @@ struct SponsoredWalletCard: View {
                     .frame(width: 42, height: 42)
                     .background(Color(hex: "E8F1FA"), in: Circle())
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(wallet.userNameSponsored.isEmpty ? "Sponsored wallet" : wallet.userNameSponsored)
+                    Text(wallet.userNameSponsored.isEmpty ? AppStrings.sponsoredWallet : wallet.userNameSponsored)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(Color(hex: "17212F"))
                         .lineLimit(1)
@@ -397,7 +399,7 @@ struct SponsoredWalletCard: View {
                         .frame(width: 30, height: 34)
                         .contentShape(Rectangle())
                 }
-                .accessibilityLabel("Wallet options")
+                .accessibilityLabel(AppStrings.walletOptions)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -405,11 +407,11 @@ struct SponsoredWalletCard: View {
             Divider().overlay(Color(hex: "E8EDF3"))
 
             HStack(alignment: .top, spacing: 0) {
-                statColumn(title: "Daily limit", value: formatCurrency(wallet.dailyLimit))
+                statColumn(title: AppStrings.dailyLimit, value: formatCurrency(wallet.dailyLimit))
                 statDivider
-                statColumn(title: "Monthly limit", value: formatCurrency(wallet.monthlyLimit))
+                statColumn(title: AppStrings.monthlyLimit2, value: formatCurrency(wallet.monthlyLimit))
                 statDivider
-                statColumn(title: "Validity", value: compactDateRange(start: wallet.startDate, end: wallet.endDate))
+                statColumn(title: AppStrings.validity, value: compactDateRange(start: wallet.startDate, end: wallet.endDate))
             }
             .padding(.vertical, 12)
         }
@@ -419,15 +421,15 @@ struct SponsoredWalletCard: View {
         .shadow(color: Color(hex: "13253A").opacity(0.06), radius: 5, x: 0, y: 2)
         .actionSheet(isPresented: $showMenu) {
             ActionSheet(
-                title: Text("Options"),
+                title: Text(AppStrings.options),
                 buttons: [
-                    .default(Text("Update")) {
+                    .default(Text(AppStrings.update)) {
                         onUpdate()
                     },
-                    .destructive(Text("Unlink")) {
+                    .destructive(Text(AppStrings.unlink)) {
                         onUnlink()
                     },
-                    .cancel(Text("Cancel"))
+                    .cancel(Text(AppStrings.cancel))
                 ]
             )
         }
@@ -435,12 +437,12 @@ struct SponsoredWalletCard: View {
     
     private func formatCurrency(_ amount: String) -> String {
         guard let value = Double(amount), value > 0 else {
-            return "No limit"
+            return AppStrings.noLimit
         }
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         formatter.maximumFractionDigits = 0
         
         return (formatter.string(from: NSNumber(value: value)) ?? amount) + " GMD"
@@ -470,22 +472,22 @@ struct SponsoredWalletCard: View {
     private func compactDateRange(start: String, end: String) -> String {
         let from = start.isEmpty || start == "null" ? "—" : formatDate(start)
         let to = end.isEmpty || end == "null" ? "—" : formatDate(end)
-        return "\(from) to \(to)"
+        return AppStrings.valueToValue(String(describing: from), String(describing: to))
     }
     
     private func formatDateRange(start: String, end: String) -> String {
         var result = ""
         
         if !start.isEmpty && start != "null" {
-            result += "From \(formatDate(start))"
+            result += AppStrings.fromValue(String(describing: formatDate(start)))
         } else {
-            result += "Start date not specified"
+            result += AppStrings.startDateNotSpecified
         }
         
         if !end.isEmpty && end != "null" {
-            result += " to \(formatDate(end))"
+            result += AppStrings.toValue(String(describing: formatDate(end)))
         } else if !start.isEmpty && start != "null" {
-            result += " - No end date"
+            result += AppStrings.noEndDate
         }
         
         return result
@@ -513,6 +515,7 @@ struct SponsoredWalletCard: View {
 
 // MARK: - PIN Dialog View
 struct PinDialogView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var isPresented: Bool
     let title: String
     let message: String
@@ -539,7 +542,7 @@ struct PinDialogView: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                 
-                SecureField("PIN", text: $pin)
+                SecureField(AppStrings.pin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
                     .padding()
@@ -547,7 +550,7 @@ struct PinDialogView: View {
                     .cornerRadius(8)
                 
                 if showError {
-                    Text("Please enter your PIN")
+                    Text(AppStrings.pleaseEnterYourPin)
                         .font(.system(size: 12))
                         .foregroundColor(.red)
                 }
@@ -556,7 +559,7 @@ struct PinDialogView: View {
                     Button(action: {
                         isPresented = false
                     }) {
-                        Text("Cancel")
+                        Text(AppStrings.cancel)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity)
@@ -573,7 +576,7 @@ struct PinDialogView: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text("Confirm")
+                        Text(AppStrings.confirm)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

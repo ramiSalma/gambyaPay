@@ -2,6 +2,7 @@ import SwiftUI
 import CoreImage.CIFilterBuiltins
 
 struct MyQRCodeView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     private let userDataManager = UserDataManager.shared
@@ -20,7 +21,7 @@ struct MyQRCodeView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "My QR Code", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.myQrCode, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -37,9 +38,9 @@ struct MyQRCodeView: View {
             generateCustomerQR()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .sheet(isPresented: $showShareSheet) {
             if let image = qrCodeImage {
@@ -58,7 +59,7 @@ struct MyQRCodeView: View {
                     .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                     .scaleEffect(1.5)
                 
-                Text("Génération du code QR...")
+                Text(AppStrings.generationDuCodeQr)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.secondary)
             }
@@ -103,7 +104,7 @@ struct MyQRCodeView: View {
                         .font(.system(size: 80))
                         .foregroundColor(Color(red: 0.8, green: 0.8, blue: 0.8))
                     
-                    Text("Aucun code QR disponible")
+                    Text(AppStrings.aucunCodeQrDisponible)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Color(red: 0.6, green: 0.6, blue: 0.6))
                 }
@@ -120,7 +121,7 @@ struct MyQRCodeView: View {
         HStack(spacing: 16) {
             // Save Button
             Button(action: saveQRCode) {
-                Text("Enregistrer")
+                Text(AppStrings.enregistrer)
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -132,7 +133,7 @@ struct MyQRCodeView: View {
             
             // Share Button
             Button(action: { showShareSheet = true }) {
-                Text("Partager")
+                Text(AppStrings.partager)
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -159,13 +160,13 @@ struct MyQRCodeView: View {
                         .foregroundColor(.white)
                 }
                 
-                Text("Comment ça marche?")
+                Text(AppStrings.commentCaMarche2)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(Color.blueH)
             }
             
             // Instructions
-            Text("1. Montrez ou envoyez ce code QR à la personne qui souhaite vous transférer\n\n2. Elle scanne le code avec son application\n\n3. Elle entre le montant et confirme\n\n4. Vous recevez instantanément l'argent!")
+            Text(AppStrings.copy1MontrezOuEnvoyezCeCodeQrALaPersonne)
                 .font(.system(size: 15, weight: .medium))
                 .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
                 .lineSpacing(6)
@@ -189,7 +190,7 @@ struct MyQRCodeView: View {
         
         guard !phoneNumber.isEmpty else {
             //print("❌ Phone number not found")
-            showError("Numéro de téléphone non trouvé")
+            showError(AppStrings.numeroDeTelephoneNonTrouve)
             return
         }
         
@@ -236,7 +237,7 @@ struct MyQRCodeView: View {
             if response.status == "OK" && response.respCode == "000" {
                 handleSuccess(response)
             } else {
-                let errorMsg = response.message ?? "Erreur inconnue"
+                let errorMsg = response.message ?? AppStrings.unknownError
                 //print("❌ QR generation failed: \(errorMsg)")
                 showError(errorMsg)
             }
@@ -244,9 +245,9 @@ struct MyQRCodeView: View {
         case .failure(let error):
             //print("❌ API Failure: \(error.localizedDescription)")
             if let apiError = error as? APIError {
-                showError("Erreur: \(apiError.message)")
+                showError(AppStrings.erreurValue(AppStrings.option(apiError.message)))
             } else {
-                showError("Erreur réseau: \(error.localizedDescription)")
+                showError(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
             }
         }
     }
@@ -254,7 +255,7 @@ struct MyQRCodeView: View {
     private func handleSuccess(_ response: ResponseServiceJson) {
         guard let resultObj = response.result else {
             //print("❌ No result data")
-            showError("Données QR manquantes")
+            showError(AppStrings.donneesQrManquantes)
             return
         }
         
@@ -269,7 +270,7 @@ struct MyQRCodeView: View {
         
         guard !qrDataValue.isEmpty else {
             //print("❌ QR data is empty")
-            showError("Données QR vides")
+            showError(AppStrings.donneesQrVides)
             return
         }
         
@@ -281,7 +282,7 @@ struct MyQRCodeView: View {
             //print("✅ QR code displayed successfully")
         } else {
             //print("❌ Failed to generate QR image")
-            showError("Erreur génération image QR")
+            showError(AppStrings.erreurGenerationImageQr)
         }
     }
     
@@ -315,21 +316,21 @@ struct MyQRCodeView: View {
     // MARK: - Actions
     private func saveQRCode() {
         guard let image = qrCodeImage else {
-            showError("Aucun code QR à enregistrer")
+            showError(AppStrings.aucunCodeQrAEnregistrer)
             return
         }
         
         UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
         
-        alertTitle = "Succès"
-        alertMessage = "Code QR enregistré dans la galerie!"
+        alertTitle = AppStrings.succes
+        alertMessage = AppStrings.codeQrEnregistreDansLaGalerie
         showAlert = true
         
         //print("✅ QR code saved to gallery")
     }
     
     private func showError(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }

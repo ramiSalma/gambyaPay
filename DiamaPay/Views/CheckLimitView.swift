@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CheckLimitView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     var onOpenSettings: () -> Void = {}
     @State private var showSponsors = false
@@ -16,29 +17,29 @@ struct CheckLimitView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            DiamaPayHeader(title: "Limits", headerColor: accent)
+            DiamaPayHeader(title: AppStrings.limits, headerColor: accent)
             ZStack(alignment: .bottomTrailing) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 28) {
                         globalDailyLimitCard
                         sectionTitle
                         if isLoading {
-                            ProgressView("Loading limits...")
+                            ProgressView(AppStrings.loadingLimits)
                                 .tint(accent)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 20)
                         } else if let errorMessage {
                             VStack(spacing: 12) {
-                                Text(errorMessage)
+                                Text(AppStrings.option(errorMessage))
                                     .foregroundColor(.secondary)
                                     .multilineTextAlignment(.center)
-                                Button("Try Again", action: loadWalletLimits)
+                                Button(AppStrings.tryAgain, action: loadWalletLimits)
                                     .tint(accent)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
                         } else if hasLoaded && limitDetails.isEmpty {
-                            Text("No limits configured")
+                            Text(AppStrings.noLimitsConfigured)
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
                                 .frame(maxWidth: .infinity)
@@ -64,7 +65,7 @@ struct CheckLimitView: View {
                 }
                 .disabled(isLoading)
                 .opacity(isLoading ? 0.5 : 1)
-                .accessibilityLabel("Refresh wallet limits")
+                .accessibilityLabel(AppStrings.refreshWalletLimits)
                 .padding(.trailing, 16)
                 .padding(.bottom, 42)
             }
@@ -101,7 +102,7 @@ struct CheckLimitView: View {
             Rectangle()
                 .fill(Color(hex: "0089BC"))
                 .frame(width: 4, height: 26)
-            Text("Limits by transaction")
+            Text(AppStrings.limitsByTransaction)
                 .font(.system(size: 19, weight: .bold))
                 .foregroundColor(accent)
         }
@@ -110,21 +111,21 @@ struct CheckLimitView: View {
 
     private var globalDailyLimitCard: some View {
         VStack(spacing: 0) {
-            Text("Global Daily Limit")
+            Text(AppStrings.globalDailyLimit)
                 .font(.system(size: 23, weight: .bold))
                 .multilineTextAlignment(.center)
             Rectangle()
                 .fill(Color.white.opacity(0.6))
                 .frame(width: 62, height: 2)
                 .padding(.top, 10)
-            Text("All your transactions share this common daily limit.")
+            Text(AppStrings.allYourTransactionsShareThisCommonDailyLimit)
                 .font(.system(size: 14))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 20)
                 .padding(.bottom, 18)
             VStack(spacing: 10) {
-                Text("Global Daily Limit")
+                Text(AppStrings.globalDailyLimit)
                     .font(.system(size: 12, weight: .bold))
                     .tracking(0.5)
                     .foregroundColor(.white.opacity(0.8))
@@ -135,7 +136,7 @@ struct CheckLimitView: View {
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
                 if !isLoading && limitSummary?.soldeDisponible == nil {
-                    Text("Not available")
+                    Text(AppStrings.notAvailable)
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.8))
                 }
@@ -145,7 +146,7 @@ struct CheckLimitView: View {
             .background(Color.white.opacity(0.2))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             VStack(spacing: 4) {
-                Text("Period")
+                Text(AppStrings.period)
                     .font(.system(size: 12))
                     .foregroundColor(.white.opacity(0.8))
                 Text(periodText)
@@ -203,30 +204,30 @@ struct CheckLimitView: View {
         let expanded = expandedCards.contains(index)
         let currency = nonempty(limit.currencyCode) ?? nonempty(limitSummary?.devise)
         return VStack(alignment: .leading, spacing: 14) {
-            Text(nonempty(limit.operationName) ?? "Transaction \(nonempty(limit.processingCode) ?? "—")")
+            Text(nonempty(limit.operationName) ?? AppStrings.transactionValue(String(describing: nonempty(limit.processingCode) ?? "—")))
                 .font(.headline)
                 .foregroundColor(accent)
-            detail("Processing code", limit.processingCode)
+            detail(AppStrings.processingCode, limit.processingCode)
             Divider()
             if let percentage = limit.pourcentageUtilisationJour, percentage.isFinite {
-                detail("Daily usage", String(format: "%.1f%%", percentage))
+                detail(AppStrings.dailyUsage, String(format: "%.1f%%", percentage))
                 // The label retains the reported percentage, including values over 100%.
                 // Only the visual bar is constrained to its valid range.
                 ProgressView(value: min(max(percentage, 0), 100), total: 100)
                     .tint(accent)
-                    .accessibilityLabel("Daily limit usage")
+                    .accessibilityLabel(AppStrings.dailyLimitUsage)
                     .accessibilityValue(String(format: "%.1f percent", percentage))
             } else {
-                detail("Daily usage", nil)
+                detail(AppStrings.dailyUsage, nil)
             }
-            detail("Daily limit", money(limit.limiteJournaliere, currency: currency))
-            detail("Used today", money(limit.consommeAujourdhui, currency: currency))
-            detail("Remaining today", money(limit.restantAujourdhui, currency: currency))
-            detail("Transactions today", limit.nombreTransactionsJour.map { String($0) })
+            detail(AppStrings.dailyLimit, money(limit.limiteJournaliere, currency: currency))
+            detail(AppStrings.usedToday, money(limit.consommeAujourdhui, currency: currency))
+            detail(AppStrings.remainingToday, money(limit.restantAujourdhui, currency: currency))
+            detail(AppStrings.transactionsToday, limit.nombreTransactionsJour.map { String($0) })
             // These are strings in the backend DTO. Display the bank's values without
             // guessing their code meanings or deriving eligibility from usage alone.
-            detail("Can transact", limit.peutTransacter)
-            detail("Alert level", limit.niveauAlerte)
+            detail(AppStrings.canTransact, limit.peutTransacter)
+            detail(AppStrings.alertLevel, limit.niveauAlerte)
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     if expanded {
@@ -237,7 +238,7 @@ struct CheckLimitView: View {
                 }
             } label: {
                 HStack {
-                    Text(expanded ? "Hide details" : "View details")
+                    Text(expanded ? AppStrings.hideDetails : AppStrings.viewDetails)
                     Spacer()
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
                 }
@@ -246,14 +247,14 @@ struct CheckLimitView: View {
             .accessibilityValue(expanded ? "Expanded" : "Collapsed")
             if expanded {
                 Divider()
-                detail("Minimum per transaction", money(limit.montantMinimum, currency: currency))
-                detail("Maximum per transaction", money(limit.montantMaximum, currency: currency))
-                detail("Period type", limit.typePeriode)
-                detail("Period limit", money(limit.limitePeriode, currency: currency))
-                detail("Used this period", money(limit.consommePeriode, currency: currency))
-                detail("Remaining this period", money(limit.restantPeriode, currency: currency))
-                detail("Period starts", limit.debutPeriode)
-                detail("Period ends", limit.finPeriode)
+                detail(AppStrings.minimumPerTransaction, money(limit.montantMinimum, currency: currency))
+                detail(AppStrings.maximumPerTransaction, money(limit.montantMaximum, currency: currency))
+                detail(AppStrings.periodType, limit.typePeriode)
+                detail(AppStrings.periodLimit, money(limit.limitePeriode, currency: currency))
+                detail(AppStrings.usedThisPeriod, money(limit.consommePeriode, currency: currency))
+                detail(AppStrings.remainingThisPeriod, money(limit.restantPeriode, currency: currency))
+                detail(AppStrings.periodStarts, limit.debutPeriode)
+                detail(AppStrings.periodEnds, limit.finPeriode)
             }
         }
         .padding(18)
@@ -266,7 +267,7 @@ struct CheckLimitView: View {
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
-            Text(nonempty(value) ?? "Not provided")
+            Text(nonempty(value) ?? AppStrings.notProvided)
                 .font(.subheadline)
                 .foregroundColor(Color(hex: "303949"))
                 .fixedSize(horizontal: false, vertical: true)
@@ -296,7 +297,7 @@ struct CheckLimitView: View {
         let wallet = nonempty(user.getWalletNumber())
         let phone = nonempty(user.getPhoneNumber())
         guard wallet != nil || phone != nil else {
-            errorMessage = "Your wallet details are missing. Please sign in again."
+            errorMessage = AppStrings.yourWalletDetailsAreMissingPleaseSignInAgain
             return
         }
         isLoading = true
@@ -315,14 +316,14 @@ struct CheckLimitView: View {
                 switch result {
                 case .success(let response):
                     guard response.isSuccessful else {
-                        errorMessage = nonempty(response.message) ?? "Unable to load wallet limits. Please try again."
+                        errorMessage = nonempty(response.message) ?? AppStrings.unableToLoadWalletLimitsPleaseTryAgain
                         return
                     }
                     limitSummary = response.summary
                     limitDetails = response.limits ?? []
                     hasLoaded = true
                 case .failure(let error):
-                    errorMessage = (error as? APIError)?.message ?? "Unable to load wallet limits. Please check your connection and try again."
+                    errorMessage = (error as? APIError)?.message ?? AppStrings.unableToLoadWalletLimitsPleaseCheckYourConnectionAnd
                 }
             }
         }

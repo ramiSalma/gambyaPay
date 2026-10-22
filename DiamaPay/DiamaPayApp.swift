@@ -3,12 +3,16 @@ import UIKit
 
 @main
 struct DiamaPayApp: App {
+    @StateObject private var localization = AppLanguageStore.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some Scene {
         WindowGroup {
             RootView()
                 .preferredColorScheme(.light)
+                .environment(\.locale, Locale(identifier: localization.language.rawValue))
+                .environment(\.layoutDirection, localization.language.layoutDirection)
+                .modifier(AppTranslationModifier())
         }
     }
 }

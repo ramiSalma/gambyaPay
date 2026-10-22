@@ -65,7 +65,7 @@ struct TransactionItem: Identifiable, Codable {
             // For received transfers
             if details.contains("Received transfer from:") {
                 if let phoneNumber = extractPhoneNumber(from: details, pattern: "Received transfer from:\\s*(\\d+)") {
-                    return "Transfert reçu de \(maskPhoneNumber(phoneNumber))"
+                    return AppStrings.transfertRecuDeValue(String(describing: maskPhoneNumber(phoneNumber)))
                 }
             }
             
@@ -79,14 +79,14 @@ struct TransactionItem: Identifiable, Codable {
             // For acquiring entity
             if details.contains("Acquiring entity :") {
                 if let entityId = extractPhoneNumber(from: details, pattern: "Acquiring entity :\\s*(\\d+)") {
-                    return "\(frenchTransactionType) via \(maskEntityId(entityId))"
+                    return AppStrings.valueViaValue(String(describing: frenchTransactionType), String(describing: maskEntityId(entityId)))
                 }
             }
             
             // For institution transfers
             if details.contains("institution:") {
                 if let institution = extractPhoneNumber(from: details, pattern: "institution:\\s*([^,]+)") {
-                    return "\(frenchTransactionType) via \(institution.trimmingCharacters(in: .whitespaces))"
+                    return AppStrings.valueViaValue(String(describing: frenchTransactionType), String(describing: institution.trimmingCharacters(in: .whitespaces)))
                 }
             }
             
@@ -106,50 +106,50 @@ struct TransactionItem: Identifiable, Codable {
     }
     
     var frenchTransactionType: String {
-        guard let type = type else { return "Transaction" }
+        guard let type = type else { return AppStrings.transactionGeneric }
         
         switch type.uppercased() {
-        case "CASH OUT": return "Retrait d'espèces"
-        case "CASH IN": return "Dépôt d'espèces"
-        case "ACCOUNT TO WALLET": return "Compte vers portefeuille"
-        case "TOPUP PURCHASE": return "Achat de crédit"
-        case "EVALUE CREDIT": return "Crédit eValue"
-        case "EVALUE DEBIT": return "Débit eValue"
-        case "EVALUE_TRANSFER": return "Transfert eValue"
-        case "TELLER CASH OUT": return "Retrait guichet"
-        case "TELLER CASH IN": return "Dépôt guichet"
-        case "GIP QR CREDIT": return "Crédit QR GIP"
-        case "GIP QR DEBIT": return "Débit QR GIP"
-        case "WALLET TO WALLET": return "Transfert entre portefeuilles"
+        case "CASH OUT": return AppStrings.retraitDEspeces
+        case "CASH IN": return AppStrings.depotDEspeces
+        case "ACCOUNT TO WALLET": return AppStrings.accountToWallet
+        case "TOPUP PURCHASE": return AppStrings.achatDeCredit
+        case "EVALUE CREDIT": return AppStrings.creditEvalue
+        case "EVALUE DEBIT": return AppStrings.debitEvalue
+        case "EVALUE_TRANSFER": return AppStrings.transfertEvalue
+        case "TELLER CASH OUT": return AppStrings.retraitGuichet
+        case "TELLER CASH IN": return AppStrings.depotGuichet
+        case "GIP QR CREDIT": return AppStrings.creditQrGip
+        case "GIP QR DEBIT": return AppStrings.debitQrGip
+        case "WALLET TO WALLET": return AppStrings.transfertEntrePortefeuilles
         case "MONEY VOUCHER": return "Bon d'argent"
-        case "MONEY VOUCHER TRANSFER": return "Transfert bon d'argent"
-        case "QR TRANSFER": return "Transfert QR"
-        case "WALLET TO ACCOUNT": return "Portefeuille vers compte"
-        case "AGENT CASH IN": return "Dépôt agent"
-        case "AGENT CASH OUT": return "Retrait agent"
-        case "AGENT MONEY VOUCHER CASH": return "Espèces bon agent"
-        case "GIP CREDIT": return "Crédit GIP"
-        case "GIP DEBIT": return "Débit GIP"
+        case "MONEY VOUCHER TRANSFER": return AppStrings.transfertBonDArgent
+        case "QR TRANSFER": return AppStrings.qrTransfer
+        case "WALLET TO ACCOUNT": return AppStrings.walletToAccount
+        case "AGENT CASH IN": return AppStrings.depotAgent
+        case "AGENT CASH OUT": return AppStrings.retraitAgent
+        case "AGENT MONEY VOUCHER CASH": return AppStrings.especesBonAgent
+        case "GIP CREDIT": return AppStrings.creditGip
+        case "GIP DEBIT": return AppStrings.debitGip
         case "MOBILE MONEY": return "Argent mobile"
-        case "REQUEST TO PAY": return "Demande de paiement"
-        case "BILLER PAYMENT ACCOUNT": return "Paiement facture compte"
-        case "BILLER PAYMENT WALLET": return "Paiement facture portefeuille"
-        case "BILL PAYMENT": return "Paiement de facture"
-        case "WALLET ENQUIRY": return "Consultation portefeuille"
-        case "SAVING TRANSACTION": return "Transaction épargne"
-        case "SAVING DAILY INTERESTS": return "Intérêts quotidiens épargne"
-        case "SAVING DAILY INTERESTS REV": return "Annulation intérêts épargne"
-        case "SAVING INTERESTS": return "Intérêts épargne"
-        case "INTEREST CREDIT": return "Crédit d'intérêts"
-        case "INTEREST TRANSACTION": return "Transaction d'intérêts"
-        case "SPONSORED TRANSACTION": return "Transaction sponsorisée"
-        case "CREDIT AGENT COMISSION": return "Commission agent"
-        case "DORMANT WALLET TO UNCLAIMED": return "Portefeuille dormant"
-        case "DORMANT SAVINGS TO UNCLAIMED": return "Épargne dormante"
+        case "REQUEST TO PAY": return AppStrings.demandeDePaiement
+        case "BILLER PAYMENT ACCOUNT": return AppStrings.paiementFactureCompte
+        case "BILLER PAYMENT WALLET": return AppStrings.paiementFacturePortefeuille
+        case "BILL PAYMENT": return AppStrings.paiementDeFacture
+        case "WALLET ENQUIRY": return AppStrings.consultationPortefeuille
+        case "SAVING TRANSACTION": return AppStrings.transactionEpargne
+        case "SAVING DAILY INTERESTS": return AppStrings.interetsQuotidiensEpargne
+        case "SAVING DAILY INTERESTS REV": return AppStrings.annulationInteretsEpargne
+        case "SAVING INTERESTS": return AppStrings.interetsEpargne
+        case "INTEREST CREDIT": return AppStrings.creditDInterets
+        case "INTEREST TRANSACTION": return AppStrings.transactionDInterets
+        case "SPONSORED TRANSACTION": return AppStrings.transactionSponsorisee
+        case "CREDIT AGENT COMISSION": return AppStrings.commissionAgent
+        case "DORMANT WALLET TO UNCLAIMED": return AppStrings.portefeuilleDormant
+        case "DORMANT SAVINGS TO UNCLAIMED": return AppStrings.epargneDormante
         case "BRANCH PORTING": return "Portage agence"
         case "WALLET PORTING": return "Portage portefeuille"
-        case "TRANSFER TO WALLET": return "Transfert vers portefeuille"
-        case "TRANSFER FROM WALLET": return "Transfert depuis portefeuille"
+        case "TRANSFER TO WALLET": return AppStrings.transfertVersPortefeuille
+        case "TRANSFER FROM WALLET": return AppStrings.transfertDepuisPortefeuille
         default: return type
         }
     }
@@ -180,7 +180,7 @@ struct TransactionItem: Identifiable, Codable {
     }
     
     private func maskEntityId(_ entityId: String) -> String {
-        guard entityId.count >= 6 else { return "Agent" }
+        guard entityId.count >= 6 else { return AppStrings.agent }
         let end = entityId.suffix(3)
         return "***\(end)"
     }

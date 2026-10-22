@@ -9,6 +9,7 @@ import SwiftUI
 import PDFKit
 
 struct TransactionDetailView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     let transaction: Transaction
     @State private var itemsToShare: [Any]?
@@ -19,7 +20,7 @@ struct TransactionDetailView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Transaction Details", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.transactionDetails, headerColor: Color(hex: "174EA6"))
                 ScrollView {
                     VStack(spacing: 18) {
                         transactionInfoCard
@@ -29,7 +30,7 @@ struct TransactionDetailView: View {
                         }) {
                             HStack(spacing: 10) {
                                 Image(systemName: "square.and.arrow.up")
-                                Text("Share receipt")
+                                Text(AppStrings.shareReceipt)
                             }
                             .foregroundColor(.white)
                             .font(.system(size: 16, weight: .semibold))
@@ -68,17 +69,17 @@ struct TransactionDetailView: View {
             summaryCard
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("TRANSACTION INFORMATION")
+                Text(AppStrings.transactionInformation2)
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1.1)
                     .foregroundColor(Color(hex: "174EA6"))
                     .padding(.bottom, 6)
 
-                detailRow(label: "Reference", value: transaction.transactionReference ?? "N/A")
-                detailRow(label: "Type", value: transaction.title)
-                detailRow(label: "Details", value: transaction.details ?? "No additional details")
-                detailRow(label: "Opening balance", value: transaction.openingBalance ?? "N/A")
-                detailRow(label: "Closing balance", value: transaction.closingBalance ?? "N/A")
+                detailRow(label: AppStrings.reference, value: transaction.transactionReference ?? AppStrings.nA)
+                detailRow(label: AppStrings.type, value: transaction.displayTitle)
+                detailRow(label: AppStrings.details, value: transaction.details ?? AppStrings.noAdditionalDetails)
+                detailRow(label: AppStrings.openingBalance, value: transaction.openingBalance ?? AppStrings.nA)
+                detailRow(label: AppStrings.closingBalance, value: transaction.closingBalance ?? AppStrings.nA)
             }
             .padding(18)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,10 +120,10 @@ struct TransactionDetailView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 14))
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(transaction.title)
+                        Text(transaction.displayTitle)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
-                        Text(transaction.date)
+                        Text(transaction.displayDate)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white.opacity(0.76))
                     }
@@ -131,7 +132,7 @@ struct TransactionDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(transaction.isDebit ? "Money sent" : "Money received")
+                    Text(transaction.isDebit ? AppStrings.moneySent : AppStrings.moneyReceived)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.white.opacity(0.78))
                     Text(transaction.amount)
@@ -142,7 +143,7 @@ struct TransactionDetailView: View {
                 }
 
                 HStack {
-                    Label(transaction.status ?? "Unknown", systemImage: statusIcon)
+                    Label(transaction.status ?? AppStrings.unknown, systemImage: statusIcon)
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 11)
@@ -152,7 +153,7 @@ struct TransactionDetailView: View {
 
                     Spacer()
 
-                    Text("Ref. \(transaction.transactionReference ?? "N/A")")
+                    Text(AppStrings.refValue(String(describing: transaction.transactionReference ?? AppStrings.nA)))
                         .font(.system(size: 11, weight: .medium, design: .monospaced))
                         .foregroundColor(.white.opacity(0.82))
                         .lineLimit(1)
@@ -198,9 +199,9 @@ struct TransactionDetailView: View {
         //print("🔵 Starting PDF generation")
         
         let pdfMetaData = [
-            kCGPDFContextCreator: "DIAMACASH",
+            kCGPDFContextCreator: AppStrings.brand,
             kCGPDFContextAuthor: "DIAMACASH App",
-            kCGPDFContextTitle: "Transaction receipt"
+            kCGPDFContextTitle: AppStrings.transactionReceipt
         ]
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = pdfMetaData as [String: Any]
@@ -222,21 +223,21 @@ struct TransactionDetailView: View {
             var yOffset: CGFloat = 40
             let leftMargin: CGFloat = 40
             
-            "Transaction Receipt".draw(at: CGPoint(x: leftMargin, y: yOffset), withAttributes: [
+            AppStrings.transactionReceipt2.draw(at: CGPoint(x: leftMargin, y: yOffset), withAttributes: [
                 .font: titleFont,
                 .foregroundColor: textColor
             ])
             yOffset += 40
             
             let lines = [
-                "Reference: \(transaction.transactionReference ?? "N/A")",
-                "Date: \(transaction.date)",
-                "Type: \(transaction.title)",
-                "Amount: \(transaction.amount)",
-                "Status: \(transaction.status ?? "Unknown")",
-                "Details: \(transaction.details ?? "N/A")",
-                "Opening balance: \(transaction.openingBalance ?? "N/A")",
-                "Closing balance: \(transaction.closingBalance ?? "N/A")"
+                AppStrings.referenceValue(String(describing: transaction.transactionReference ?? AppStrings.nA)),
+                AppStrings.dateValue(String(describing: transaction.displayDate)),
+                AppStrings.typeValue(String(describing: transaction.displayTitle)),
+                AppStrings.amountValue(String(describing: transaction.amount)),
+                AppStrings.statusValue(String(describing: transaction.status ?? AppStrings.unknown)),
+                AppStrings.detailsValue(String(describing: transaction.details ?? AppStrings.nA)),
+                AppStrings.openingBalanceValue(String(describing: transaction.openingBalance ?? AppStrings.nA)),
+                AppStrings.closingBalanceValue(String(describing: transaction.closingBalance ?? AppStrings.nA))
             ]
             
             //print("🔵 Drawing \(lines.count) lines")

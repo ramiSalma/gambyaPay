@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SavedLinkedAccountsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     let accounts: [Account]
     let onSelect: (Account) -> Void
@@ -27,15 +28,15 @@ struct SavedLinkedAccountsView: View {
 
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Saved recipients")
+                    Text(AppStrings.savedRecipients)
                         .font(.system(size: 25, weight: .bold))
                         .foregroundColor(Color(hex: "174EA6"))
-                    Text("Select a recent recipient")
+                    Text(AppStrings.selectARecentRecipient)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(hex: "505A69"))
                 }
                 Spacer()
-                Button("Close") { dismiss() }
+                Button(AppStrings.close) { dismiss() }
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "0788B9"))
             }
@@ -46,7 +47,7 @@ struct SavedLinkedAccountsView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 21, weight: .medium))
                     .foregroundColor(Color(hex: "0788B9"))
-                TextField("Search...", text: $search)
+                TextField(AppStrings.search, text: $search)
                     .font(.system(size: 17))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -62,15 +63,15 @@ struct SavedLinkedAccountsView: View {
                     Image(systemName: "building.columns")
                         .font(.system(size: 34))
                         .foregroundColor(Color(hex: "0788B9"))
-                    Text("No saved accounts")
+                    Text(AppStrings.noSavedAccounts)
                         .font(.system(size: 17, weight: .semibold))
-                    Text("Linked bank accounts will appear here.")
+                    Text(AppStrings.linkedBankAccountsWillAppearHere)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if filteredAccounts.isEmpty {
-                Text("No matching accounts")
+                Text(AppStrings.noMatchingAccounts)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -116,7 +117,7 @@ struct SavedLinkedAccountsView: View {
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(Color(hex: "505A69"))
                     .lineLimit(1)
-                Text("\(account.accountNumber)  •  \(account.bankCode)")
+                Text(AppStrings.valueValue(String(describing: account.accountNumber), String(describing: account.bankCode)))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color(hex: "505A69"))
                     .lineLimit(1)

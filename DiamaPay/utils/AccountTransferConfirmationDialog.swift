@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct AccountTransferConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let amount: String
     let fee: Double
     let total: Double
@@ -64,10 +65,10 @@ struct AccountTransferConfirmationDialog: View {
             HStack(spacing: 14) {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 30, weight: .semibold))
-                Text("Confirmation du transfert")
+                Text(AppStrings.confirmationDuTransfert)
                     .font(.system(size: 25, weight: .bold))
             }
-            Text("Vérifiez les détails et saisissez votre code PIN")
+            Text(AppStrings.verifiezLesDetailsEtSaisissezVotreCodePin)
                 .font(.system(size: 16, weight: .medium))
                 .padding(.leading, 45)
         }
@@ -80,7 +81,7 @@ struct AccountTransferConfirmationDialog: View {
 
     private var amountCard: some View {
         VStack(spacing: 12) {
-            Text("MONTANT")
+            Text(AppStrings.montant)
                 .font(.system(size: 15, weight: .bold))
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -93,16 +94,16 @@ struct AccountTransferConfirmationDialog: View {
 
             Divider()
             HStack {
-                Text("Frais d'envoi")
+                Text(AppStrings.fraisDEnvoi)
                 Spacer()
-                Text(fee > 0 ? formatAmount(fee) : "Gratuit")
+                Text(fee > 0 ? formatAmount(fee) : AppStrings.gratuit)
             }
             .font(.system(size: 15))
             .foregroundColor(.secondary)
 
             Divider()
             HStack {
-                Text("Total à débiter")
+                Text(AppStrings.totalADebiter)
                 Spacer()
                 Text(formatAmount(total))
             }
@@ -117,16 +118,16 @@ struct AccountTransferConfirmationDialog: View {
 
     private var recipientCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("INFORMATIONS DU BÉNÉFICIAIRE")
+            Text(AppStrings.informationsDuBeneficiaire)
                 .font(.system(size: 15, weight: .bold))
                 .foregroundColor(.secondary)
 
-            detailRow("Bénéficiaire", value: accountName)
+            detailRow(AppStrings.beneficiary, value: accountName)
             Divider()
-            detailRow("Numéro de compte", value: accountNumber)
+            detailRow(AppStrings.numeroDeCompte, value: accountNumber)
             if !bankName.isEmpty {
                 Divider()
-                detailRow("Banque", value: bankName)
+                detailRow(AppStrings.banque, value: bankName)
             }
         }
         .padding(16)
@@ -139,7 +140,7 @@ struct AccountTransferConfirmationDialog: View {
     private var descriptionCard: some View {
         if !paymentDetails.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             VStack(alignment: .leading, spacing: 9) {
-                Text("DESCRIPTION")
+                Text(AppStrings.description)
                     .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.secondary)
                 Text(paymentDetails)
@@ -157,18 +158,18 @@ struct AccountTransferConfirmationDialog: View {
     private var pinEntry: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("AUTHENTIFICATION")
+                Text(AppStrings.authentification)
                     .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.secondary)
                 Spacer()
                 if pinFieldFocused {
-                    Button("Done") { pinFieldFocused = false }
+                    Button(AppStrings.done) { pinFieldFocused = false }
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(Color(hex: "0788B9"))
                 }
             }
 
-            SecureField("Code PIN", text: $pin)
+            SecureField(AppStrings.pin, text: $pin)
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
                 .focused($pinFieldFocused)
@@ -196,7 +197,7 @@ struct AccountTransferConfirmationDialog: View {
     private var actionButtons: some View {
         HStack(spacing: 12) {
             Button(action: onCancel) {
-                Text("Annuler")
+                Text(AppStrings.annuler)
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(Color(hex: "0788B9"))
                     .frame(maxWidth: .infinity)
@@ -214,7 +215,7 @@ struct AccountTransferConfirmationDialog: View {
                     if isVerifyingPin {
                         ProgressView().tint(.white)
                     }
-                    Text("Transférer")
+                    Text(AppStrings.transferer)
                         .font(.system(size: 17, weight: .bold))
                 }
                 .foregroundColor(.white)
@@ -251,7 +252,7 @@ struct AccountTransferConfirmationDialog: View {
         formatter.numberStyle = .decimal
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return "\(formatter.string(from: NSNumber(value: value)) ?? "0.00") \(currency)"
     }
 
@@ -260,7 +261,7 @@ struct AccountTransferConfirmationDialog: View {
         showPinError = false
 
         guard pin.count == 4, pin.allSatisfy({ $0.isASCII && $0.isNumber }) else {
-            pinErrorMessage = "Le PIN doit contenir exactement 4 chiffres"
+            pinErrorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             showPinError = true
             return
         }

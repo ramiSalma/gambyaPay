@@ -16,6 +16,7 @@
 import SwiftUI
 
 struct StandingInstructionUpdateView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     let instruction: StandingInstruction
@@ -30,10 +31,10 @@ struct StandingInstructionUpdateView: View {
     ]
     
     private let frequencies = [
-        ("Quotidien", "D"),
-        ("Hebdomadaire", "W"),
-        ("Mensuel", "M"),
-        ("Annuel", "Y")
+        (AppStrings.original("quotidien"), "D"),
+        (AppStrings.original("hebdomadaire"), "W"),
+        (AppStrings.original("mensuel"), "M"),
+        (AppStrings.original("annuel"), "Y")
     ]
     
     // MARK: - State Variables
@@ -49,7 +50,7 @@ struct StandingInstructionUpdateView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Information"
+    @State private var alertTitle = AppStrings.information
     
     private let userDataManager = UserDataManager.shared
     
@@ -60,7 +61,7 @@ struct StandingInstructionUpdateView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Edit Standing Instruction", headerColor: Color(hex: "174EA6"), onBackToHome: {
+                DiamaPayHeader(title: AppStrings.editStandingInstruction, headerColor: Color(hex: "174EA6"), onBackToHome: {
                     presentationMode.wrappedValue.dismiss()
                 })
 
@@ -71,7 +72,7 @@ struct StandingInstructionUpdateView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -104,9 +105,9 @@ struct StandingInstructionUpdateView: View {
             loadInstructionData()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
     }
     
@@ -118,7 +119,7 @@ struct StandingInstructionUpdateView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Modifier le Virement")
+                Text(AppStrings.modifierLeVirement)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -134,7 +135,7 @@ struct StandingInstructionUpdateView: View {
     private var beneficiaryCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Détails du Bénéficiaire")
+                Text(AppStrings.detailsDuBeneficiaire)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -145,7 +146,7 @@ struct StandingInstructionUpdateView: View {
             
             // Beneficiary Name (Non-editable)
             HStack {
-                Text(instruction.beneficiary ?? "Unknown")
+                Text(instruction.beneficiary ?? AppStrings.unknown)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 12)
@@ -165,7 +166,7 @@ struct StandingInstructionUpdateView: View {
     private var paymentDetailsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Détails de Paiement")
+                Text(AppStrings.detailsDePaiement)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -176,16 +177,16 @@ struct StandingInstructionUpdateView: View {
             
             // Amount
             VStack(alignment: .leading, spacing: 8) {
-                Text("Montant")
+                Text(AppStrings.montant3)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
-                FormattedTextField(placeholder: "Entrer le montant", text: $amount)
+                FormattedTextField(placeholder: AppStrings.entrerLeMontant, text: $amount)
 
             }
             
             // Currency
             VStack(alignment: .leading, spacing: 8) {
-                Text("Devise")
+                Text(AppStrings.devise)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 
@@ -218,11 +219,11 @@ struct StandingInstructionUpdateView: View {
             
             // Description
             VStack(alignment: .leading, spacing: 8) {
-                Text("Description")
+                Text(AppStrings.description2)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 
-                TextField("Entrer une description", text: $details)
+                TextField(AppStrings.entrerUneDescription, text: $details)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
                     .frame(height: 48)
@@ -240,7 +241,7 @@ struct StandingInstructionUpdateView: View {
     private var scheduleCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Planification")
+                Text(AppStrings.planification)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -252,7 +253,7 @@ struct StandingInstructionUpdateView: View {
             
             // Start Date
             VStack(alignment: .leading, spacing: 8) {
-                Text("Date de début")
+                Text(AppStrings.dateDeDebut)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 
@@ -273,13 +274,13 @@ struct StandingInstructionUpdateView: View {
                     .cornerRadius(8)
                 }
                 .sheet(isPresented: $showStartDatePicker) {
-                    DatePickerSheetA(selectedDate: $startDate, title: "Date de début")
+                    DatePickerSheetA(selectedDate: $startDate, title: AppStrings.dateDeDebut)
                 }
             }
             
             // End Date
             VStack(alignment: .leading, spacing: 8) {
-                Text("Date de fin (optionnel)")
+                Text(AppStrings.dateDeFinOptionnel)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 
@@ -300,7 +301,7 @@ struct StandingInstructionUpdateView: View {
                     .cornerRadius(8)
                 }
                 .sheet(isPresented: $showEndDatePicker) {
-                    DatePickerSheetA(selectedDate: $endDate, title: "Date de fin")
+                    DatePickerSheetA(selectedDate: $endDate, title: AppStrings.dateDeFin)
                 }
             }
         }
@@ -314,7 +315,7 @@ struct StandingInstructionUpdateView: View {
     private var pinCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Sécurité")
+                Text(AppStrings.securite)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -324,11 +325,11 @@ struct StandingInstructionUpdateView: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("Code PIN")
+                Text(AppStrings.pin)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 
-                SecureField("Entrer votre PIN", text: $pin)
+                SecureField(AppStrings.entrerVotrePin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
@@ -352,7 +353,7 @@ struct StandingInstructionUpdateView: View {
     private var updateButton: some View {
         VStack(spacing: 16) {
             Button(action: validateAndUpdate) {
-                Text("Mettre à jour")
+                Text(AppStrings.update)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 150, height: 48)
@@ -399,22 +400,22 @@ struct StandingInstructionUpdateView: View {
     // MARK: - Validate and Update
     private func validateAndUpdate() {
         guard !amount.isEmpty else {
-            showErrorAlert("Le montant est requis")
+            showErrorAlert(AppStrings.leMontantEstRequis)
             return
         }
         
         guard !details.isEmpty else {
-            showErrorAlert("La description est requise")
+            showErrorAlert(AppStrings.laDescriptionEstRequise)
             return
         }
         
         guard !pin.isEmpty else {
-            showErrorAlert("Le code PIN est requis")
+            showErrorAlert(AppStrings.leCodePinEstRequis)
             return
         }
         
         guard startDate < endDate else {
-            showErrorAlert("La date de début doit être avant la date de fin")
+            showErrorAlert(AppStrings.laDateDeDebutDoitEtreAvantLaDateDe)
             return
         }
         
@@ -451,18 +452,18 @@ struct StandingInstructionUpdateView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccessAlert("Instruction mise à jour avec succès")
+                        self.showSuccessAlert(AppStrings.instructionMiseAJourAvecSucces)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                             self.onSuccess()
                         }
                     } else {
-                        self.showErrorAlert("Erreur: \(response.message ?? "Échec de la mise à jour")")
+                        self.showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.echecDeLaMiseAJour)))
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -497,13 +498,13 @@ struct StandingInstructionUpdateView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }

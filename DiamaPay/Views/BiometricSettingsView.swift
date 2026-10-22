@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct BiometricSettingsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     
     @Environment(\.presentationMode) var presentationMode
     @State private var biometricEnabled: Bool
@@ -31,7 +32,7 @@ struct BiometricSettingsView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Biometric Settings", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.biometricSettings, headerColor: Color(hex: "174EA6"))
 
                 
                 ScrollView {
@@ -63,9 +64,9 @@ struct BiometricSettingsView: View {
             }
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .overlay(
             Group {
@@ -110,11 +111,11 @@ struct BiometricSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Activer \(BiometricHelper.getBiometricTypeString())")
+                    Text(AppStrings.activerValue(String(describing: BiometricHelper.getBiometricTypeString())))
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.primary)
                     
-                    Text("Connexion rapide et sécurisée")
+                    Text(AppStrings.connexionRapideEtSecurisee)
                         .font(.system(size: 13))
                         .foregroundColor(.secondary)
                 }
@@ -155,7 +156,7 @@ struct BiometricSettingsView: View {
                     .foregroundColor(.green)
                     .font(.system(size: 20))
                 
-                Text("Comment ça marche")
+                Text(AppStrings.commentCaMarche)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.primary)
             }
@@ -163,17 +164,17 @@ struct BiometricSettingsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 InstructionRow(
                     number: "1",
-                    text: "À la prochaine connexion, vous verrez le bouton d'authentification biométrique"
+                    text: AppStrings.aLaProchaineConnexionVousVerrezLeBoutonDAuthentification
                 )
                 
                 InstructionRow(
                     number: "2",
-                    text: "Appuyez sur le bouton et utilisez votre \(BiometricHelper.getBiometricTypeString())"
+                    text: AppStrings.appuyezSurLeBoutonEtUtilisezVotreValue(String(describing: BiometricHelper.getBiometricTypeString()))
                 )
                 
                 InstructionRow(
                     number: "3",
-                    text: "Accédez instantanément à votre portefeuille"
+                    text: AppStrings.accedezInstantanementAVotrePortefeuille
                 )
             }
             .padding(.top, 8)
@@ -188,8 +189,8 @@ struct BiometricSettingsView: View {
     private var biometricStatusText: String {
         if BiometricHelper.isBiometricAvailable() {
             return biometricEnabled ? 
-                "La connexion biométrique est activée pour une connexion rapide et sécurisée" :
-                "Activez la connexion biométrique pour une authentification plus rapide"
+                AppStrings.laConnexionBiometriqueEstActiveePourUneConnexionRapideEt :
+                AppStrings.activezLaConnexionBiometriquePourUneAuthentificationPlusRapide
         } else {
             return BiometricHelper.getBiometricStatus().message
         }
@@ -211,7 +212,7 @@ struct BiometricSettingsView: View {
         
         // Verify PIN is correct by attempting authentication
         BiometricHelper.authenticateWithCustomPrompt(
-            reason: "Confirmer pour activer \(BiometricHelper.getBiometricTypeString())"
+            reason: AppStrings.confirmerPourActiverValue(String(describing: BiometricHelper.getBiometricTypeString()))
         ) { result in
             DispatchQueue.main.async {
                 self.isProcessing = false
@@ -221,15 +222,15 @@ struct BiometricSettingsView: View {
                     // Save PIN in Keychain
                     if self.userDataManager.saveBiometricCredentials(pin: pin) {
                         self.userDataManager.setUseBiometric(true)
-                        self.alertTitle = "Succès"
-                        self.alertMessage = "\(BiometricHelper.getBiometricTypeString()) activé avec succès"
+                        self.alertTitle = AppStrings.succes
+                        self.alertMessage = AppStrings.valueActiveAvecSucces(String(describing: BiometricHelper.getBiometricTypeString()))
                         self.showAlert = true
                         
                         //print("✅ Biometric login enabled successfully")
                     } else {
                         self.biometricEnabled = false
-                        self.alertTitle = "Erreur"
-                        self.alertMessage = "Impossible d'activer \(BiometricHelper.getBiometricTypeString())"
+                        self.alertTitle = AppStrings.error
+                        self.alertMessage = AppStrings.impossibleDActiverValue(String(describing: BiometricHelper.getBiometricTypeString()))
                         self.showAlert = true
                         
                         //print("❌ Failed to save biometric credentials")
@@ -243,7 +244,7 @@ struct BiometricSettingsView: View {
                         return
                     }
                     
-                    self.alertTitle = "Erreur"
+                    self.alertTitle = AppStrings.error
                     self.alertMessage = error.localizedDescription
                     self.showAlert = true
                     
@@ -256,8 +257,8 @@ struct BiometricSettingsView: View {
     private func disableBiometric() {
         userDataManager.setUseBiometric(false)
         
-        alertTitle = "Désactivé"
-        alertMessage = "\(BiometricHelper.getBiometricTypeString()) désactivé"
+        alertTitle = AppStrings.desactive
+        alertMessage = AppStrings.valueDesactive(String(describing: BiometricHelper.getBiometricTypeString()))
         showAlert = true
         
         //print("ℹ️ Biometric login disabled")
@@ -266,6 +267,7 @@ struct BiometricSettingsView: View {
 
 // MARK: - Instruction Row
 struct InstructionRow: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let number: String
     let text: String
     
@@ -287,6 +289,7 @@ struct InstructionRow: View {
 }
 
 struct PINPromptView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @State private var pin = ""
     @State private var showPassword = false
@@ -304,11 +307,11 @@ struct PINPromptView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.blueH)
                     
-                    Text("Activer \(BiometricHelper.getBiometricTypeString())")
+                    Text(AppStrings.activerValue(String(describing: BiometricHelper.getBiometricTypeString())))
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.primary)
                     
-                    Text("Entrez votre PIN pour confirmer")
+                    Text(AppStrings.entrezVotrePinPourConfirmer)
                         .font(.system(size: 15))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -322,11 +325,11 @@ struct PINPromptView: View {
                             .frame(width: 20)
                         
                         if showPassword {
-                            TextField("PIN", text: $pin)
+                            TextField(AppStrings.pin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                         } else {
-                            SecureField("PIN", text: $pin)
+                            SecureField(AppStrings.pin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                         }
@@ -347,7 +350,7 @@ struct PINPromptView: View {
                     }
                     
                     if !errorMessage.isEmpty {
-                        Text(errorMessage)
+                        Text(AppStrings.option(errorMessage))
                             .font(.system(size: 12))
                             .foregroundColor(.red)
                     }
@@ -357,7 +360,7 @@ struct PINPromptView: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text("Confirmer")
+                            Text(AppStrings.confirmer)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                         }
@@ -374,7 +377,7 @@ struct PINPromptView: View {
             }
             .background(Color.white)
             .navigationBarItems(
-                leading: Button("Annuler") { presentationMode.wrappedValue.dismiss() }
+                leading: Button(AppStrings.annuler) { presentationMode.wrappedValue.dismiss() }
                     .foregroundColor(.blueH)
             )
         }
@@ -384,7 +387,7 @@ struct PINPromptView: View {
         errorMessage = ""
         
         guard pin.count == 4 else {
-            errorMessage = "Le PIN doit contenir exactement 4 chiffres"
+            errorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             return
         }
         

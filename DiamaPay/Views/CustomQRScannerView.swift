@@ -2,6 +2,7 @@ import SwiftUI
 import AVFoundation
 
 struct CustomQRScannerView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var scannedCode: String?
     @Environment(\.presentationMode) var presentationMode
     
@@ -87,7 +88,7 @@ struct CustomQRScannerView: View {
                 
                 Spacer()
                 
-                Text("Scanner QR Code")
+                Text(AppStrings.scannerQrCode)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -126,7 +127,7 @@ struct CustomQRScannerView: View {
             .frame(height: 180)
             
             VStack(spacing: 8) {
-                Text("Placez le code QR dans le cadre")
+                Text(AppStrings.placezLeCodeQrDansLeCadre)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
@@ -136,7 +137,7 @@ struct CustomQRScannerView: View {
                             .fill(Color.black.opacity(0.6))
                     )
                 
-                Text("Le scan se fera automatiquement")
+                Text(AppStrings.leScanSeFeraAutomatiquement)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
             }
@@ -153,6 +154,7 @@ struct CustomQRScannerView: View {
 
 // MARK: - Scanner Corner Frames
 struct ScannerCornerFrames: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     var body: some View {
         GeometryReader { geometry in
             let centerX = geometry.size.width / 2

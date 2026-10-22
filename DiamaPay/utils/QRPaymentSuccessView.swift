@@ -2,6 +2,7 @@ import SwiftUI
 import PDFKit
 
 struct QRPaymentSuccessView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let transactionId: String
     let transactionDate: String
     let amount: String
@@ -28,7 +29,7 @@ struct QRPaymentSuccessView: View {
                         .foregroundColor(.green)
                         .padding(.top, 20)
                     
-                    Text("Paiement réussi")
+                    Text(AppStrings.paiementReussi)
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -36,15 +37,15 @@ struct QRPaymentSuccessView: View {
                     // DETAILS CARD
                     VStack(alignment: .leading, spacing: 16) {
                         Group {
-                            DetailRow(label: "ID Transaction:", value: transactionId)
-                            DetailRow(label: "Date:", value: transactionDate)
-                            DetailRow(label: "Montant :",
+                            DetailRow(label: AppStrings.idTransaction, value: transactionId)
+                            DetailRow(label: AppStrings.dateLabel, value: transactionDate)
+                            DetailRow(label: AppStrings.montant4,
                                       value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
                             
                             // ✅ Show fees if they exist (already filtered)
                             if sendingFee > 0 {
                                 DetailRow(
-                                    label: "Frais d'envoi:",
+                                    label: AppStrings.fraisDEnvoi2,
                                     value: formatAmount(sendingFee),
                                     valueColor: .orange
                                 )
@@ -52,7 +53,7 @@ struct QRPaymentSuccessView: View {
                             
                             if withdrawalFee > 0 {
                                 DetailRow(
-                                    label: "Frais de retrait:",
+                                    label: AppStrings.fraisDeRetrait2,
                                     value: formatAmount(withdrawalFee),
                                     valueColor: .orange
                                 )
@@ -61,7 +62,7 @@ struct QRPaymentSuccessView: View {
                             Divider().padding(.vertical, 4)
                             
                             DetailRow(
-                                label: "Total débité:",
+                                label: AppStrings.totalDebite,
                                 value: formatAmount(total),
                                 valueColor: .primary,
                                 isBold: true
@@ -71,18 +72,18 @@ struct QRPaymentSuccessView: View {
                         Divider().padding(.vertical, 8)
                         
                         Group {
-                            DetailRow(label: "Émetteur:", value: senderName)
-                            DetailRow(label: "Téléphone:", value: senderPhone)
+                            DetailRow(label: AppStrings.emetteur2, value: senderName)
+                            DetailRow(label: AppStrings.telephone, value: senderPhone)
                         }
                         
                         Divider().padding(.vertical, 8)
                         
                         Group {
-                            DetailRow(label: "Destinataire:", value: merchantName)
+                            DetailRow(label: AppStrings.destinataire3, value: merchantName)
                             
                             if recipientType != .unknown {
                                 HStack {
-                                    Text("Type:")
+                                    Text(AppStrings.type2)
                                         .font(.system(size: 14))
                                         .foregroundColor(.secondary)
                                     Spacer()
@@ -96,18 +97,18 @@ struct QRPaymentSuccessView: View {
                                 }
                             }
 
-                            DetailRow(label: "Portefeuille:", value: merchantWallet)
+                            DetailRow(label: AppStrings.portefeuille, value: merchantWallet)
                             
                             if !merchantNumber.isEmpty {
-                                DetailRow(label: "ID Destinataire:", value: merchantNumber)
+                                DetailRow(label: AppStrings.idDestinataire, value: merchantNumber)
                             }
                             
                             if !bankCode.isEmpty {
-                                DetailRow(label: "Banque:", value: bankCode)
+                                DetailRow(label: AppStrings.banque2, value: bankCode)
                             }
                             
                             if !paymentDetails.isEmpty {
-                                DetailRow(label: "Détails:", value: paymentDetails)
+                                DetailRow(label: AppStrings.details2, value: paymentDetails)
                             }
                         }
                     }
@@ -121,7 +122,7 @@ struct QRPaymentSuccessView: View {
                         Button(action: { shareReceipt() }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.up")
-                                Text("Partager le reçu")
+                                Text(AppStrings.partagerLeRecu)
                             }
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -132,7 +133,7 @@ struct QRPaymentSuccessView: View {
                         }
                         
                         Button(action: onClose) {
-                            Text("Fermer")
+                            Text(AppStrings.fermer)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.blueH)
                                 .frame(maxWidth: .infinity)
@@ -147,24 +148,24 @@ struct QRPaymentSuccessView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button("Fermer", action: onClose))
-            .navigationBarTitle("Reçu de paiement QR", displayMode: .inline)
+            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarTitle(AppStrings.recuDePaiementQr, displayMode: .inline)
         }
     }
     
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
     }
     
     private var recipientTypeName: String {
         switch recipientType {
-        case .client: return "CLIENT"
-        case .merchant: return "MARCHAND"
-        case .agent: return "AGENT"
-        case .unknown: return "INCONNU"
+        case .client: return AppStrings.client
+        case .merchant: return AppStrings.marchand
+        case .agent: return AppStrings.agent2
+        case .unknown: return AppStrings.inconnu
         }
     }
     
@@ -221,7 +222,7 @@ struct QRPaymentSuccessView: View {
         let pdfMeta = [
             kCGPDFContextCreator: "DIAMACASH",
             kCGPDFContextAuthor: senderName,
-            kCGPDFContextTitle: "Reçu de Paiement QR EMV"
+            kCGPDFContextTitle: AppStrings.recuDePaiementQrEmv
         ]
         
         let format = UIGraphicsPDFRendererFormat()
@@ -277,58 +278,58 @@ struct QRPaymentSuccessView: View {
             }
             
             // TITLE
-            addText("REÇU DE PAIEMENT QR EMV", fontSize: 18, isBold: true, extraSpacing: 10)
+            addText(AppStrings.recuDePaiementQrEmv2, fontSize: 18, isBold: true, extraSpacing: 10)
             addSeparator()
             
             // TRANSACTION STATUS
-            addText("Statut: Paiement réussi", fontSize: 12, isBold: true)
-            addText("ID Transaction: \(transactionId)")
-            addText("Date: \(transactionDate)")
+            addText(AppStrings.statutPaiementReussi, fontSize: 12, isBold: true)
+            addText(AppStrings.idTransactionValue(String(describing: transactionId)))
+            addText(AppStrings.dateValue(String(describing: transactionDate)))
             addText(" ")
             
             // AMOUNT DETAILS
-            addText("Montant: \(formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0))", fontSize: 12, isBold: true)
+            addText(AppStrings.montantValue(String(describing: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0))), fontSize: 12, isBold: true)
             
             if sendingFee > 0 {
-                addText("Frais d'envoi: \(formatAmount(sendingFee))", color: .orange)
+                addText(AppStrings.fraisDEnvoiValue(String(describing: formatAmount(sendingFee))), color: .orange)
             }
             
             if withdrawalFee > 0 {
-                addText("Frais de retrait: \(formatAmount(withdrawalFee))", color: .red)
+                addText(AppStrings.fraisDeRetraitValue(String(describing: formatAmount(withdrawalFee))), color: .red)
             }
             
-            addText("Total débité: \(formatAmount(total))", fontSize: 13, isBold: true, extraSpacing: 10)
+            addText(AppStrings.totalDebiteValue(String(describing: formatAmount(total))), fontSize: 13, isBold: true, extraSpacing: 10)
             addSeparator()
             
             // SENDER INFO
-            addText("ÉMETTEUR", fontSize: 14, isBold: true, extraSpacing: 8)
-            addText("Nom: \(senderName)")
-            addText("Téléphone: \(senderPhone)", extraSpacing: 10)
+            addText(AppStrings.emetteur, fontSize: 14, isBold: true, extraSpacing: 8)
+            addText(AppStrings.nomValue(String(describing: senderName)))
+            addText(AppStrings.telephoneValue(String(describing: senderPhone)), extraSpacing: 10)
             addSeparator()
             
             // RECIPIENT INFO
-            addText("MARCHAND", fontSize: 14, isBold: true, extraSpacing: 8)
-            addText("Nom: \(merchantName)")
-            addText("Type: \(recipientTypeName)")
-            addText("Portefeuille: \(merchantWallet)")
+            addText(AppStrings.marchand, fontSize: 14, isBold: true, extraSpacing: 8)
+            addText(AppStrings.nomValue(String(describing: merchantName)))
+            addText(AppStrings.typeValue(String(describing: recipientTypeName)))
+            addText(AppStrings.portefeuilleValue(String(describing: merchantWallet)))
             
             if !merchantNumber.isEmpty {
-                addText("ID Marchand: \(merchantNumber)")
+                addText(AppStrings.idMarchandValue(String(describing: merchantNumber)))
             }
             
             if !bankCode.isEmpty {
-                addText("Banque: \(bankCode)")
+                addText(AppStrings.banqueValue(String(describing: bankCode)))
             }
             
             if !paymentDetails.isEmpty {
-                addText("Détails: \(paymentDetails)", extraSpacing: 10)
+                addText(AppStrings.detailsValue2(String(describing: paymentDetails)), extraSpacing: 10)
             }
             
             addSeparator()
             
             // FOOTER
             addText(" ")
-            addText("Ce reçu a été généré automatiquement.", fontSize: 10, color: .gray)
+            addText(AppStrings.ceRecuAEteGenereAutomatiquement, fontSize: 10, color: .gray)
         }
     }
     
@@ -337,42 +338,19 @@ struct QRPaymentSuccessView: View {
         
         // ✅ Only include fees if they exist
         if sendingFee > 0 {
-            feeText += "Frais d'envoi: \(formatAmount(sendingFee))\n"
+            feeText += AppStrings.fraisDEnvoiValue2(String(describing: formatAmount(sendingFee)))
         }
         
         if withdrawalFee > 0 {
-            feeText += "Frais de retrait: \(formatAmount(withdrawalFee))\n"
+            feeText += AppStrings.fraisDeRetraitValue2(String(describing: formatAmount(withdrawalFee)))
         }
         
-        var merchantDetails = """
-        Nom: \(merchantName)
-        Type: \(recipientTypeName)
-        Portefeuille: \(merchantWallet)
-        """
+        var merchantDetails = AppStrings.nomValueTypeValuePortefeuilleValue(String(describing: merchantName), String(describing: recipientTypeName), String(describing: merchantWallet))
         
-        if !merchantNumber.isEmpty { merchantDetails += "\nID Marchand: \(merchantNumber)" }
-        if !bankCode.isEmpty { merchantDetails += "\nBanque: \(bankCode)" }
+        if !merchantNumber.isEmpty { merchantDetails += AppStrings.idMarchandValue2(String(describing: merchantNumber)) }
+        if !bankCode.isEmpty { merchantDetails += AppStrings.banqueValue2(String(describing: bankCode)) }
         
-        return """
-        REÇU DE PAIEMENT QR EMV
-        
-        Statut: Paiement réussi
-        ID Transaction: \(transactionId)
-        Date: \(transactionDate)
-        
-        Montant: \(formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0))
-        \(feeText)Total débité: \(formatAmount(total))
-        
-        ÉMETTEUR
-        Nom: \(senderName)
-        Téléphone: \(senderPhone)
-        
-        MARCHAND
-        \(merchantDetails)
-        
-        \(paymentDetails.isEmpty ? "" : "Détails: \(paymentDetails)\n")
-        Ce reçu a été généré automatiquement.
-        """
+        return AppStrings.recuDePaiementQrEmvStatutPaiementReussiIdTransaction(String(describing: transactionId), String(describing: transactionDate), String(describing: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0)), String(describing: feeText), String(describing: formatAmount(total)), String(describing: senderName), String(describing: senderPhone), String(describing: merchantDetails), String(describing: paymentDetails.isEmpty ? "" : AppStrings.detailsValue3(String(describing: paymentDetails))))
     }
 }
 extension String {

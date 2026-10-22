@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct QRPaymentConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let paymentData: EMVQRPaymentData
     let sendingFee: Double
     let withdrawalFee: Double
@@ -72,13 +73,13 @@ struct QRPaymentConfirmationDialog: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 8) {
-                    Text("Paiement Code QR EMV")
+                    Text(AppStrings.paiementCodeQrEmv)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
 
                     if paymentData.isExpired {
-                        Text("Ce code QR a expiré")
+                        Text(AppStrings.ceCodeQrAExpire)
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(.red)
                     }
@@ -93,7 +94,7 @@ struct QRPaymentConfirmationDialog: View {
                     VStack(spacing: 16) {
                         // Amount & Fees
                         VStack(spacing: 12) {
-                            Text("Montant à payer")
+                            Text(AppStrings.montantAPayer)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
 
@@ -107,7 +108,7 @@ struct QRPaymentConfirmationDialog: View {
 
                                     if displaySendingFee > 0 {
                                         HStack {
-                                            Text("Frais d'envoi:")
+                                            Text(AppStrings.fraisDEnvoi2)
                                                 .font(.system(size: 14))
                                                 .foregroundColor(.secondary)
                                             Spacer()
@@ -119,7 +120,7 @@ struct QRPaymentConfirmationDialog: View {
 
                                     if displayWithdrawalFee > 0 {
                                         HStack {
-                                            Text("Frais de retrait:")
+                                            Text(AppStrings.fraisDeRetrait2)
                                                 .font(.system(size: 14))
                                                 .foregroundColor(.secondary)
                                             Spacer()
@@ -132,7 +133,7 @@ struct QRPaymentConfirmationDialog: View {
                                     Divider().padding(.vertical, 4)
 
                                     HStack {
-                                        Text("Total à débiter:")
+                                        Text(AppStrings.totalADebiter2)
                                             .font(.system(size: 15, weight: .bold))
                                             .foregroundColor(.primary)
                                         Spacer()
@@ -152,7 +153,7 @@ struct QRPaymentConfirmationDialog: View {
                         VStack(alignment: .leading, spacing: 12) {
                             if showRecipientDetails {
                                 HStack {
-                                    Text("Destinataire")
+                                    Text(AppStrings.destinataire2)
                                         .font(.system(size: 14, weight: .semibold))
                                         .foregroundColor(.secondary)
 
@@ -168,15 +169,15 @@ struct QRPaymentConfirmationDialog: View {
                                 }
                             }
 
-                            DetailRowView(label: "Nom", value: paymentData.merchantName)
-                            DetailRowView(label: "Portefeuille", value: paymentData.merchantWallet)
+                            DetailRowView(label: AppStrings.nom2, value: paymentData.merchantName)
+                            DetailRowView(label: AppStrings.portefeuille2, value: paymentData.merchantWallet)
 
                             if !paymentData.bankCode.isEmpty {
-                                DetailRowView(label: "Banque", value: "DIAMABANK SA")
+                                DetailRowView(label: AppStrings.banque, value: AppStrings.diamabankSa)
                             }
 
                             if paymentData.expiresAt != nil {
-                                DetailRowView(label: "Expire le", value: paymentData.formattedExpiration)
+                                DetailRowView(label: AppStrings.expireLe, value: paymentData.formattedExpiration)
                             }
                         }
                         .padding(16)
@@ -185,11 +186,11 @@ struct QRPaymentConfirmationDialog: View {
 
                         // PIN Entry
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Code PIN")
+                            Text(AppStrings.pin)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
 
-                            SecureField("Entrer le code PIN", text: $pin)
+                            SecureField(AppStrings.entrerLeCodePin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                                 .padding(.horizontal, 16)
@@ -228,7 +229,7 @@ struct QRPaymentConfirmationDialog: View {
                     Button(action: {
                         if !isValidatingPin { onCancel() }
                     }) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -249,7 +250,7 @@ struct QRPaymentConfirmationDialog: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 50)
                         } else {
-                            Text("Payer")
+                            Text(AppStrings.payer)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -274,17 +275,17 @@ struct QRPaymentConfirmationDialog: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         formatter.maximumFractionDigits = 0
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " GMD"
     }
 
     private var recipientTypeName: String {
         switch recipientType {
-        case .client: return "CLIENT"
-        case .merchant: return "MARCHAND"
-        case .agent: return "AGENT"
-        case .unknown: return "INCONNU"
+        case .client: return AppStrings.client
+        case .merchant: return AppStrings.marchand
+        case .agent: return AppStrings.agent2
+        case .unknown: return AppStrings.inconnu
         }
     }
 
@@ -300,13 +301,13 @@ struct QRPaymentConfirmationDialog: View {
     private func validateAndConfirm() {
         guard pin.count == 4 else {
             showPinError = true
-            pinErrorMessage = "Le code PIN doit contenir 4 chiffres"
+            pinErrorMessage = AppStrings.leCodePinDoitContenir4Chiffres
             return
         }
 
         guard !paymentData.isExpired else {
             showPinError = true
-            pinErrorMessage = "Ce code QR a expiré"
+            pinErrorMessage = AppStrings.ceCodeQrAExpire
             return
         }
 
@@ -342,7 +343,7 @@ struct QRPaymentConfirmationDialog: View {
                     }
                 case .failure(let error):
                     self.showPinError = true
-                    self.pinErrorMessage = (error as? APIError)?.message ?? "Erreur réseau: \(error.localizedDescription)"
+                    self.pinErrorMessage = (error as? APIError)?.message ?? AppStrings.erreurReseauValue(String(describing: error.localizedDescription))
                 }
             }
         }
@@ -352,12 +353,12 @@ struct QRPaymentConfirmationDialog: View {
         showPinError = true
         let errorMessage = response.message ?? {
             switch response.respCode {
-            case "001": return "Portefeuille non trouvé"
-            case "003": return "Données manquantes dans la requête"
-            case "005": return "Code PIN incorrect"
-            case "006": return "Code PIN bloqué"
-            case "021": return "Utilisateur non autorisé"
-            default: return "Échec de la validation. Code: \(response.respCode ?? "N/A")"
+            case "001": return AppStrings.portefeuilleNonTrouve
+            case "003": return AppStrings.donneesManquantesDansLaRequete
+            case "005": return AppStrings.codePinIncorrect
+            case "006": return AppStrings.codePinBloque
+            case "021": return AppStrings.utilisateurNonAutorise
+            default: return AppStrings.echecDeLaValidationCodeValue(String(describing: response.respCode ?? "N/A"))
             }
         }()
         pinErrorMessage = errorMessage

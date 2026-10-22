@@ -10,6 +10,7 @@ import SwiftUI
 import SwiftUI
 
 struct DiamaPayHeader: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     var headerColor: Color
     @Environment(\.dismiss) private var dismiss

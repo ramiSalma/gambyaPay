@@ -9,6 +9,7 @@ import SwiftUI
 import PDFKit
 
 struct AccountToWalletTransferView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
@@ -24,7 +25,7 @@ struct AccountToWalletTransferView: View {
     @State private var isVerifying = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     
     // Fee calculation
     @State private var calculatedFee: Double = 0.0
@@ -56,7 +57,7 @@ struct AccountToWalletTransferView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Account to Wallet", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.accountToWallet, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -65,7 +66,7 @@ struct AccountToWalletTransferView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -101,9 +102,9 @@ struct AccountToWalletTransferView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .sheet(isPresented: $showSuccessDialog) {
             AccountToWalletSuccessView(
@@ -174,7 +175,7 @@ struct AccountToWalletTransferView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Transfert de Compte vers Portefeuille")
+                Text(AppStrings.transfertDeCompteVersPortefeuille)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -191,7 +192,7 @@ struct AccountToWalletTransferView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
-                Text("Compte Source")
+                Text(AppStrings.compteSource2)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -203,7 +204,7 @@ struct AccountToWalletTransferView: View {
             HStack(spacing: 10) {
                 Button { showLinkedAccounts = true } label: {
                     HStack {
-                        Text(selectedAccount?.accountNumber ?? "Sélectionner un compte")
+                        Text(selectedAccount?.accountNumber ?? AppStrings.selectionnerUnCompte)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(selectedAccount == nil ? .secondary : .primary)
                             .lineLimit(1)
@@ -224,7 +225,7 @@ struct AccountToWalletTransferView: View {
                             .font(.system(size: 21))
                             .frame(width: 46, height: 48)
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "0788B9"), lineWidth: 1.2))
-                        Text("Enregistrés").font(.system(size: 11, weight: .medium))
+                        Text(AppStrings.enregistres).font(.system(size: 11, weight: .medium))
                     }
                     .foregroundColor(Color(hex: "0788B9"))
                 }
@@ -232,7 +233,7 @@ struct AccountToWalletTransferView: View {
             }
             
             // Account Holder Name
-            TextField("Titulaire du compte", text: .constant(accountNameVerified))
+            TextField(AppStrings.titulaireDuCompte, text: .constant(accountNameVerified))
                 .font(.system(size: 12, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
@@ -244,7 +245,7 @@ struct AccountToWalletTransferView: View {
                 HStack {
                     ProgressView()
                         .scaleEffect(0.8)
-                    Text("Vérification en cours...")
+                    Text(AppStrings.verificationEnCours)
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                 }
@@ -260,7 +261,7 @@ struct AccountToWalletTransferView: View {
     private var amountCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Montant")
+                Text(AppStrings.montant3)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -269,7 +270,7 @@ struct AccountToWalletTransferView: View {
                     .frame(width: 60, height: 2)
             }
             
-            TextField("Entrer le montant (GMD)", text: $amount)
+            TextField(AppStrings.entrerLeMontantGmd, text: $amount)
                 .keyboardType(.decimalPad)
                 .font(.system(size: 12, weight: .medium))
                 .padding(.horizontal, 12)
@@ -318,14 +319,14 @@ struct AccountToWalletTransferView: View {
                 case .success(let response):
                     guard response.respCode == "000", let quote = response.result,
                           let fee = quote.feeAmount, fee.isFinite, fee >= 0 else {
-                        if completion != nil { self.showErrorAlert(response.message ?? "Unable to calculate fees.") }
+                        if completion != nil { self.showErrorAlert(response.message ?? AppStrings.unableToCalculateFees) }
                         completion?(false)
                         return
                     }
                     let tax = quote.taxAmount ?? 0
                     let total = quote.totalAmount ?? (value + fee + tax)
                     guard tax.isFinite, tax >= 0, total.isFinite, total >= value else {
-                        if completion != nil { self.showErrorAlert("Invalid fee quote. Please try again.") }
+                        if completion != nil { self.showErrorAlert(AppStrings.invalidFeeQuotePleaseTryAgain) }
                         completion?(false)
                         return
                     }
@@ -343,7 +344,7 @@ struct AccountToWalletTransferView: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + defaultCurrency
     }
     
@@ -351,7 +352,7 @@ struct AccountToWalletTransferView: View {
     private var referenceCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Référence (optionnel)")
+                Text(AppStrings.referenceOptionnel)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -360,7 +361,7 @@ struct AccountToWalletTransferView: View {
                     .frame(width: 60, height: 2)
             }
             
-            TextField("Entrer une référence", text: $reference)
+            TextField(AppStrings.entrerUneReference, text: $reference)
                 .font(.system(size: 12, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
@@ -379,7 +380,7 @@ struct AccountToWalletTransferView: View {
             Button(action: {
                 validateAndShowConfirmation()
             }) {
-                Text("Soumettre")
+                Text(AppStrings.soumettre)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 150, height: 48)
@@ -417,10 +418,10 @@ struct AccountToWalletTransferView: View {
                     if response.respCode == "000" {
                         parseLinkedAccounts(response)
                     } else {
-                        showErrorAlert("Erreur: \(response.message ?? "Erreur lors de la récupération des comptes")")
+                        showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.erreurLorsDeLaRecuperationDesComptes)))
                     }
                 case .failure(let error):
-                    showErrorAlert((error as? APIError)?.message ?? "Erreur réseau: \(error.localizedDescription)")
+                    showErrorAlert((error as? APIError)?.message ?? AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                 }
             }
         }
@@ -451,7 +452,7 @@ struct AccountToWalletTransferView: View {
         }
 
         if linkedAccounts.isEmpty {
-            showErrorAlert("No linked bank accounts were returned. Link a bank account before transferring to your wallet.")
+            showErrorAlert(AppStrings.noLinkedBankAccountsWereReturnedLinkABankAccount)
         }
     }
 
@@ -513,17 +514,17 @@ struct AccountToWalletTransferView: View {
     
     private func validateAndShowConfirmation() {
         guard selectedAccount != nil else {
-            showErrorAlert("Veuillez sélectionner un compte")
+            showErrorAlert(AppStrings.veuillezSelectionnerUnCompte)
             return
         }
         
         guard !amount.isEmpty else {
-            showErrorAlert("Le montant est requis")
+            showErrorAlert(AppStrings.leMontantEstRequis)
             return
         }
         
         guard let value = Double(getCleanAmount(amount)), value.isFinite, value > 0 else {
-            showErrorAlert("Enter a valid amount greater than zero.")
+            showErrorAlert(AppStrings.enterAValidAmountGreaterThanZero)
             return
         }
         guard !isCalculatingTransferFee else { return }
@@ -590,13 +591,13 @@ struct AccountToWalletTransferView: View {
                         
                         self.showSuccessDialog = true
                     } else {
-                        self.showErrorAlert("Transfert échoué: \(response.message ?? "Erreur inconnue")")
+                        self.showErrorAlert(AppStrings.transfertEchoueValue(String(describing: response.message ?? AppStrings.unknownError)))
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -608,7 +609,7 @@ struct AccountToWalletTransferView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
@@ -624,6 +625,7 @@ extension String {
 }
 
 struct AccountToWalletConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let amount: String
     let fee: Double
     let withdrawalFee: Double
@@ -653,7 +655,7 @@ struct AccountToWalletConfirmationDialog: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 8) {
-                    Text("Confirmer le Transfert")
+                    Text(AppStrings.confirmerLeTransfert)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
@@ -669,14 +671,14 @@ struct AccountToWalletConfirmationDialog: View {
                     VStack(spacing: 16) {
                         // Amount Section with Fees Breakdown
                         VStack(spacing: 12) {
-                            DetailRowView(label: "Montant", value: formatAmount(Double(amount.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: ",", with: ".")) ?? 0.0))
+                            DetailRowView(label: AppStrings.montant3, value: formatAmount(Double(amount.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: ",", with: ".")) ?? 0.0))
                             
                             Divider()
                                 .padding(.vertical, 4)
                             
                             // Fees Breakdown Section
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Frais applicables")
+                                Text(AppStrings.fraisApplicables)
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundColor(.secondary)
                                 
@@ -687,7 +689,7 @@ struct AccountToWalletConfirmationDialog: View {
                                             Image(systemName: "banknote")
                                                 .font(.system(size: 12))
                                                 .foregroundColor(.orange)
-                                            Text("Frais de retrait")
+                                            Text(AppStrings.fraisDeRetrait)
                                                 .font(.system(size: 13))
                                                 .foregroundColor(.primary)
                                         }
@@ -709,7 +711,7 @@ struct AccountToWalletConfirmationDialog: View {
                                             Image(systemName: "paperplane.fill")
                                                 .font(.system(size: 12))
                                                 .foregroundColor(.blueH)
-                                            Text("Frais de transfert")
+                                            Text(AppStrings.fraisDeTransfert)
                                                 .font(.system(size: 13))
                                                 .foregroundColor(.primary)
                                         }
@@ -728,12 +730,12 @@ struct AccountToWalletConfirmationDialog: View {
                                             Image(systemName: "paperplane.fill")
                                                 .font(.system(size: 12))
                                                 .foregroundColor(.green)
-                                            Text("Frais de transfert")
+                                            Text(AppStrings.fraisDeTransfert)
                                                 .font(.system(size: 13))
                                                 .foregroundColor(.primary)
                                         }
                                         Spacer()
-                                        Text("Gratuit")
+                                        Text(AppStrings.gratuit)
                                             .font(.system(size: 13, weight: .semibold))
                                             .foregroundColor(.green)
                                     }
@@ -748,7 +750,7 @@ struct AccountToWalletConfirmationDialog: View {
                                 .padding(.vertical, 4)
                             
                             DetailRowView(
-                                label: "Total à créditer",
+                                label: AppStrings.totalACrediter,
                                 value: formatAmount(total),
                                 isHighlighted: true
                             )
@@ -759,12 +761,12 @@ struct AccountToWalletConfirmationDialog: View {
                         
                         // Account Source Section
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Compte source")
+                            Text(AppStrings.compteSource3)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
                             
-                            DetailRowView(label: "Compte", value: accountNumber)
-                            DetailRowView(label: "Titulaire", value: accountHolder)
+                            DetailRowView(label: AppStrings.compte, value: accountNumber)
+                            DetailRowView(label: AppStrings.titulaire2, value: accountHolder)
                         }
                         .padding(16)
                         .background(Color(UIColor.systemGray6))
@@ -773,7 +775,7 @@ struct AccountToWalletConfirmationDialog: View {
                         // Payment Details
                         if !paymentDetails.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Référence")
+                                Text(AppStrings.reference2)
                                     .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(.secondary)
                                 
@@ -789,11 +791,11 @@ struct AccountToWalletConfirmationDialog: View {
                         
                         // PIN Entry
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Code PIN")
+                            Text(AppStrings.pin)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
                             
-                            SecureField("Entrer le code PIN", text: $pin)
+                            SecureField(AppStrings.entrerLeCodePin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                                 .padding(.horizontal, 16)
@@ -831,7 +833,7 @@ struct AccountToWalletConfirmationDialog: View {
                     Button(action: {
                         onCancel()
                     }) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -850,7 +852,7 @@ struct AccountToWalletConfirmationDialog: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text("Confirmer")
+                                Text(AppStrings.confirmer)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                             }
@@ -876,7 +878,7 @@ struct AccountToWalletConfirmationDialog: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
     }
     
@@ -884,7 +886,7 @@ struct AccountToWalletConfirmationDialog: View {
         showPinError = false
         
         guard pin.count == 4 else {
-            pinErrorMessage = "Le PIN doit contenir exactement 4 chiffres"
+            pinErrorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             showPinError = true
             return
         }

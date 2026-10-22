@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct OtpVerificationView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let phoneNumber: String
     let deviceId: String
     
@@ -28,11 +29,11 @@ struct OtpVerificationView: View {
                 .frame(width: 100, height: 100)
                 .padding(.top, 50)
             
-            Text("Vérifiez votre appareil")
+            Text(AppStrings.verifiezVotreAppareil)
                 .font(.title3)
                 .bold()
             
-            Text("Entrez le code OTP envoyé à \(maskedPhoneNumber)")
+            Text(AppStrings.entrezLeCodeOtpEnvoyeAValue(String(describing: maskedPhoneNumber)))
                 .font(.subheadline)
                 .foregroundColor(.gray)
             
@@ -49,7 +50,7 @@ struct OtpVerificationView: View {
                 if isLoading {
                     ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
                 } else {
-                    Text("Vérifier")
+                    Text(AppStrings.verifier)
                         .bold()
                 }
             }
@@ -63,10 +64,10 @@ struct OtpVerificationView: View {
             
             Spacer()
         }
-        .alert("Erreur", isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+        .alert(AppStrings.error, isPresented: $showAlert) {
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .onAppear {
             // ✅ DEBUG: Log values when view appears
@@ -121,7 +122,7 @@ struct OtpVerificationView: View {
                         // Dismiss OTP view to return to login
                         dismiss()
                     } else {
-                        alertMessage = authResponse.message ?? "OTP verification failed"
+                        alertMessage = authResponse.message ?? AppStrings.otpVerificationFailed
                         showAlert = true
                     }
 

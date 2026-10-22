@@ -16,6 +16,7 @@
 import SwiftUI
 
 struct SponsoringWalletListView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
      @State private var navigationPath = NavigationPath()
     
@@ -26,7 +27,7 @@ struct SponsoringWalletListView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showEmptyState = false
-    @State private var emptyStateMessage = "No sponsoring wallets found."
+    @State private var emptyStateMessage = AppStrings.noSponsoringWalletsFound
     
     // Selected wallet for actions
     @State private var selectedWallet: SponsoringWallet?
@@ -42,7 +43,7 @@ struct SponsoringWalletListView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Sponsoring Wallets", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.sponsoringWallets, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -72,7 +73,7 @@ struct SponsoringWalletListView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Wallets sponsoring you")
+                Text(AppStrings.walletsSponsoringYou)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                 
@@ -120,7 +121,7 @@ struct SponsoringWalletListView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                 .scaleEffect(1.5)
             
-            Text("Loading wallets…")
+            Text(AppStrings.loadingWallets)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.secondary)
             Spacer()
@@ -164,7 +165,7 @@ struct SponsoringWalletListView: View {
         
         if phoneNumber.isEmpty && walletNumber.isEmpty {
             showEmptyState = true
-            emptyStateMessage = "Wallet information is unavailable."
+            emptyStateMessage = AppStrings.walletInformationIsUnavailable
             return
         }
         
@@ -209,14 +210,14 @@ struct SponsoringWalletListView: View {
                         self.processResponse(response)
                     } else {
                         self.showEmptyState = true
-                        self.emptyStateMessage = response.message ?? "No sponsoring wallets found."
+                        self.emptyStateMessage = response.message ?? AppStrings.noSponsoringWalletsFound
                     }
                 case .failure(let error):
                     self.showEmptyState = true
                     if let apiError = error as? APIError {
                         self.emptyStateMessage = apiError.message
                     } else {
-                        self.emptyStateMessage = "Check your internet connection."
+                        self.emptyStateMessage = AppStrings.checkYourInternetConnection
                     }
                 }
             }
@@ -226,7 +227,7 @@ struct SponsoringWalletListView: View {
     private func processResponse(_ response: JResponseService) {
         guard let resultList = response.result, !resultList.isEmpty else {
             showEmptyState = true
-            emptyStateMessage = "No sponsoring wallets found."
+            emptyStateMessage = AppStrings.noSponsoringWalletsFound
             return
         }
         
@@ -238,8 +239,8 @@ struct SponsoringWalletListView: View {
             var wallet = SponsoringWallet()
             wallet.walletNumber = dict["walletNumber"] as? String ?? ""
             wallet.walletNumberSponsored = dict["walletNumberSponsored"] as? String ?? ""
-            wallet.userName = dict["userName"] as? String ?? dict["walletHolder"] as? String ?? "Not specified"
-            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? "Not specified"
+            wallet.userName = dict["userName"] as? String ?? dict["walletHolder"] as? String ?? AppStrings.notSpecified
+            wallet.userNameSponsored = dict["userNameSponsored"] as? String ?? AppStrings.notSpecified
             wallet.phoneNumber = dict["phoneNumber"] as? String ?? ""
             wallet.phoneNumberSponsored = dict["phoneNumberSponsored"] as? String ?? ""
             
@@ -280,7 +281,7 @@ struct SponsoringWalletListView: View {
         
         if parsedWallets.isEmpty {
             showEmptyState = true
-            emptyStateMessage = "No sponsoring wallets found."
+            emptyStateMessage = AppStrings.noSponsoringWalletsFound
         } else {
             wallets = parsedWallets
             showEmptyState = false
@@ -289,21 +290,22 @@ struct SponsoringWalletListView: View {
     
     private func updateWalletLimit(_ wallet: SponsoringWallet) {
         // TODO: Navigate to update limit screen
-        alertTitle = "Info"
-        alertMessage = "Mise à jour de la limite pour \(wallet.userName)"
+        alertTitle = AppStrings.info
+        alertMessage = AppStrings.miseAJourDeLaLimitePourValue(String(describing: wallet.userName))
         showAlert = true
     }
     
     private func unlinkWallet(_ wallet: SponsoringWallet) {
         // TODO: Implement unlink functionality
-        alertTitle = "Info"
-        alertMessage = "Fonctionnalité de dissociation à implémenter"
+        alertTitle = AppStrings.info
+        alertMessage = AppStrings.fonctionnaliteDeDissociationAImplementer
         showAlert = true
     }
 }
 
 // MARK: - Wallet Row View
 struct WalletRowView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let wallet: SponsoringWallet
     
     var body: some View {
@@ -330,7 +332,7 @@ struct WalletRowView: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.secondary)
                     
-                    Text("Valid until: \(formattedExpiryDate)")
+                    Text(AppStrings.validUntilValue(String(describing: formattedExpiryDate)))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.secondary)
                 }
@@ -340,7 +342,7 @@ struct WalletRowView: View {
                 // Limits
                 VStack(alignment: .trailing, spacing: 4) {
                     HStack(spacing: 4) {
-                        Text("Daily")
+                        Text(AppStrings.daily)
                             .font(.system(size: 10, weight: .medium))
                             .foregroundColor(.secondary)
                         
@@ -350,7 +352,7 @@ struct WalletRowView: View {
                     }
                     
                     HStack(spacing: 4) {
-                        Text("Monthly")
+                        Text(AppStrings.monthly)
                             .font(.system(size: 10, weight: .medium))
                             .foregroundColor(.secondary)
                         
@@ -398,7 +400,7 @@ struct WalletRowView: View {
         if let amountDouble = Double(amount) {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
-            formatter.locale = Locale(identifier: "fr_FR")
+            formatter.locale = Locale(identifier: localization.language.rawValue)
             formatter.maximumFractionDigits = 0
             return (formatter.string(from: NSNumber(value: amountDouble)) ?? "0") + " GMD"
         }

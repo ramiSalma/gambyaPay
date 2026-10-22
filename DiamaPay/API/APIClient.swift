@@ -387,7 +387,7 @@ class APIClient {
         ) {
             let endpoint = "api/customer/register"
             guard !request.documentId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                completion(.failure(APIError(success: false, message: "Enter the number shown on your National ID.", respCode: "400", details: nil)))
+                completion(.failure(APIError(success: false, message: AppStrings.original("enterTheNumberShownOnYourNationalId"), respCode: "400", details: nil)))
                 return
             }
             logRegistrationRequestDiagnostics(request)
@@ -491,7 +491,7 @@ class APIClient {
         let wallet = user.getWalletNumber()
         let phone = user.getPhoneNumber()
         guard !wallet.isEmpty || !phone.isEmpty else {
-            completion(.failure(APIError(success: false, message: "Wallet details are missing. Please sign in again.", respCode: nil, details: nil)))
+            completion(.failure(APIError(success: false, message: AppStrings.original("walletDetailsAreMissingPleaseSignInAgain"), respCode: nil, details: nil)))
             return
         }
         let request = RequestBalanceEnquiry(
@@ -616,7 +616,7 @@ class APIClient {
            let endpoint = "api/comments"
            
            guard let url = URL(string: baseURL + endpoint) else {
-               completion(.failure(APIError(success: false, message: "Invalid URL", respCode: nil, details: nil)))
+               completion(.failure(APIError(success: false, message: AppStrings.original("invalidUrl"), respCode: nil, details: nil)))
                return
            }
            
@@ -652,7 +652,7 @@ class APIClient {
                    }
                    
                    guard let httpResponse = response as? HTTPURLResponse else {
-                       completion(.failure(APIError(success: false, message: "Invalid response", respCode: nil, details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("invalidResponse"), respCode: nil, details: nil)))
                        return
                    }
                    
@@ -662,13 +662,13 @@ class APIClient {
                        print("Comment sent successfully")
                        completion(.success(()))
                    case 400:
-                       completion(.failure(APIError(success: false, message: "Données invalides", respCode: "400", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("donneesInvalides"), respCode: "400", details: nil)))
                    case 401:
-                       completion(.failure(APIError(success: false, message: "Non autorisé", respCode: "401", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("nonAutorise"), respCode: "401", details: nil)))
                    case 500...599:
-                       completion(.failure(APIError(success: false, message: "Erreur du serveur", respCode: "\(httpResponse.statusCode)", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("erreurDuServeur"), respCode: "\(httpResponse.statusCode)", details: nil)))
                    default:
-                       completion(.failure(APIError(success: false, message: "Erreur inconnue", respCode: "\(httpResponse.statusCode)", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("unknownError"), respCode: "\(httpResponse.statusCode)", details: nil)))
                    }
                }
            }.resume()
@@ -678,7 +678,7 @@ class APIClient {
            let endpoint = "api/complaints"
            
            guard let url = URL(string: baseURL + endpoint) else {
-               completion(.failure(APIError(success: false, message: "Invalid URL", respCode: nil, details: nil)))
+               completion(.failure(APIError(success: false, message: AppStrings.original("invalidUrl"), respCode: nil, details: nil)))
                return
            }
            
@@ -714,7 +714,7 @@ class APIClient {
                    }
                    
                    guard let httpResponse = response as? HTTPURLResponse else {
-                       completion(.failure(APIError(success: false, message: "Invalid response", respCode: nil, details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("invalidResponse"), respCode: nil, details: nil)))
                        return
                    }
                    
@@ -723,15 +723,15 @@ class APIClient {
                    case 200...299:
                        completion(.success(()))
                    case 400:
-                       completion(.failure(APIError(success: false, message: "Données invalides", respCode: "400", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("donneesInvalides"), respCode: "400", details: nil)))
                    case 401:
-                       completion(.failure(APIError(success: false, message: "Non autorisé", respCode: "401", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("nonAutorise"), respCode: "401", details: nil)))
                    case 429:
-                       completion(.failure(APIError(success: false, message: "Trop de plaintes récentes", respCode: "429", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("tropDePlaintesRecentes"), respCode: "429", details: nil)))
                    case 500...599:
-                       completion(.failure(APIError(success: false, message: "Erreur du serveur", respCode: "\(httpResponse.statusCode)", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("erreurDuServeur"), respCode: "\(httpResponse.statusCode)", details: nil)))
                    default:
-                       completion(.failure(APIError(success: false, message: "Erreur inconnue", respCode: "\(httpResponse.statusCode)", details: nil)))
+                       completion(.failure(APIError(success: false, message: AppStrings.original("unknownError"), respCode: "\(httpResponse.statusCode)", details: nil)))
                    }
                }
            }.resume()
@@ -783,7 +783,7 @@ class APIClient {
             let endpoint = "branches/\(bankCode)"
             
             guard let url = URL(string: baseURL + endpoint) else {
-                completion(.failure(APIError(success: false, message: "Invalid URL", respCode: nil, details: nil)))
+                completion(.failure(APIError(success: false, message: AppStrings.original("invalidUrl"), respCode: nil, details: nil)))
                 return
             }
             
@@ -810,14 +810,14 @@ class APIClient {
                     
                     guard let httpResponse = response as? HTTPURLResponse else {
                         print(" Invalid response type")
-                        completion(.failure(APIError(success: false, message: "Invalid response", respCode: nil, details: nil)))
+                        completion(.failure(APIError(success: false, message: AppStrings.original("invalidResponse"), respCode: nil, details: nil)))
                         return
                     }
                     
                     
                     guard let data = data else {
                         print(" No data received")
-                        completion(.failure(APIError(success: false, message: "No data received", respCode: nil, details: nil)))
+                        completion(.failure(APIError(success: false, message: AppStrings.original("noDataReceived"), respCode: nil, details: nil)))
                         return
                     }
                     
@@ -846,7 +846,7 @@ class APIClient {
                                 
                                 completion(.success(branches))
                             } else {
-                                completion(.failure(APIError(success: false, message: "Invalid response format", respCode: nil, details: nil)))
+                                completion(.failure(APIError(success: false, message: AppStrings.original("invalidResponseFormat"), respCode: nil, details: nil)))
                             }
                         } catch {
                             completion(.failure(error))
@@ -854,11 +854,11 @@ class APIClient {
                         
                     case 401:
                         self.handleTokenExpiration()
-                        let error = APIError(success: false, message: "Session expired", respCode: "401", details: "Please login again")
+                        let error = APIError(success: false, message: AppStrings.original("sessionExpired2"), respCode: "401", details: "Please login again")
                         completion(.failure(error))
                         
                     default:
-                        let error = APIError(success: false, message: "Server error", respCode: "\(httpResponse.statusCode)", details: nil)
+                        let error = APIError(success: false, message: AppStrings.original("serverError"), respCode: "\(httpResponse.statusCode)", details: nil)
                         completion(.failure(error))
                     }
                 }
@@ -874,7 +874,7 @@ class APIClient {
         completion: @escaping (Result<U, Error>) -> Void
     ) {
         guard let url = URL(string: baseURL + endpoint) else {
-            completion(.failure(APIError(success: false, message: "Invalid URL", respCode: nil, details: nil)))
+            completion(.failure(APIError(success: false, message: AppStrings.original("invalidUrl"), respCode: nil, details: nil)))
             return
         }
         
@@ -1037,13 +1037,13 @@ class APIClient {
         }
         
         guard let httpResponse = response as? HTTPURLResponse else {
-            completion(.failure(APIError(success: false, message: "Invalid response", respCode: nil, details: nil)))
+            completion(.failure(APIError(success: false, message: AppStrings.original("invalidResponse"), respCode: nil, details: nil)))
             return
         }
         
         
         guard let data = data else {
-            completion(.failure(APIError(success: false, message: "No data received", respCode: nil, details: nil)))
+            completion(.failure(APIError(success: false, message: AppStrings.original("noDataReceived"), respCode: nil, details: nil)))
             return
         }
         
@@ -1108,7 +1108,7 @@ class APIClient {
                 completion(.failure(error))
             } else {
                 handleTokenExpiration()
-                let error = APIError(success: false, message: "Session expired", respCode: "401", details: "Please login again")
+                let error = APIError(success: false, message: AppStrings.original("sessionExpired2"), respCode: "401", details: "Please login again")
                 completion(.failure(error))
             }
         case 403:
@@ -1120,7 +1120,7 @@ class APIClient {
                                          details: "VERSION_UPDATE_REQUIRED")
                     completion(.failure(error))
                 } else {
-                    let error = APIError(success: false, message: "Access denied", respCode: "403", details: "VERSION_UPDATE_REQUIRED")
+                    let error = APIError(success: false, message: AppStrings.original("accessDenied"), respCode: "403", details: "VERSION_UPDATE_REQUIRED")
                     completion(.failure(error))
                 }
         case 400...499:
@@ -1136,16 +1136,16 @@ class APIClient {
             } else if let errorResponse = try? JSONDecoder().decode(APIError.self, from: data) {
                 completion(.failure(errorResponse))
             } else {
-                let genericError = APIError(success: false, message: "Client error", respCode: "\(httpResponse.statusCode)", details: nil)
+                let genericError = APIError(success: false, message: AppStrings.original("clientError"), respCode: "\(httpResponse.statusCode)", details: nil)
                 completion(.failure(genericError))
             }
             
         case 500...599:
-            let error = APIError(success: false, message: "Server error", respCode: "\(httpResponse.statusCode)", details: nil)
+            let error = APIError(success: false, message: AppStrings.original("serverError"), respCode: "\(httpResponse.statusCode)", details: nil)
             completion(.failure(error))
             
         default:
-            let error = APIError(success: false, message: "Unknown error", respCode: "\(httpResponse.statusCode)", details: nil)
+            let error = APIError(success: false, message: AppStrings.original("unknownError2"), respCode: "\(httpResponse.statusCode)", details: nil)
             completion(.failure(error))
         }
     }
@@ -1283,7 +1283,7 @@ class APIClient {
         completion: @escaping (Result<ResponseService, Error>) -> Void
     ) {
         guard let url = URL(string: baseURL + endpoint) else {
-            completion(.failure(APIError(success: false, message: "Invalid URL", respCode: nil, details: nil)))
+            completion(.failure(APIError(success: false, message: AppStrings.original("invalidUrl"), respCode: nil, details: nil)))
             return
         }
         

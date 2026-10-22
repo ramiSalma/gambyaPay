@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MiniStatementView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
@@ -22,7 +23,7 @@ struct MiniStatementView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     @State private var showEmptyState = false
     
     @State private var verifiedPin: String = ""
@@ -50,7 +51,7 @@ struct MiniStatementView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Mini Statement", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.miniStatement, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -59,7 +60,7 @@ struct MiniStatementView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -114,22 +115,22 @@ struct MiniStatementView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .sheet(isPresented: $showDateFromPicker) {
             DatePickerSheet(
                 selectedDate: $dateFrom,
                 dateString: $dateFromString,
-                title: "Date de début"
+                title: AppStrings.dateDeDebut
             )
         }
         .sheet(isPresented: $showDateToPicker) {
             DatePickerSheet(
                 selectedDate: $dateTo,
                 dateString: $dateToString,
-                title: "Date de fin"
+                title: AppStrings.dateDeFin
             )
         }
         .onAppear {
@@ -149,7 +150,7 @@ struct MiniStatementView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Mini Relevé")
+                Text(AppStrings.miniReleve)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -167,7 +168,7 @@ struct MiniStatementView: View {
             HStack(spacing: 12) {
                 // Date From
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("De")
+                    Text(AppStrings.de)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.secondary)
                     
@@ -193,7 +194,7 @@ struct MiniStatementView: View {
                 
                 // Date To
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("À")
+                    Text(AppStrings.a)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.secondary)
                     
@@ -231,7 +232,7 @@ struct MiniStatementView: View {
             Button(action: {
                 validateAndDownloadStatement()
             }) {
-                Text("Télécharger le relevé")
+                Text(AppStrings.telechargerLeReleve)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                     .frame(maxWidth: .infinity)
@@ -250,7 +251,7 @@ struct MiniStatementView: View {
     
     // MARK: - Info Text
     private var infoText: some View {
-        Text("La recherche affiche les 5 dernières transactions")
+        Text(AppStrings.laRechercheAfficheLes5DernieresTransactions)
             .font(.system(size: 12, weight: .regular))
             .italic()
             .foregroundColor(.secondary)
@@ -280,11 +281,11 @@ struct MiniStatementView: View {
                 .foregroundColor(.gray)
                 .padding(.top, 40)
             
-            Text("Aucune transaction")
+            Text(AppStrings.aucuneTransaction)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.secondary)
             
-            Text("Il n'y a pas de transactions pour la période sélectionnée")
+            Text(AppStrings.ilNYAPasDeTransactionsPourLaPeriode)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -330,13 +331,13 @@ struct MiniStatementView: View {
                     if response.respCode == "000" {
                         self.processTransactionResponse(response)
                     } else {
-                        self.showErrorAlert(response.message ?? "Échec de la récupération des transactions")
+                        self.showErrorAlert(response.message ?? AppStrings.echecDeLaRecuperationDesTransactions)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur de connexion. Vérifiez votre internet.")
+                        self.showErrorAlert(AppStrings.erreurDeConnexionVerifiezVotreInternet)
                     }
                 }
             }
@@ -355,15 +356,15 @@ struct MiniStatementView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccessAlert("Relevé téléchargé avec succès")
+                        self.showSuccessAlert(AppStrings.releveTelechargeAvecSucces)
                     } else {
-                        self.showErrorAlert(response.message ?? "Échec du téléchargement du relevé")
+                        self.showErrorAlert(response.message ?? AppStrings.echecDuTelechargementDuReleve)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur de connexion. Vérifiez votre internet.")
+                        self.showErrorAlert(AppStrings.erreurDeConnexionVerifiezVotreInternet)
                     }
                 }
             }
@@ -457,20 +458,21 @@ struct MiniStatementView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
         showEmptyState = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }
 }
 // MARK: - Transaction Row View
 struct TransactionRowViewA: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let transaction: TransactionItem
     
     private let displayDateFormatter: DateFormatter = {
@@ -510,7 +512,7 @@ struct TransactionRowViewA: View {
             // Reference Row
             if let reference = transaction.transactionReference, !reference.isEmpty {
                 HStack {
-                    Text("Réf:")
+                    Text(AppStrings.ref)
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.secondary)
                     
@@ -527,7 +529,7 @@ struct TransactionRowViewA: View {
                     .padding(.vertical, 4)
                 
                 HStack {
-                    Text("Solde:")
+                    Text(AppStrings.solde2)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.secondary)
                     
@@ -581,7 +583,7 @@ struct TransactionRowViewA: View {
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 2
         

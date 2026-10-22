@@ -96,6 +96,18 @@ struct Transaction: Identifiable, Codable {
         self.balance = "Balance: \(Transaction.formatAmount(balanceValue)) \(currencyCode)"
     }
     
+    // Resolve presentation copy at render time so loaded history updates with the language.
+    var displayDate: String {
+        guard let transactionDate, !transactionDate.isEmpty else { return AppStrings.dateUnavailable }
+        return Self.formatDate(transactionDate)
+    }
+
+    var displayTitle: String { title == "Transaction" ? AppStrings.transactionGeneric : title }
+    var displayReference: String { AppStrings.refValue(transactionReference ?? AppStrings.nA) }
+    var displayBalance: String {
+        AppStrings.balanceValue(Self.formatAmount(closingBalance ?? "0") + " " + (currency ?? "GMD"))
+    }
+
     var fees: String {
         return Transaction.extractFeesFromDetails(details ?? "")
     }
@@ -117,7 +129,7 @@ struct Transaction: Identifiable, Codable {
             if let date = formatter.date(from: dateString) {
                 let outputFormatter = DateFormatter()
                 outputFormatter.dateFormat = "dd MMM yyyy"
-                outputFormatter.locale = Locale(identifier: "en_US_POSIX")
+                outputFormatter.locale = Locale(identifier: AppLanguageStore.shared.language.rawValue)
                 return outputFormatter.string(from: date)
             }
         }

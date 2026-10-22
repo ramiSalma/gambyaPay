@@ -54,11 +54,12 @@ private enum SavingsStyle {
 }
 
 struct SavingsWalletView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @State private var balance = "0.00"
     @State private var interest = "0.00"
     @State private var currency = "GMD"
     @State private var transactions: [SavingsTransaction] = []
-    @State private var direction = "To Savings"
+    @State private var direction = AppStrings.original("toSavings")
     @State private var amount = ""
     @State private var reason = ""
     @State private var isLoading = false
@@ -69,11 +70,11 @@ struct SavingsWalletView: View {
     @State private var transferError: String?
     @State private var alertMessage: String?
 
-    private let directions = ["To Savings", "From Savings"]
+    private let directions = [AppStrings.original("toSavings"), AppStrings.original("fromSavings")]
 
     var body: some View {
         VStack(spacing: 0) {
-            DiamaPayHeader(title: "Savings wallet", headerColor: SavingsStyle.blue)
+            DiamaPayHeader(title: AppStrings.savingsWallet, headerColor: SavingsStyle.blue)
             ScrollView {
                 VStack(spacing: 20) {
                     balanceCard
@@ -93,16 +94,16 @@ struct SavingsWalletView: View {
                     .zIndex(10)
             }
         }
-        .alert("Savings wallet", isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
-            Button("OK", role: .cancel) { alertMessage = nil }
-        } message: { Text(alertMessage ?? "") }
+        .alert(AppStrings.savingsWallet, isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
+            Button(AppStrings.ok, role: .cancel) { alertMessage = nil }
+        } message: { Text(AppStrings.option(alertMessage ?? "")) }
     }
 
     private var balanceCard: some View {
         VStack(alignment: .leading, spacing: 24) {
-            sectionTitle("Savings wallet balance")
+            sectionTitle(AppStrings.savingsWalletBalance)
             HStack {
-                Text("Current Balance").foregroundColor(Color(hex: "58707B"))
+                Text(AppStrings.currentBalance).foregroundColor(Color(hex: "58707B"))
                 Spacer()
                 Text("\(balance) \(currency)").fontWeight(.bold).foregroundColor(SavingsStyle.blue)
                 Button(action: loadSavings) {
@@ -112,7 +113,7 @@ struct SavingsWalletView: View {
             }
             .font(.system(size: 20))
             HStack {
-                Text("Interest Acquired").foregroundColor(Color(hex: "58707B"))
+                Text(AppStrings.interestAcquired).foregroundColor(Color(hex: "58707B"))
                 Spacer()
                 Text("\(interest) \(currency)").fontWeight(.semibold).foregroundColor(Color(hex: "29323A"))
             }
@@ -124,28 +125,28 @@ struct SavingsWalletView: View {
 
     private var transferCard: some View {
         VStack(alignment: .leading, spacing: 20) {
-            sectionTitle("Fund Transfer")
+            sectionTitle(AppStrings.fundTransfer)
             HStack(spacing: 12) {
                 ForEach(directions, id: \.self) { value in
                     Button { direction = value } label: {
                         HStack(spacing: 8) {
                             Image(systemName: direction == value ? "largecircle.fill.circle" : "circle")
                                 .foregroundColor(direction == value ? SavingsStyle.cyan : .gray)
-                            Text(value).foregroundColor(.gray)
+                            Text(AppStrings.option(value)).foregroundColor(.gray)
                         }
                     }.buttonStyle(.plain)
                     if value == directions.first { Spacer(minLength: 0) }
                 }
             }
             VStack(alignment: .leading, spacing: 8) {
-                fieldLabel("Amount")
-                TextField("Enter Amount", text: $amount)
+                fieldLabel(AppStrings.amount)
+                TextField(AppStrings.enterAmount, text: $amount)
                     .keyboardType(.decimalPad)
                     .savingsInput()
             }
             VStack(alignment: .leading, spacing: 8) {
-                fieldLabel("Reference")
-                TextField("Transfer reason", text: $reason)
+                fieldLabel(AppStrings.reference)
+                TextField(AppStrings.transferReason, text: $reason)
                     .textInputAutocapitalization(.sentences)
                     .savingsInput()
             }
@@ -154,7 +155,7 @@ struct SavingsWalletView: View {
                 transferError = nil
                 showTransferReview = true
             } label: {
-                HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text("Transfer").font(.system(size: 19, weight: .semibold)).tracking(1); Spacer() }
+                HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text(AppStrings.transfer).font(.system(size: 19, weight: .semibold)).tracking(1); Spacer() }
                     .foregroundColor(.white).frame(height: 56).background(SavingsStyle.blue, in: RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isLoading || Double(amount) == nil || (Double(amount) ?? 0) <= 0)
@@ -166,9 +167,9 @@ struct SavingsWalletView: View {
 
     private var historyCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            sectionTitle("Transaction History")
+            sectionTitle(AppStrings.transactionHistory)
             if transactions.isEmpty {
-                Text(isLoading ? "Loading transactions…" : "No recent savings transactions")
+                Text(isLoading ? AppStrings.loadingTransactions2 : AppStrings.noRecentSavingsTransactions)
                     .foregroundColor(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 8)
             } else {
                 ForEach(transactions) { transaction in
@@ -180,7 +181,7 @@ struct SavingsWalletView: View {
                                 .font(.system(size: 18, weight: .bold)).foregroundColor(SavingsStyle.blue)
                         }
                         Text(transaction.type).font(.system(size: 16, weight: .semibold)).foregroundColor(.gray)
-                        Text("Ref: \(transaction.reference)").font(.system(size: 14)).foregroundColor(SavingsStyle.ink)
+                        Text(AppStrings.refValue2(String(describing: transaction.reference))).font(.system(size: 14)).foregroundColor(SavingsStyle.ink)
                     }
                     .padding(.vertical, 8)
                     if transaction.id != transactions.last?.id { Divider() }
@@ -210,9 +211,9 @@ struct SavingsWalletView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 14) {
                         Image(systemName: "lock.fill").font(.system(size: 25, weight: .medium))
-                        Text("Fund Transfer").font(.system(size: 25, weight: .bold))
+                        Text(AppStrings.fundTransfer).font(.system(size: 25, weight: .bold))
                     }
-                    Text("Verify your transaction details")
+                    Text(AppStrings.verifyYourTransactionDetails)
                         .font(.system(size: 17, weight: .medium)).padding(.leading, 39)
                 }
                 .foregroundColor(.white)
@@ -222,32 +223,32 @@ struct SavingsWalletView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        reviewCard(title: "AMOUNT") {
+                        reviewCard(title: AppStrings.amount3) {
                             Text("\(amount) \(currency)")
                                 .font(.system(size: 29, weight: .bold)).foregroundColor(SavingsStyle.cyan)
                                 .frame(maxWidth: .infinity).padding(.top, 8)
                         }
-                        reviewCard(title: "RECIPIENT INFORMATION") {
+                        reviewCard(title: AppStrings.recipientInformation) {
                             HStack {
-                                Text("Recipient").foregroundColor(SavingsStyle.ink)
+                                Text(AppStrings.recipient).foregroundColor(SavingsStyle.ink)
                                 Spacer()
-                                Text(direction == "To Savings" ? "Savings wallet" : "Main wallet")
+                                Text(direction == AppStrings.original("toSavings") ? AppStrings.savingsWallet : AppStrings.mainWallet)
                                     .fontWeight(.semibold).foregroundColor(.gray)
                             }.font(.system(size: 16)).padding(.top, 6)
                             Divider().padding(.top, 4)
                         }
-                        reviewCard(title: "DESCRIPTION") {
+                        reviewCard(title: AppStrings.description) {
                             Text(reason.isEmpty ? "—" : reason).font(.system(size: 16)).foregroundColor(.gray).padding(.top, 3)
                         }
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("AUTHENTICATION").font(.system(size: 17, weight: .bold)).tracking(1).foregroundColor(SavingsStyle.ink)
+                            Text(AppStrings.authentication).font(.system(size: 17, weight: .bold)).tracking(1).foregroundColor(SavingsStyle.ink)
                             HStack(spacing: 12) {
                                 Image(systemName: "lock.fill").foregroundColor(SavingsStyle.cyan)
                                 Group {
                                     if isPinVisible {
-                                        TextField("PIN Code", text: $pin)
+                                        TextField(AppStrings.pinCode, text: $pin)
                                     } else {
-                                        SecureField("PIN Code", text: $pin)
+                                        SecureField(AppStrings.pinCode, text: $pin)
                                     }
                                 }
                                 .keyboardType(.numberPad)
@@ -265,14 +266,14 @@ struct SavingsWalletView: View {
                         }
                         HStack(spacing: 12) {
                             Button(action: closeTransferReview) {
-                                Text("Cancel").frame(maxWidth: .infinity).frame(height: 54)
+                                Text(AppStrings.cancel).frame(maxWidth: .infinity).frame(height: 54)
                                     .foregroundColor(SavingsStyle.cyan).background(Color.white, in: RoundedRectangle(cornerRadius: 12))
                                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.25), lineWidth: 1))
                             }
                             Button(action: verifyPinAndTransfer) {
                                 HStack(spacing: 8) {
                                     if isVerifyingPin { ProgressView().tint(.white) }
-                                    Text("Transfer")
+                                    Text(AppStrings.transfer)
                                 }
                                 .frame(maxWidth: .infinity).frame(height: 54).foregroundColor(.white)
                                 .background(SavingsStyle.cyan, in: RoundedRectangle(cornerRadius: 12))
@@ -312,7 +313,7 @@ struct SavingsWalletView: View {
 
     private func verifyPinAndTransfer() {
         guard !pin.isEmpty else {
-            transferError = "Enter your PIN to continue."
+            transferError = AppStrings.enterYourPinToContinue
             return
         }
         isVerifyingPin = true
@@ -336,7 +337,7 @@ struct SavingsWalletView: View {
                     isVerifyingPin = true
                     submitTransfer()
                 case .success(let response):
-                    transferError = response.message ?? "PIN verification failed. Please try again."
+                    transferError = response.message ?? AppStrings.pinVerificationFailedPleaseTryAgain
                     pin = ""
                 case .failure(let error):
                     transferError = (error as? APIError)?.message ?? error.localizedDescription
@@ -376,7 +377,7 @@ struct SavingsWalletView: View {
                             amount: row["amount"] as? String ?? "0.00",
                             currency: row["currency"] as? String ?? currency,
                             sign: row["sign"] as? String ?? "C",
-                            type: row["type"] as? String ?? "Transaction"
+                            type: row["type"] as? String ?? AppStrings.transactionGeneric
                         )
                     }
                 }
@@ -397,13 +398,13 @@ struct SavingsWalletView: View {
                     if response.isSuccessful {
                         isVerifyingPin = false
                         closeTransferReview()
-                        alertMessage = response.message ?? "Transfer completed successfully."
+                        alertMessage = response.message ?? AppStrings.transferCompletedSuccessfully
                         amount = ""
                         reason = ""
                         loadSavings()
                     } else {
                         isVerifyingPin = false
-                        transferError = response.message ?? "Transfer could not be completed. Please try again."
+                        transferError = response.message ?? AppStrings.transferCouldNotBeCompletedPleaseTryAgain
                     }
                 case .failure(let error):
                     isVerifyingPin = false
@@ -411,7 +412,7 @@ struct SavingsWalletView: View {
                 }
             }
         }
-        if direction == "To Savings" {
+        if direction == AppStrings.original("toSavings") {
             APIClient.shared.creditSavingsWallet(request: RequestCreditSaving(walletNumber: data.getWalletNumber(), phoneNumber: data.getPhoneNumber(), bank: data.getBankCode(), amount: common.amount, reason: common.reason, requestId: savingsRequestID(), requestDate: savingsRequestDate(), entityId: data.getUserCode()), completion: completion)
         } else {
             APIClient.shared.debitSavingsWallet(request: RequestDebitSaving(walletNumber: data.getWalletNumber(), phoneNumber: data.getPhoneNumber(), bank: data.getBankCode(), amount: common.amount, reason: common.reason, requestId: savingsRequestID(), requestDate: savingsRequestDate(), entityId: data.getUserCode()), completion: completion)
@@ -420,44 +421,45 @@ struct SavingsWalletView: View {
 }
 
 struct SavingsWalletStatementView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @State private var startDate = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
     @State private var endDate = Date()
-    @State private var format = "PDF (Portable Document)"
+    @State private var format = AppStrings.original("pdfPortableDocument")
     @State private var isLoading = false
     @State private var alertMessage: String?
-    private let formats = ["PDF (Portable Document)", "Excel (Spreadsheet)", "CSV (Comma Separated Values)"]
+    private let formats = [AppStrings.original("pdfPortableDocument"), AppStrings.original("excelSpreadsheet"), AppStrings.original("csvCommaSeparatedValues")]
 
     var body: some View {
         VStack(spacing: 0) {
-            DiamaPayHeader(title: "Savings Wallet Statement", headerColor: SavingsStyle.blue)
+            DiamaPayHeader(title: AppStrings.savingsStatement, headerColor: SavingsStyle.blue)
             ScrollView {
                 VStack(spacing: 18) {
                     VStack(alignment: .leading, spacing: 20) {
-                        statementTitle("Statement Options")
-                        Text("Select Period").font(.system(size: 17)).foregroundColor(.gray)
+                        statementTitle(AppStrings.statementOptions)
+                        Text(AppStrings.selectPeriod).font(.system(size: 17)).foregroundColor(.gray)
                         HStack(spacing: 12) {
-                            dateField("Start Date", date: $startDate)
-                            dateField("End Date", date: $endDate)
+                            dateField(AppStrings.startDate2, date: $startDate)
+                            dateField(AppStrings.endDate2, date: $endDate)
                         }
-                        Text("Select Format").font(.system(size: 17)).foregroundColor(.gray).padding(.top, 2)
+                        Text(AppStrings.selectFormat).font(.system(size: 17)).foregroundColor(.gray).padding(.top, 2)
                         ForEach(formats, id: \.self) { value in
                             Button { format = value } label: {
                                 HStack(spacing: 10) {
                                     Image(systemName: format == value ? "largecircle.fill.circle" : "circle")
                                         .foregroundColor(format == value ? SavingsStyle.cyan : .gray)
-                                    Text(value).foregroundColor(.gray).multilineTextAlignment(.leading)
+                                    Text(AppStrings.option(value)).foregroundColor(.gray).multilineTextAlignment(.leading)
                                 }.font(.system(size: 16))
                             }.buttonStyle(.plain)
                         }
                         Button(action: generateStatement) {
-                            HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text("Generate Statement").font(.system(size: 18, weight: .semibold)).tracking(1); Spacer() }
+                            HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text(AppStrings.generateStatement).font(.system(size: 18, weight: .semibold)).tracking(1); Spacer() }
                                 .foregroundColor(.white).frame(height: 56).background(SavingsStyle.blue, in: RoundedRectangle(cornerRadius: 12))
                         }.disabled(isLoading || startDate > endDate)
                     }.padding(20).savingsCard()
 
                     VStack(alignment: .leading, spacing: 18) {
-                        statementTitle("Information")
-                        Text("The savings account statement will be generated and sent to the email address associated with your account. Please check your inbox after clicking the ‘Generate Statement’ button.")
+                        statementTitle(AppStrings.information)
+                        Text(AppStrings.theSavingsAccountStatementWillBeGeneratedAndSentTo)
                             .font(.system(size: 16)).foregroundColor(SavingsStyle.ink)
                     }.padding(20).savingsCard()
                 }
@@ -465,9 +467,9 @@ struct SavingsWalletStatementView: View {
             }.background(SavingsStyle.background)
         }
         .navigationBarHidden(true)
-        .alert("Savings statement", isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
-            Button("OK", role: .cancel) { alertMessage = nil }
-        } message: { Text(alertMessage ?? "") }
+        .alert(AppStrings.savingsStatement2, isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
+            Button(AppStrings.ok, role: .cancel) { alertMessage = nil }
+        } message: { Text(AppStrings.option(alertMessage ?? "")) }
     }
 
     private func dateField(_ title: String, date: Binding<Date>) -> some View {
@@ -493,7 +495,7 @@ struct SavingsWalletStatementView: View {
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
-                case .success(let response): alertMessage = response.message ?? (response.isSuccessful ? "Your statement has been requested. Check your email." : "Unable to generate the statement.")
+                case .success(let response): alertMessage = response.message ?? (response.isSuccessful ? AppStrings.yourStatementHasBeenRequestedCheckYourEmail : AppStrings.unableToGenerateTheStatement)
                 case .failure(let error): alertMessage = error.localizedDescription
                 }
             }

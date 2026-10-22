@@ -16,6 +16,7 @@
 import SwiftUI
 
 struct WalletToAccountTransferView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedSource: SourceOfFunds = .wallet
     @State private var selectedWallet: SponsoringWallet?
@@ -32,8 +33,9 @@ struct WalletToAccountTransferView: View {
     @State private var isVerifying = false
     @State private var isLoading = false
     @State private var showAlert = false
+    @State private var isSavePrompt = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     
     // Transfer management
     @State private var calculatedFee: Double = 0.0
@@ -75,7 +77,7 @@ struct WalletToAccountTransferView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.2)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -123,17 +125,17 @@ struct WalletToAccountTransferView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            if alertTitle == "Save beneficiary?" {
-                Button("Save") { saveCurrentBeneficiary() }
-                Button("Not now", role: .cancel) {
+            if isSavePrompt {
+                Button(AppStrings.save) { saveCurrentBeneficiary() }
+                Button(AppStrings.notNow, role: .cancel) {
                     presentationMode.wrappedValue.dismiss()
                 }
             } else {
-                Button("OK", role: .cancel) { }
+                Button(AppStrings.ok, role: .cancel) { }
             }
         } message: {
-            Text(alertTitle == "Save beneficiary?"
-                 ? "Would you like to save \(accountName) to your beneficiaries for future transfers?"
+            Text(isSavePrompt
+                 ? AppStrings.wouldYouLikeToSaveValueToYourBeneficiaries(String(describing: accountName))
                  : alertMessage)
         }
         .overlay {
@@ -155,7 +157,8 @@ struct WalletToAccountTransferView: View {
                     paymentDetails: paymentDetails,
                     onClose: {
                         showSuccessDialog = false
-                        alertTitle = "Save beneficiary?"
+                        isSavePrompt = true
+                        alertTitle = AppStrings.saveBeneficiary
                         alertMessage = ""
                         showAlert = true
                     }
@@ -193,7 +196,7 @@ struct WalletToAccountTransferView: View {
                     .frame(width: 34, height: 34)
             }
             Spacer()
-            Text("Wallet to Account")
+            Text(AppStrings.walletToAccount)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.white)
             Spacer()
@@ -207,7 +210,7 @@ struct WalletToAccountTransferView: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + defaultCurrency
     }
     
@@ -243,7 +246,7 @@ struct WalletToAccountTransferView: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
-                Text("Account Details")
+                Text(AppStrings.accountDetails)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -253,7 +256,7 @@ struct WalletToAccountTransferView: View {
             }
             
             HStack(alignment: .top, spacing: 10) {
-                TextField("Enter account number", text: $accountNumber)
+                TextField(AppStrings.enterAccountNumber, text: $accountNumber)
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
@@ -280,7 +283,7 @@ struct WalletToAccountTransferView: View {
                             .background(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "0788B9"), lineWidth: 1.5))
                     }
                     .disabled(accountNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isVerifying)
-                    Text("Verify").font(.system(size: 12, weight: .medium)).foregroundColor(Color(hex: "0788B9"))
+                    Text(AppStrings.verify).font(.system(size: 12, weight: .medium)).foregroundColor(Color(hex: "0788B9"))
                 }
 
                 VStack(spacing: 5) {
@@ -294,12 +297,12 @@ struct WalletToAccountTransferView: View {
                             .background(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "0788B9"), lineWidth: 1.5))
                     }
                     .disabled(isVerifying)
-                    Text("Saved").font(.system(size: 12, weight: .medium)).foregroundColor(Color(hex: "174EA6"))
+                    Text(AppStrings.saved).font(.system(size: 12, weight: .medium)).foregroundColor(Color(hex: "174EA6"))
                 }
             }
             
             // Account name display
-            TextField("Beneficiary Name", text: .constant(accountName))
+            TextField(AppStrings.beneficiaryName, text: .constant(accountName))
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 42)
@@ -315,7 +318,7 @@ struct WalletToAccountTransferView: View {
     private var amountCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Amount")
+                Text(AppStrings.amount)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -326,7 +329,7 @@ struct WalletToAccountTransferView: View {
             
             // Replace the TextField with FormattedTextField
             FormattedTextField(
-                placeholder: "Amount *",
+                placeholder: AppStrings.amount2,
                 text: $amount,
                 walletTransferStyle: true
             )
@@ -393,7 +396,7 @@ struct WalletToAccountTransferView: View {
                 case .failure(_):
                     self.withdrawalFee = 0.0
                     self.isWithdrawalFeeEnabled = false
-                    self.withdrawalFeeError = "Impossible de calculer"
+                    self.withdrawalFeeError = AppStrings.impossibleDeCalculer
                 }
             }
         }
@@ -403,7 +406,7 @@ struct WalletToAccountTransferView: View {
     private var referenceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Reason (optional)")
+                Text(AppStrings.reasonOptional)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -412,7 +415,7 @@ struct WalletToAccountTransferView: View {
                     .frame(width: 100, height: 2)
             }
             
-            TextField("Enter a reason", text: $paymentDetails)
+            TextField(AppStrings.enterAReason, text: $paymentDetails)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 42)
@@ -435,7 +438,7 @@ struct WalletToAccountTransferView: View {
             Button(action: {
                 validateAndShowConfirmation()
             }) {
-                Text("Submit")
+                Text(AppStrings.submit)
                     .font(.system(size: 15, weight: .bold)).tracking(1)
                     .foregroundColor(.white)
                     .frame(width: 120, height: 42)
@@ -451,7 +454,7 @@ struct WalletToAccountTransferView: View {
 
     private func verifyAccount(_ account: Account) {
         guard !account.accountNumber.isEmpty else {
-            showErrorAlert("Numéro de compte invalide")
+            showErrorAlert(AppStrings.numeroDeCompteInvalide)
             return
         }
         
@@ -491,9 +494,9 @@ struct WalletToAccountTransferView: View {
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                     self.accountName = ""
                 }
@@ -504,7 +507,7 @@ struct WalletToAccountTransferView: View {
     private func verifyEnteredAccount() {
         let number = accountNumber.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !number.isEmpty else {
-            showErrorAlert("Enter an account number")
+            showErrorAlert(AppStrings.enterAnAccountNumber)
             return
         }
 
@@ -523,15 +526,15 @@ struct WalletToAccountTransferView: View {
                 accountName = nameToCredit
                 isAccountVerified = true
                 nameEnquiryAuthCode = response.authCode ?? ""
-                showSuccessAlert("Compte vérifié avec succès")
+                showSuccessAlert(AppStrings.compteVerifieAvecSucces)
             } else {
                 accountName = account.accountHolder.isEmpty ? account.accountName : account.accountHolder
                 isAccountVerified = true
                 nameEnquiryAuthCode = response.authCode ?? ""
-                showSuccessAlert("Compte vérifié")
+                showSuccessAlert(AppStrings.compteVerifie)
             }
         } else {
-            showErrorAlert("Information du compte non disponible")
+            showErrorAlert(AppStrings.informationDuCompteNonDisponible)
             accountName = ""
             isAccountVerified = false
         }
@@ -540,9 +543,9 @@ struct WalletToAccountTransferView: View {
     private func handleVerificationError(_ response: ResponseServiceJson) {
         let errorMessage = response.message ?? {
             switch response.respCode {
-            case "001": return "Compte non trouvé"
-            case "003": return "Données manquantes dans la requête"
-            default: return "Échec de la vérification. Code: \(response.respCode ?? "N/A")"
+            case "001": return AppStrings.compteNonTrouve
+            case "003": return AppStrings.donneesManquantesDansLaRequete
+            default: return AppStrings.echecDeLaVerificationCodeValue(String(describing: response.respCode ?? AppStrings.nA))
             }
         }()
         
@@ -558,23 +561,23 @@ struct WalletToAccountTransferView: View {
     
     private func validateInputs() -> Bool {
         if selectedSource == .sponsor && selectedWallet == nil {
-            showErrorAlert("Please select a sponsor wallet")
+            showErrorAlert(AppStrings.pleaseSelectASponsorWallet)
             return false
         }
 
         if accountNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             || selectedAccount?.accountNumber != accountNumber || !isAccountVerified {
-            showErrorAlert("Veuillez saisir un numéro de compte valide et le vérifier")
+            showErrorAlert(AppStrings.veuillezSaisirUnNumeroDeCompteValideEtLe)
             return false
         }
         
         if amount.isEmpty {
-            showErrorAlert("Le montant est requis")
+            showErrorAlert(AppStrings.leMontantEstRequis)
             return false
         }
         
         if accountName.isEmpty {
-            showErrorAlert("Veuillez d'abord vérifier le compte")
+            showErrorAlert(AppStrings.veuillezDAbordVerifierLeCompte)
             return false
         }
         
@@ -616,7 +619,7 @@ struct WalletToAccountTransferView: View {
     private func processTransfer(with pinCode: String) {
         guard let account = selectedAccount,
               !account.accountNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            showErrorAlert("Veuillez sélectionner un compte valide")
+            showErrorAlert(AppStrings.veuillezSelectionnerUnCompteValide)
             return
         }
         let walletNumber = userDataManager.getWalletNumber()
@@ -624,11 +627,11 @@ struct WalletToAccountTransferView: View {
         let normalizedAmount = amount.cleanCurrencyValue()
         guard !walletNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               let baseAmount = Double(normalizedAmount), baseAmount > 0 else {
-            showErrorAlert("Veuillez vérifier le numéro de compte et saisir un montant valide.")
+            showErrorAlert(AppStrings.veuillezVerifierLeNumeroDeCompteEtSaisirUn)
             return
         }
         guard !pinCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            showErrorAlert("Veuillez saisir votre code PIN")
+            showErrorAlert(AppStrings.veuillezSaisirVotreCodePin)
             return
         }
 
@@ -672,13 +675,13 @@ struct WalletToAccountTransferView: View {
                     if response.respCode == "000" {
                         self.handleTransferSuccess(response, requestId: requestId)
                     }else {
-                        self.showError(message: "Transfert échoué: \(response.message ?? "Erreur inconnue")")
+                        self.showError(message: AppStrings.transfertEchoueValue(String(describing: response.message ?? AppStrings.unknownError)))
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -709,8 +712,9 @@ struct WalletToAccountTransferView: View {
         guard !isSavingBeneficiary else { return }
         let phoneNumber = userDataManager.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !phoneNumber.isEmpty, let account = selectedAccount else {
-            alertTitle = "Unable to save beneficiary"
-            alertMessage = "The account details are unavailable. Please try again."
+            isSavePrompt = false
+            alertTitle = AppStrings.unableToSaveBeneficiary
+            alertMessage = AppStrings.theAccountDetailsAreUnavailablePleaseTryAgain
             showAlert = true
             return
         }
@@ -738,11 +742,13 @@ struct WalletToAccountTransferView: View {
                     presentationMode.wrappedValue.dismiss()
                     return
                 case .success(let response):
-                    alertTitle = "Unable to save beneficiary"
-                    alertMessage = response.message ?? "Please try again later."
+                    isSavePrompt = false
+                    alertTitle = AppStrings.unableToSaveBeneficiary
+                    alertMessage = response.message ?? AppStrings.pleaseTryAgainLater
                 case .failure(let error):
-                    alertTitle = "Unable to save beneficiary"
-                    alertMessage = (error as? APIError)?.message ?? "Please check your connection and try again."
+                    isSavePrompt = false
+                    alertTitle = AppStrings.unableToSaveBeneficiary
+                    alertMessage = (error as? APIError)?.message ?? AppStrings.pleaseCheckYourConnectionAndTryAgain
                 }
                 showAlert = true
             }
@@ -771,18 +777,20 @@ struct WalletToAccountTransferView: View {
         transactionReference = ""
     }
     private func showError(message: String) {
-        alertTitle = "Erreur"
+        isSavePrompt = false
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        isSavePrompt = false
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }

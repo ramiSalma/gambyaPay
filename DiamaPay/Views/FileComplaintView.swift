@@ -16,6 +16,7 @@
 import SwiftUI
 
 struct FileComplaintView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
@@ -32,7 +33,7 @@ struct FileComplaintView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     
     @State private var showConfirmationDialog = false
     @State private var showSuccessDialog = false
@@ -41,27 +42,27 @@ struct FileComplaintView: View {
     private let maxDescriptionLength = 1000
     
     private let complaintTypes = [
-        "Transaction échouée",
-        "Débit non autorisé",
-        "Problème de sécurité",
-        "Service client",
-        "Application défaillante",
-        "Frais incorrects",
-        "Problème de compte",
-        "Autre"
+        AppStrings.original("transactionEchouee"),
+        AppStrings.original("debitNonAutorise"),
+        AppStrings.original("problemeDeSecurite"),
+        AppStrings.original("serviceClient"),
+        AppStrings.original("applicationDefaillante"),
+        AppStrings.original("fraisIncorrects"),
+        AppStrings.original("problemeDeCompte"),
+        AppStrings.original("autre")
     ]
     
     private let priorities = [
-        "🔴 Urgent - Perte financière",
-        "🟠 Élevé - Service indisponible",
-        "🟡 Moyen - Problème fonctionnel",
-        "🟢 Faible - Amélioration"
+        AppStrings.original("urgentPerteFinanciere"),
+        AppStrings.original("eleveServiceIndisponible"),
+        AppStrings.original("moyenProblemeFonctionnel"),
+        AppStrings.original("faibleAmelioration")
     ]
     
     private let contactMethods = [
-        "SMS (Numéro enregistré)",
-        "Email (alternatif)",
-        "Ne pas me contacter"
+        AppStrings.original("smsNumeroEnregistre"),
+        AppStrings.original("emailAlternatif"),
+        AppStrings.original("nePasMeContacter")
     ]
     
     var body: some View {
@@ -71,7 +72,7 @@ struct FileComplaintView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Déposer une Plainte", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.deposerUnePlainte, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -80,7 +81,7 @@ struct FileComplaintView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -134,9 +135,9 @@ struct FileComplaintView: View {
             setDefaultDate()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .overlay(confirmationDialogOverlay)
         .sheet(isPresented: $showSuccessDialog) {
@@ -183,7 +184,7 @@ struct FileComplaintView: View {
                 .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
             
             VStack(spacing: 8) {
-                Text("Déposer une Plainte")
+                Text(AppStrings.deposerUnePlainte)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -203,12 +204,12 @@ struct FileComplaintView: View {
                     .foregroundColor(.orange)
                     .font(.system(size: 16))
                 
-                Text("Signaler un problème")
+                Text(AppStrings.signalerUnProbleme)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.primary)
             }
             
-            Text("Veuillez fournir autant de détails que possible pour nous aider à résoudre votre problème rapidement.")
+            Text(AppStrings.veuillezFournirAutantDeDetailsQuePossiblePourNousAider)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
@@ -221,7 +222,7 @@ struct FileComplaintView: View {
     private var complaintTypeCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Type de Plainte")
+                Text(AppStrings.typeDePlainte)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -236,7 +237,7 @@ struct FileComplaintView: View {
                         selectedComplaintType = index
                     }) {
                         HStack {
-                            Text(complaintTypes[index])
+                            Text(AppStrings.option(complaintTypes[index]))
                             if selectedComplaintType == index {
                                 Image(systemName: "checkmark")
                             }
@@ -245,7 +246,7 @@ struct FileComplaintView: View {
                 }
             } label: {
                 HStack {
-                    Text(complaintTypes[selectedComplaintType])
+                    Text(AppStrings.option(complaintTypes[selectedComplaintType]))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
@@ -273,7 +274,7 @@ struct FileComplaintView: View {
     private var priorityCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Priorité")
+                Text(AppStrings.priorite)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -288,7 +289,7 @@ struct FileComplaintView: View {
                         selectedPriority = index
                     }) {
                         HStack {
-                            Text(priorities[index])
+                            Text(AppStrings.option(priorities[index]))
                             if selectedPriority == index {
                                 Image(systemName: "checkmark")
                             }
@@ -297,7 +298,7 @@ struct FileComplaintView: View {
                 }
             } label: {
                 HStack {
-                    Text(priorities[selectedPriority])
+                    Text(AppStrings.option(priorities[selectedPriority]))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
@@ -325,7 +326,7 @@ struct FileComplaintView: View {
     private var titleInputCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Titre")
+                Text(AppStrings.titre)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -334,7 +335,7 @@ struct FileComplaintView: View {
                     .frame(width: 64, height: 2)
             }
             
-            TextField("Entrer le titre", text: $title)
+            TextField(AppStrings.entrerLeTitre, text: $title)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 14)
                 .frame(height: 50)
@@ -353,7 +354,7 @@ struct FileComplaintView: View {
     private var descriptionCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Description")
+                Text(AppStrings.description2)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -378,7 +379,7 @@ struct FileComplaintView: View {
                 
                 HStack {
                     Spacer()
-                    Text("\(description.count)/\(maxDescriptionLength) caractères")
+                    Text(AppStrings.valueValueCaracteres(String(describing: description.count), String(describing: maxDescriptionLength)))
                         .font(.system(size: 12))
                         .foregroundColor(characterCountColor)
                 }
@@ -395,7 +396,7 @@ struct FileComplaintView: View {
     private var incidentDateCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Date de l'incident")
+                Text(AppStrings.dateDeLIncident)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -404,7 +405,7 @@ struct FileComplaintView: View {
                     .frame(width: 64, height: 2)
             }
             
-            TextField("JJ/MM/AAAA", text: $incidentDate)
+            TextField(AppStrings.jjMmAaaa, text: $incidentDate)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 14)
                 .frame(height: 50)
@@ -424,7 +425,7 @@ struct FileComplaintView: View {
     private var transactionRefCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Référence Transaction (optionnel)")
+                Text(AppStrings.referenceTransactionOptionnel)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -433,7 +434,7 @@ struct FileComplaintView: View {
                     .frame(width: 64, height: 2)
             }
             
-            TextField("Entrer la référence", text: $transactionRef)
+            TextField(AppStrings.entrerLaReference, text: $transactionRef)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 14)
                 .frame(height: 50)
@@ -452,7 +453,7 @@ struct FileComplaintView: View {
     private var contactMethodCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Méthode de Contact")
+                Text(AppStrings.methodeDeContact)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -467,7 +468,7 @@ struct FileComplaintView: View {
                         selectedContactMethod = index
                     }) {
                         HStack {
-                            Text(contactMethods[index])
+                            Text(AppStrings.option(contactMethods[index]))
                             if selectedContactMethod == index {
                                 Image(systemName: "checkmark")
                             }
@@ -476,7 +477,7 @@ struct FileComplaintView: View {
                 }
             } label: {
                 HStack {
-                    Text(contactMethods[selectedContactMethod])
+                    Text(AppStrings.option(contactMethods[selectedContactMethod]))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
@@ -504,7 +505,7 @@ struct FileComplaintView: View {
     private var alternateContactCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Email Alternatif")
+                Text(AppStrings.emailAlternatif2)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -513,7 +514,7 @@ struct FileComplaintView: View {
                     .frame(width: 64, height: 2)
             }
             
-            TextField("Entrer votre email", text: $alternateContact)
+            TextField(AppStrings.entrerVotreEmail, text: $alternateContact)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 14)
                 .frame(height: 50)
@@ -537,7 +538,7 @@ struct FileComplaintView: View {
                 showConfirmationDialog = true
             }
         }) {
-            Text("Soumettre")
+            Text(AppStrings.soumettre)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 180, height: 50)
@@ -569,33 +570,33 @@ struct FileComplaintView: View {
     
     private func validateInputs() -> Bool {
         if title.trimmingCharacters(in: .whitespaces).isEmpty {
-            showErrorAlert("Veuillez entrer un titre")
+            showErrorAlert(AppStrings.veuillezEntrerUnTitre)
             return false
         }
         
         if title.trimmingCharacters(in: .whitespaces).count < 5 {
-            showErrorAlert("Le titre doit contenir au moins 5 caractères")
+            showErrorAlert(AppStrings.leTitreDoitContenirAuMoins5Caracteres)
             return false
         }
         
         if description.trimmingCharacters(in: .whitespaces).isEmpty {
-            showErrorAlert("Veuillez décrire votre plainte")
+            showErrorAlert(AppStrings.veuillezDecrireVotrePlainte)
             return false
         }
         
         if description.trimmingCharacters(in: .whitespaces).count < 20 {
-            showErrorAlert("La description doit contenir au moins 20 caractères")
+            showErrorAlert(AppStrings.laDescriptionDoitContenirAuMoins20Caracteres)
             return false
         }
         
         if incidentDate.trimmingCharacters(in: .whitespaces).isEmpty {
-            showErrorAlert("Veuillez entrer la date de l'incident")
+            showErrorAlert(AppStrings.veuillezEntrerLaDateDeLIncident)
             return false
         }
         
         if selectedContactMethod == 1 && !alternateContact.isEmpty {
             if !isValidEmail(alternateContact) {
-                showErrorAlert("Format d'email invalide")
+                showErrorAlert(AppStrings.formatDEmailInvalide)
                 return false
             }
         }
@@ -636,7 +637,7 @@ struct FileComplaintView: View {
                     if let apiError = error as? APIError {
                         self.handleApiError(apiError)
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -653,11 +654,11 @@ struct FileComplaintView: View {
     
     private func getExpectedResolutionTime(_ priority: String) -> String {
         switch priority {
-        case "URGENT": return "24-48 heures"
-        case "ÉLEVÉ": return "2-3 jours ouvrables"
-        case "MOYEN": return "5-7 jours ouvrables"
-        case "FAIBLE": return "7-14 jours ouvrables"
-        default: return "5-7 jours ouvrables"
+        case "URGENT": return AppStrings.original("copy2448Heures")
+        case "ÉLEVÉ": return AppStrings.original("copy23JoursOuvrables")
+        case "MOYEN": return AppStrings.original("copy57JoursOuvrables")
+        case "FAIBLE": return AppStrings.original("copy714JoursOuvrables")
+        default: return AppStrings.original("copy57JoursOuvrables")
         }
     }
     
@@ -665,13 +666,13 @@ struct FileComplaintView: View {
         let message: String
         switch error.respCode {
         case "400":
-            message = "Données invalides. Veuillez vérifier vos informations."
+            message = AppStrings.donneesInvalidesVeuillezVerifierVosInformations
         case "401":
-            message = "Session expirée. Veuillez vous reconnecter."
+            message = AppStrings.loginAgain
         case "429":
-            message = "Vous avez déposé trop de plaintes récemment. Veuillez attendre."
+            message = AppStrings.vousAvezDeposeTropDePlaintesRecemmentVeuillezAttendre
         case "500", "502", "503":
-            message = "Erreur du serveur. Veuillez réessayer plus tard."
+            message = AppStrings.erreurDuServeurVeuillezReessayerPlusTard
         default:
             message = error.message
         }
@@ -679,7 +680,7 @@ struct FileComplaintView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
@@ -687,6 +688,7 @@ struct FileComplaintView: View {
 
 // MARK: - Complaint Confirmation Dialog
 struct ComplaintConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let complaintType: String
     let priority: String
     let title: String
@@ -710,7 +712,7 @@ struct ComplaintConfirmationDialog: View {
                         .font(.system(size: 50))
                         .foregroundColor(.orange)
                     
-                    Text("Confirmer le dépôt de plainte")
+                    Text(AppStrings.confirmerLeDepotDePlainte)
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
@@ -718,19 +720,19 @@ struct ComplaintConfirmationDialog: View {
                 
                 // Details
                 VStack(alignment: .leading, spacing: 12) {
-                    DetailRow(label: "Type:", value: complaintType)
+                    DetailRow(label: AppStrings.type2, value: complaintType)
                     Divider()
-                    DetailRow(label: "Priorité:", value: priority.replacingOccurrences(of: #"^[🔴🟠🟡🟢]\s*"#, with: "", options: .regularExpression))
+                    DetailRow(label: AppStrings.priorite2, value: priority.replacingOccurrences(of: #"^[🔴🟠🟡🟢]\s*"#, with: "", options: .regularExpression))
                     Divider()
-                    DetailRow(label: "Titre:", value: title)
+                    DetailRow(label: AppStrings.titre2, value: title)
                     Divider()
-                    DetailRow(label: "Résolution estimée:", value: expectedResolution)
+                    DetailRow(label: AppStrings.resolutionEstimee, value: AppStrings.option(expectedResolution))
                 }
                 .padding(16)
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(8)
                 
-                Text("Êtes-vous sûr de vouloir déposer cette plainte?")
+                Text(AppStrings.etesVousSurDeVouloirDeposerCettePlainte)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -738,7 +740,7 @@ struct ComplaintConfirmationDialog: View {
                 // Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -748,7 +750,7 @@ struct ComplaintConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text("Déposer")
+                        Text(AppStrings.deposer)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -769,6 +771,7 @@ struct ComplaintConfirmationDialog: View {
 
 // MARK: - Complaint Success Dialog
 struct ComplaintSuccessDialogView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let complaintType: String
     let priority: String
     let title: String
@@ -784,33 +787,33 @@ struct ComplaintSuccessDialogView: View {
                         .foregroundColor(.green)
                         .padding(.top, 20)
                     
-                    Text("Plainte déposée")
+                    Text(AppStrings.plainteDeposee)
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
                     
                     VStack(alignment: .leading, spacing: 16) {
-                        DetailRow(label: "Type:", value: complaintType)
+                        DetailRow(label: AppStrings.type2, value: complaintType)
                         Divider()
-                        DetailRow(label: "Priorité:", value: priority)
+                        DetailRow(label: AppStrings.priorite2, value: priority)
                         Divider()
-                        DetailRow(label: "Titre:", value: title)
+                        DetailRow(label: AppStrings.titre2, value: title)
                         Divider()
-                        DetailRow(label: "Temps de résolution estimé:", value: expectedResolution)
+                        DetailRow(label: AppStrings.tempsDeResolutionEstime, value: AppStrings.option(expectedResolution))
                     }
                     .padding(20)
                     .background(Color.white)
                     .cornerRadius(12)
                     .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
                     
-                    Text("Vous recevrez une confirmation et des mises à jour selon votre méthode de contact préférée.")
+                    Text(AppStrings.vousRecevrezUneConfirmationEtDesMisesAJourSelon)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
                     Button(action: onClose) {
-                        Text("Fermer")
+                        Text(AppStrings.fermer)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -824,14 +827,15 @@ struct ComplaintSuccessDialogView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button("Fermer", action: onClose))
-            .navigationBarTitle("Confirmation", displayMode: .inline)
+            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarTitle(AppStrings.confirmation, displayMode: .inline)
         }
     }
 }
 
 // MARK: - Success Dialog (for Comments)
 struct SuccessDialogView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     let message: String
     let onClose: () -> Void
@@ -859,7 +863,7 @@ struct SuccessDialogView: View {
                 Spacer()
                 
                 Button(action: onClose) {
-                    Text("Fermer")
+                    Text(AppStrings.fermer)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -870,8 +874,8 @@ struct SuccessDialogView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 32)
             }
-            .navigationBarItems(trailing: Button("Fermer", action: onClose))
-            .navigationBarTitle("Succès", displayMode: .inline)
+            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarTitle(AppStrings.succes, displayMode: .inline)
         }
     }
 }

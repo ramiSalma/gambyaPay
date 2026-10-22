@@ -16,12 +16,13 @@
 import SwiftUI
 
 struct StandingInstructionListView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @State private var instructions: [StandingInstruction] = []
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Information"
+    @State private var alertTitle = AppStrings.information
     @State private var showCreateSheet = false
     @State private var showUpdateSheet = false
     @State private var selectedInstruction: StandingInstruction? = nil
@@ -37,7 +38,7 @@ struct StandingInstructionListView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Standing Instructions", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.standingInstructions, headerColor: Color(hex: "174EA6"))
 
                 // Title Card
                     .padding(.horizontal, 16)
@@ -51,7 +52,7 @@ struct StandingInstructionListView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Chargement...")
+                        Text(AppStrings.chargement)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -71,9 +72,9 @@ struct StandingInstructionListView: View {
             loadStandingInstructions()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .sheet(isPresented: $showCreateSheet) {
             NavigationView {
@@ -107,7 +108,7 @@ struct StandingInstructionListView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 6) {  // Reduced from 8
-                Text("Virements Permanents")
+                Text(AppStrings.virementsPermanents)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -152,7 +153,7 @@ struct StandingInstructionListView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
                         .font(.system(size: 16, weight: .semibold))
-                    Text("Créer")
+                    Text(AppStrings.creer)
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundColor(.white)
@@ -176,7 +177,7 @@ struct StandingInstructionListView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
             
-            Text("Vous n'avez aucun virement permanent")
+            Text(AppStrings.vousNAvezAucunVirementPermanent)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -184,7 +185,7 @@ struct StandingInstructionListView: View {
             Button(action: {
                 showCreateSheet = true
             }) {
-                Text("Créer un virement")
+                Text(AppStrings.creerUnVirement)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 24)
@@ -225,7 +226,7 @@ struct StandingInstructionListView: View {
         let phoneNumber = userDataManager.getPhoneNumber()
         guard !phoneNumber.isEmpty else {
             isLoading = false
-            showErrorAlert("Numéro de téléphone non disponible")
+            showErrorAlert(AppStrings.numeroDeTelephoneNonDisponible)
             return
         }
         
@@ -249,9 +250,9 @@ struct StandingInstructionListView: View {
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -268,7 +269,7 @@ struct StandingInstructionListView: View {
             let instruction = StandingInstruction(
                 reference: dict["reference"] as? String ?? "",
                 destination: dict["destination"] as? String,
-                beneficiary: dict["beneficiary"] as? String ?? "Unknown",
+                beneficiary: dict["beneficiary"] as? String ?? AppStrings.unknown,
                 description: dict["description"] as? String ?? "",
                 amount: String(describing: dict["amount"] ?? "0"),
                 currency: dict["currency"] as? String ?? "324",
@@ -312,16 +313,16 @@ struct StandingInstructionListView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccessAlert("Virement permanent supprimé avec succès")
+                        self.showSuccessAlert(AppStrings.virementPermanentSupprimeAvecSucces)
                         self.loadStandingInstructions()
                     } else {
-                        self.showErrorAlert("Erreur: \(response.message ?? "Échec de la suppression")")
+                        self.showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.echecDeLaSuppression)))
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
                 
@@ -364,13 +365,13 @@ struct StandingInstructionListView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }
@@ -378,6 +379,7 @@ struct StandingInstructionListView: View {
 
 // MARK: - Standing Instruction Row
 struct StandingInstructionRow: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let instruction: StandingInstruction
     let onUpdate: () -> Void
     let onDelete: () -> Void
@@ -388,7 +390,7 @@ struct StandingInstructionRow: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(instruction.beneficiary ?? "Unknown")
+                    Text(instruction.beneficiary ?? AppStrings.unknown)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.primary)
                     
@@ -415,10 +417,10 @@ struct StandingInstructionRow: View {
                 .padding(.horizontal, 16)
             
             VStack(alignment: .leading, spacing: 8) {
-                DetailRowSmall(label: "Fréquence:", value: getFrequencyDisplay(instruction.frequency ?? "D"))
-                DetailRowSmall(label: "Prochaine date:", value: instruction.nextDate ?? "N/A")
+                DetailRowSmall(label: AppStrings.frequence, value: getFrequencyDisplay(instruction.frequency ?? "D"))
+                DetailRowSmall(label: AppStrings.prochaineDate, value: instruction.nextDate ?? "N/A")
                 if let description = instruction.description, !description.isEmpty {
-                    DetailRowSmall(label: "Description:", value: description)
+                    DetailRowSmall(label: AppStrings.description3, value: description)
                 }
             }
             .padding(16)
@@ -426,16 +428,16 @@ struct StandingInstructionRow: View {
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-        .confirmationDialog("Options", isPresented: $showMenu, titleVisibility: .hidden) {
-            Button("Modifier") {
+        .confirmationDialog(AppStrings.options, isPresented: $showMenu, titleVisibility: .hidden) {
+            Button(AppStrings.modifier) {
                 onUpdate()
             }
             
-            Button("Supprimer", role: .destructive) {
+            Button(AppStrings.supprimer, role: .destructive) {
                 onDelete()
             }
             
-            Button("Annuler", role: .cancel) { }
+            Button(AppStrings.annuler, role: .cancel) { }
         }
     }
     
@@ -446,7 +448,7 @@ struct StandingInstructionRow: View {
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return formatter.string(from: NSNumber(value: doubleAmount)) ?? amount
     }
     
@@ -461,16 +463,17 @@ struct StandingInstructionRow: View {
     
     private func getFrequencyDisplay(_ code: String) -> String {
         switch code {
-        case "D": return "Quotidien"
-        case "W": return "Hebdomadaire"
-        case "M": return "Mensuel"
-        case "Y": return "Annuel"
+        case "D": return AppStrings.quotidien
+        case "W": return AppStrings.hebdomadaire
+        case "M": return AppStrings.mensuel
+        case "Y": return AppStrings.annuel
         default: return code
         }
     }
 }
 
 struct DetailRowSmall: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let label: String
     let value: String
     
@@ -491,6 +494,7 @@ struct DetailRowSmall: View {
 
 // MARK: - Delete Confirmation Dialog
 struct DeleteConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let instruction: StandingInstruction
     @Binding var isPresented: Bool
     let onConfirm: (String) -> Void
@@ -509,14 +513,14 @@ struct DeleteConfirmationDialog: View {
             
             VStack(spacing: 0) {
                 // Header
-                Text("Confirmer la suppression")
+                Text(AppStrings.confirmerLaSuppression)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.primary)
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
                 
                 // Message
-                Text("Entrez votre code PIN pour supprimer ce virement permanent")
+                Text(AppStrings.entrezVotreCodePinPourSupprimerCeVirementPermanent)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -524,7 +528,7 @@ struct DeleteConfirmationDialog: View {
                     .padding(.top, 12)
                 
                 // PIN Input
-                SecureField("Code PIN", text: $pin)
+                SecureField(AppStrings.pin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16, weight: .medium))
                     .padding(.horizontal, 16)
@@ -540,7 +544,7 @@ struct DeleteConfirmationDialog: View {
                     }
                 
                 if showError {
-                    Text("Veuillez entrer votre PIN")
+                    Text(AppStrings.veuillezEntrerVotrePin)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
                         .padding(.top, 4)
@@ -549,7 +553,7 @@ struct DeleteConfirmationDialog: View {
                 // Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color.blueH)
                             .frame(maxWidth: .infinity)
@@ -566,7 +570,7 @@ struct DeleteConfirmationDialog: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text("Confirmer")
+                        Text(AppStrings.confirmer)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

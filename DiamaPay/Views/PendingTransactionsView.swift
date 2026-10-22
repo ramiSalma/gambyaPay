@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct PendingTransactionsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
     @State private var pendingTransactions: [PendingTransaction] = []
     @State private var isLoading = false
     @State private var showAlert = false
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     @State private var alertMessage = ""
     @State private var showPinDialog = false
     @State private var selectedTransaction: PendingTransaction?
@@ -28,7 +29,7 @@ struct PendingTransactionsView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Pending Transactions", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.pendingTransactions, headerColor: Color(hex: "174EA6"))
                 
                 if isLoading && pendingTransactions.isEmpty {
                     loadingView
@@ -45,13 +46,13 @@ struct PendingTransactionsView: View {
         .navigationBarHidden(true)
         .onAppear(perform: loadPendingTransactions)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) {
-                if alertTitle == "Succès" {
+            Button(AppStrings.ok, role: .cancel) {
+                if alertTitle == AppStrings.succes {
                     loadPendingTransactions()
                 }
             }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .overlay {
             if showPinDialog, let transaction = selectedTransaction {
@@ -84,7 +85,7 @@ struct PendingTransactionsView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                         .scaleEffect(1.5)
                     
-                    Text("Loading transactions…")
+                    Text(AppStrings.loadingTransactions2)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color(hex: "64748B"))
                 }
@@ -96,7 +97,7 @@ struct PendingTransactionsView: View {
     
     // MARK: - Title Card
     private var titleCard: some View {
-        Text("Waiting for your approval")
+        Text(AppStrings.waitingForYourApproval)
             .font(.system(size: 16, weight: .semibold))
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
@@ -150,11 +151,11 @@ struct PendingTransactionsView: View {
                 .foregroundColor(Color(hex: "0788B9").opacity(0.65))
             
             VStack(spacing: 8) {
-                Text("No pending transactions")
+                Text(AppStrings.noPendingTransactions)
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
-                Text("You’re all caught up.")
+                Text(AppStrings.youreAllCaughtUp)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color(hex: "94A3B8"))
             }
@@ -198,15 +199,15 @@ struct PendingTransactionsView: View {
         if response.respCode == "000" {
             parseTransactions(from: response)
         } else {
-            showErrorAlert(response.message ?? "Could not load pending transactions.")
+            showErrorAlert(response.message ?? AppStrings.couldNotLoadPendingTransactions)
         }
     }
     
     private func handleErrorResponse(_ error: Error) {
         if let apiError = error as? APIError {
-            showErrorAlert(apiError.message)
+            showErrorAlert(AppStrings.option(apiError.message))
         } else {
-            showErrorAlert("Network error: \(error.localizedDescription)")
+            showErrorAlert(AppStrings.networkErrorValue(String(describing: error.localizedDescription)))
         }
     }
     
@@ -229,7 +230,7 @@ struct PendingTransactionsView: View {
     
     private func validateTransaction(_ transaction: PendingTransaction, action: String, pin: String) {
         guard !pin.isEmpty else {
-            showErrorAlert("PIN is required.")
+            showErrorAlert(AppStrings.pinIsRequired)
             return
         }
         
@@ -256,13 +257,13 @@ struct PendingTransactionsView: View {
                 case .success(let response):
                     if response.respCode == "000" {
                         let actionText = action == "A" ? "approved" : "rejected"
-                        showSuccessAlert("Transaction \(actionText) successfully.")
+                        showSuccessAlert(AppStrings.transactionValueSuccessfully(String(describing: actionText)))
                         
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                             loadPendingTransactions()
                         }
                     } else {
-                        showErrorAlert("Could not update transaction: \(response.message ?? "Please try again.")")
+                        showErrorAlert(AppStrings.couldNotUpdateTransactionValue(String(describing: response.message ?? AppStrings.pleaseTryAgain)))
                     }
                 case .failure(let error):
                     handleErrorResponse(error)
@@ -272,13 +273,13 @@ struct PendingTransactionsView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }
@@ -308,6 +309,7 @@ struct PendingTransactionsView_Previews: PreviewProvider {
 }
 
 struct PendingTransactionCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let transaction: PendingTransaction
     let onApprove: () -> Void
     let onReject: () -> Void
@@ -340,20 +342,20 @@ struct PendingTransactionCard: View {
             
             // Details Section
             VStack(spacing: 0) {
-                detailRow(icon: "info.circle", label: "Reference", value: transaction.trxRef ?? "N/A")
+                detailRow(icon: "info.circle", label: AppStrings.reference, value: transaction.trxRef ?? "N/A")
                 detailDivider
-                detailRow(icon: "calendar", label: "Date", value: transaction.formattedDate)
+                detailRow(icon: "calendar", label: AppStrings.date, value: transaction.formattedDate)
                 if let fees = transaction.fees, !fees.isEmpty, fees != "0", fees != "0.00" {
                     detailDivider
-                    detailRow(icon: "plusminus", label: "Fees", value: fees)
+                    detailRow(icon: "plusminus", label: AppStrings.fees, value: fees)
                 }
                 if let tax = transaction.tax, !tax.isEmpty, tax != "0", tax != "0.00" {
                     detailDivider
-                    detailRow(icon: "percent", label: "Tax", value: tax)
+                    detailRow(icon: "percent", label: AppStrings.tax, value: tax)
                 }
                 if let details = transaction.details, !details.isEmpty {
                     detailDivider
-                    detailRow(icon: "text.alignleft", label: "Details", value: details)
+                    detailRow(icon: "text.alignleft", label: AppStrings.details, value: details)
                 }
                 
                 if transaction.shouldShowBeneficiary {
@@ -366,10 +368,10 @@ struct PendingTransactionCard: View {
             
             // Action Buttons
             HStack(spacing: 12) {
-                actionButton(title: "Reject", icon: "xmark", color: Color(hex: "DC2626"), isFilled: false, action: onReject)
+                actionButton(title: AppStrings.reject, icon: "xmark", color: Color(hex: "DC2626"), isFilled: false, action: onReject)
                 
                 if transaction.pCode != "43" {
-                    actionButton(title: "Approve", icon: "checkmark", color: Color(hex: "174EA6"), isFilled: true, action: onApprove)
+                    actionButton(title: AppStrings.approve, icon: "checkmark", color: Color(hex: "174EA6"), isFilled: true, action: onApprove)
                 }
             }
             .padding(.horizontal, 16)
@@ -458,6 +460,7 @@ struct PendingTransactionCard_Previews: PreviewProvider {
 }
 
 struct PinDialogView1: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var isPresented: Bool
     let transaction: PendingTransaction
     let action: String
@@ -509,11 +512,11 @@ struct PinDialogView1: View {
                     .foregroundColor(.blueH)
             }
             
-            Text("Code PIN requis")
+            Text(AppStrings.codePinRequis)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(Color(hex: "1F2937"))
             
-            Text("Entrez votre code PIN pour \(actionText) la transaction")
+            Text(AppStrings.entrezVotreCodePinPourValueLaTransaction(String(describing: actionText)))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(Color(hex: "6B7280"))
                 .multilineTextAlignment(.center)
@@ -525,11 +528,11 @@ struct PinDialogView1: View {
     
     private var transactionDetails: some View {
         VStack(spacing: 12) {
-            transactionDetailRow(label: "Type:", value: transaction.transactionTypeDescription, isBold: false)
+            transactionDetailRow(label: AppStrings.type2, value: transaction.transactionTypeDescription, isBold: false)
             Divider().background(Color(hex: "E5E7EB"))
-            transactionDetailRow(label: "Montant:", value: transaction.formattedAmount, isBold: true)
+            transactionDetailRow(label: AppStrings.montant2, value: transaction.formattedAmount, isBold: true)
             Divider().background(Color(hex: "E5E7EB"))
-            transactionDetailRow(label: "Référence:", value: transaction.trxRef ?? "N/A", isBold: false)
+            transactionDetailRow(label: AppStrings.reference3, value: transaction.trxRef ?? "N/A", isBold: false)
         }
         .padding(16)
         .background(Color(hex: "F9FAFB"))
@@ -554,11 +557,11 @@ struct PinDialogView1: View {
     
     private var pinInput: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Code PIN")
+            Text(AppStrings.pin)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(Color(hex: "374151"))
             
-            SecureField("Entrez votre code PIN", text: $pin)
+            SecureField(AppStrings.entrezVotreCodePin, text: $pin)
                 .font(.system(size: 16, weight: .medium))
                 .padding(16)
                 .background(Color.white)
@@ -576,7 +579,7 @@ struct PinDialogView1: View {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.circle.fill")
                         .font(.system(size: 12))
-                    Text(errorMessage.isEmpty ? "Le code PIN est obligatoire" : errorMessage)
+                    Text(errorMessage.isEmpty ? AppStrings.leCodePinEstObligatoire : errorMessage)
                         .font(.system(size: 12, weight: .medium))
                 }
                 .foregroundColor(Color(hex: "DC2626"))
@@ -590,7 +593,7 @@ struct PinDialogView1: View {
         errorMessage = ""
         
         guard pin.count == 4 else {
-            errorMessage = "Le PIN doit contenir exactement 4 chiffres"
+            errorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             showError = true
             return
         }
@@ -611,7 +614,7 @@ struct PinDialogView1: View {
     private var actionButtons: some View {
         HStack(spacing: 12) {
             Button(action: { isPresented = false }) {
-                Text("Annuler")
+                Text(AppStrings.annuler)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "6B7280"))
                     .frame(maxWidth: .infinity)
@@ -627,7 +630,7 @@ struct PinDialogView1: View {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
-                        Text("Confirmer")
+                        Text(AppStrings.confirmer)
                             .font(.system(size: 15, weight: .bold))
                             .foregroundColor(.white)
                     }

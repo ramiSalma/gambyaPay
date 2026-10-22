@@ -16,6 +16,7 @@
 import SwiftUI
 
 struct SendCommentsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
@@ -27,7 +28,7 @@ struct SendCommentsView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     
     @State private var showConfirmationDialog = false
     @State private var showSuccessDialog = false
@@ -36,14 +37,14 @@ struct SendCommentsView: View {
     private let maxCommentLength = 500
     
     private let categories = [
-        "Interface utilisateur",
-        "Fonctionnalités",
-        "Performance",
-        "Sécurité",
-        "Service client",
-        "Suggestion d'amélioration",
-        "Félicitations",
-        "Autre"
+        AppStrings.original("interfaceUtilisateur"),
+        AppStrings.original("fonctionnalites"),
+        AppStrings.original("performance"),
+        AppStrings.original("securite"),
+        AppStrings.original("serviceClient"),
+        AppStrings.original("suggestionDAmelioration"),
+        AppStrings.original("felicitations2"),
+        AppStrings.original("autre")
     ]
     
     var body: some View {
@@ -53,7 +54,7 @@ struct SendCommentsView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Commentaires & Suggestions", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.commentairesSuggestions, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -62,7 +63,7 @@ struct SendCommentsView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Envoi en cours...")
+                        Text(AppStrings.envoiEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -99,15 +100,15 @@ struct SendCommentsView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .overlay(confirmationDialogOverlay)
         .sheet(isPresented: $showSuccessDialog) {
             SuccessDialogView(
-                title: "Commentaire envoyé",
-                message: "Votre commentaire a été envoyé avec succès! Merci pour votre retour.",
+                title: AppStrings.commentaireEnvoye,
+                message: AppStrings.votreCommentaireAEteEnvoyeAvecSuccesMerciPourVotre,
                 onClose: {
                     showSuccessDialog = false
                     presentationMode.wrappedValue.dismiss()
@@ -144,7 +145,7 @@ struct SendCommentsView: View {
                 .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
             
             VStack(spacing: 8) {
-                Text("Commentaires & Suggestions")
+                Text(AppStrings.commentairesSuggestions)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -164,12 +165,12 @@ struct SendCommentsView: View {
                     .foregroundColor(.blueH)
                     .font(.system(size: 16))
                 
-                Text("Nous valorisons vos retours")
+                Text(AppStrings.nousValorisonsVosRetours)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.primary)
             }
             
-            Text("Partagez vos commentaires, suggestions ou félicitations pour nous aider à améliorer nos services.")
+            Text(AppStrings.partagezVosCommentairesSuggestionsOuFelicitationsPourNousAiderA)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
@@ -182,7 +183,7 @@ struct SendCommentsView: View {
     private var categoryCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Catégorie")
+                Text(AppStrings.categorie)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -197,7 +198,7 @@ struct SendCommentsView: View {
                         selectedCategory = index
                     }) {
                         HStack {
-                            Text(categories[index])
+                            Text(AppStrings.option(categories[index]))
                             if selectedCategory == index {
                                 Image(systemName: "checkmark")
                             }
@@ -206,7 +207,7 @@ struct SendCommentsView: View {
                 }
             } label: {
                 HStack {
-                    Text(categories[selectedCategory])
+                    Text(AppStrings.option(categories[selectedCategory]))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
@@ -234,7 +235,7 @@ struct SendCommentsView: View {
     private var subjectCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Sujet")
+                Text(AppStrings.sujet)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -243,7 +244,7 @@ struct SendCommentsView: View {
                     .frame(width: 64, height: 2)
             }
             
-            TextField("Entrer le sujet", text: $subject)
+            TextField(AppStrings.entrerLeSujet, text: $subject)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 14)
                 .frame(height: 50)
@@ -262,7 +263,7 @@ struct SendCommentsView: View {
     private var commentCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Commentaire")
+                Text(AppStrings.commentaire)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -287,7 +288,7 @@ struct SendCommentsView: View {
                 
                 HStack {
                     Spacer()
-                    Text("\(comment.count)/\(maxCommentLength) caractères")
+                    Text(AppStrings.valueValueCaracteres(String(describing: comment.count), String(describing: maxCommentLength)))
                         .font(.system(size: 12))
                         .foregroundColor(characterCountColor)
                 }
@@ -304,7 +305,7 @@ struct SendCommentsView: View {
     private var emailCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Email (optionnel)")
+                Text(AppStrings.emailOptionnel)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "174EA6"))
                 
@@ -313,7 +314,7 @@ struct SendCommentsView: View {
                     .frame(width: 64, height: 2)
             }
             
-            TextField("Entrer votre email", text: $email)
+            TextField(AppStrings.entrerVotreEmail, text: $email)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 14)
                 .frame(height: 50)
@@ -337,7 +338,7 @@ struct SendCommentsView: View {
                 showConfirmationDialog = true
             }
         }) {
-            Text("Envoyer")
+            Text(AppStrings.envoyer)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 180, height: 50)
@@ -363,22 +364,22 @@ struct SendCommentsView: View {
     // MARK: - Helper Methods
     private func validateInputs() -> Bool {
         if subject.trimmingCharacters(in: .whitespaces).isEmpty {
-            showErrorAlert("Veuillez entrer un sujet")
+            showErrorAlert(AppStrings.veuillezEntrerUnSujet)
             return false
         }
         
         if comment.trimmingCharacters(in: .whitespaces).isEmpty {
-            showErrorAlert("Veuillez entrer votre commentaire")
+            showErrorAlert(AppStrings.veuillezEntrerVotreCommentaire)
             return false
         }
         
         if comment.trimmingCharacters(in: .whitespaces).count < 10 {
-            showErrorAlert("Le commentaire doit contenir au moins 10 caractères")
+            showErrorAlert(AppStrings.leCommentaireDoitContenirAuMoins10Caracteres)
             return false
         }
         
         if !email.isEmpty && !isValidEmail(email) {
-            showErrorAlert("Format d'email invalide")
+            showErrorAlert(AppStrings.formatDEmailInvalide)
             return false
         }
         
@@ -414,7 +415,7 @@ struct SendCommentsView: View {
                     if let apiError = error as? APIError {
                         self.handleApiError(apiError)
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -425,11 +426,11 @@ struct SendCommentsView: View {
         let message: String
         switch error.respCode {
         case "400":
-            message = "Données invalides. Veuillez vérifier vos informations."
+            message = AppStrings.donneesInvalidesVeuillezVerifierVosInformations
         case "401":
-            message = "Session expirée. Veuillez vous reconnecter."
+            message = AppStrings.loginAgain
         case "500", "502", "503":
-            message = "Erreur du serveur. Veuillez réessayer plus tard."
+            message = AppStrings.erreurDuServeurVeuillezReessayerPlusTard
         default:
             message = error.message
         }
@@ -437,7 +438,7 @@ struct SendCommentsView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
@@ -445,6 +446,7 @@ struct SendCommentsView: View {
 
 // MARK: - Confirmation Dialog
 struct CommentConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let category: String
     let subject: String
     @Binding var isPresented: Bool
@@ -466,7 +468,7 @@ struct CommentConfirmationDialog: View {
                         .font(.system(size: 50))
                         .foregroundColor(.blueH)
                     
-                    Text("Confirmer l'envoi")
+                    Text(AppStrings.confirmerLEnvoi)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.primary)
                 }
@@ -474,11 +476,11 @@ struct CommentConfirmationDialog: View {
                 // Details
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
-                        Text("Catégorie:")
+                        Text(AppStrings.categorie2)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text(category)
+                        Text(AppStrings.option(category))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primary)
                     }
@@ -486,7 +488,7 @@ struct CommentConfirmationDialog: View {
                     Divider()
                     
                     HStack {
-                        Text("Sujet:")
+                        Text(AppStrings.sujet2)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.secondary)
                         Spacer()
@@ -500,7 +502,7 @@ struct CommentConfirmationDialog: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(8)
                 
-                Text("Êtes-vous sûr de vouloir envoyer ce commentaire?")
+                Text(AppStrings.etesVousSurDeVouloirEnvoyerCeCommentaire)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -508,7 +510,7 @@ struct CommentConfirmationDialog: View {
                 // Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -518,7 +520,7 @@ struct CommentConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text("Envoyer")
+                        Text(AppStrings.envoyer)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

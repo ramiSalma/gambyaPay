@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SavedWalletRecipientsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     var includeMobileMoneyRecipients = false
     let onSelect: (WalletBeneficiary) -> Void
@@ -20,18 +21,18 @@ struct SavedWalletRecipientsView: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView("Loading saved recipients...")
+                    ProgressView(AppStrings.loadingSavedRecipients)
                 } else if let errorMessage {
                     VStack(spacing: 16) {
-                        Text(errorMessage).multilineTextAlignment(.center)
-                        Button("Try Again", action: loadRecipients)
+                        Text(AppStrings.option(errorMessage)).multilineTextAlignment(.center)
+                        Button(AppStrings.tryAgain, action: loadRecipients)
                     }.padding()
                 } else if recipients.isEmpty {
-                    Text("No saved wallet recipients").foregroundColor(.secondary)
+                    Text(AppStrings.noSavedWalletRecipients).foregroundColor(.secondary)
                 } else {
                     List {
                         if filtered.isEmpty {
-                            Text("No matching recipients").foregroundColor(.secondary)
+                            Text(AppStrings.noMatchingRecipients).foregroundColor(.secondary)
                         }
                         ForEach(Array(filtered.enumerated()), id: \.offset) { _, recipient in
                             Button {
@@ -39,7 +40,7 @@ struct SavedWalletRecipientsView: View {
                                 dismiss()
                             } label: {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text(recipient.name?.isEmpty == false ? recipient.name! : "Saved recipient")
+                                    Text(recipient.name?.isEmpty == false ? recipient.name! : AppStrings.savedRecipient)
                                         .foregroundColor(.primary)
                                     Text(recipient.destination ?? "")
                                         .font(.subheadline)
@@ -48,14 +49,14 @@ struct SavedWalletRecipientsView: View {
                             }
                         }
                     }
-                    .searchable(text: $search, prompt: "Name or recipient number")
+                    .searchable(text: $search, prompt: AppStrings.nameOrRecipientNumber)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle("Saved Recipients")
+            .navigationTitle(AppStrings.savedRecipients2)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.close) { dismiss() } }
             }
             .onAppear(perform: loadRecipients)
         }
@@ -65,7 +66,7 @@ struct SavedWalletRecipientsView: View {
         guard !isLoading else { return }
         let user = UserDataManager.shared
         guard !user.getPhoneNumber().isEmpty else {
-            errorMessage = "Please sign in again to load saved recipients."
+            errorMessage = AppStrings.pleaseSignInAgainToLoadSavedRecipients
             return
         }
         isLoading = true
@@ -82,12 +83,12 @@ struct SavedWalletRecipientsView: View {
                 switch result {
                 case .success(let response):
                     guard response.respCode == "000" else {
-                        errorMessage = response.message ?? "Unable to load saved recipients."
+                        errorMessage = response.message ?? AppStrings.unableToLoadSavedRecipients
                         return
                     }
                     recipients = (response.result ?? []).filter { $0.isWalletRecipient || (includeMobileMoneyRecipients && $0.isMobileMoneyRecipient) }
                 case .failure(let error):
-                    errorMessage = (error as? APIError)?.message ?? "Unable to load saved recipients. Please try again."
+                    errorMessage = (error as? APIError)?.message ?? AppStrings.unableToLoadSavedRecipientsPleaseTryAgain
                 }
             }
         }

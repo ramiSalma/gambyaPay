@@ -15,6 +15,7 @@ private enum RegistrationTheme {
 }
 
 struct RegistrationFlowView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @State private var currentStep = 1
     @StateObject private var registrationData = RegistrationData()
     @State private var showAlert = false
@@ -74,17 +75,17 @@ struct RegistrationFlowView: View {
             .navigationBarHidden(true)
             .background(RegistrationTheme.canvas)
         }
-        .alert("Registration", isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+        .alert(AppStrings.registration, isPresented: $showAlert) {
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .actionSheet(isPresented: $showingActionSheet) {
             ActionSheet(
-                title: Text("Choose photo source"),
-                message: Text("Choose how to add the photo"),
+                title: Text(AppStrings.choosePhotoSource),
+                message: Text(AppStrings.chooseHowToAddThePhoto),
                 buttons: [
-                    .default(Text("📷 Camera")) {
+                    .default(Text(AppStrings.camera2)) {
                         if UIImagePickerController.isSourceTypeAvailable(.camera) {
                             imagePickerSourceType = .camera
                             showImagePicker = true
@@ -93,11 +94,11 @@ struct RegistrationFlowView: View {
                             showImagePicker = true
                         }
                     },
-                    .default(Text("📁 Photo Library")) {
+                    .default(Text(AppStrings.photoLibrary)) {
                         imagePickerSourceType = .photoLibrary
                         showImagePicker = true
                     },
-                    .cancel(Text("Cancel"))
+                    .cancel(Text(AppStrings.cancel))
                 ]
             )
         }
@@ -132,7 +133,7 @@ struct RegistrationFlowView: View {
                 }
                 
                 // Centered text
-                Text("Step \(min(currentStep, totalSteps)) of \(totalSteps)")
+                Text(AppStrings.stepValueOfValue(String(describing: min(currentStep, totalSteps)), String(describing: totalSteps)))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
             }
@@ -185,18 +186,18 @@ struct RegistrationFlowView: View {
     // MARK: - Step 1: Personal Info
     private var step1PersonalInfoView: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Enter your personal information")
+            Text(AppStrings.enterYourPersonalInformation)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.primary)
             
-            sectionHeader("Basic Information")
-            CustomTextField(title: "First Name*", text: $registrationData.firstName, error: personalInfoError("firstName"))
-            CustomTextField(title: "Last Name*", text: $registrationData.lastName, error: personalInfoError("lastName"))
-            CustomTextField(title: "Phone Number*", text: $registrationData.phoneNumber, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("phone"), digitLimit: 10)
-            CustomTextField(title: "Email*", text: $registrationData.email, icon: "envelope", keyboardType: .emailAddress, error: personalInfoError("email"))
+            sectionHeader(AppStrings.basicInformation)
+            CustomTextField(title: AppStrings.firstName2, text: $registrationData.firstName, error: personalInfoError("firstName"))
+            CustomTextField(title: AppStrings.lastName, text: $registrationData.lastName, error: personalInfoError("lastName"))
+            CustomTextField(title: AppStrings.phoneNumber3, text: $registrationData.phoneNumber, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("phone"), digitLimit: 10)
+            CustomTextField(title: AppStrings.email2, text: $registrationData.email, icon: "envelope", keyboardType: .emailAddress, error: personalInfoError("email"))
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("Date of Birth*")
+                Text(AppStrings.dateOfBirth)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.primary)
                 
@@ -230,15 +231,15 @@ struct RegistrationFlowView: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Gender*")
+                Text(AppStrings.gender)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(RegistrationTheme.ink)
                 Menu {
-                    Button("Male") { registrationData.gender = "M" }
-                    Button("Female") { registrationData.gender = "F" }
+                    Button(AppStrings.male) { registrationData.gender = "M" }
+                    Button(AppStrings.female) { registrationData.gender = "F" }
                 } label: {
                     HStack {
-                        Text(registrationData.gender.isEmpty ? "Select your gender" : (registrationData.gender == "M" ? "Male" : "Female"))
+                        Text(registrationData.gender.isEmpty ? AppStrings.selectYourGender : (registrationData.gender == "M" ? AppStrings.male : AppStrings.female))
                             .foregroundColor(registrationData.gender.isEmpty ? .gray : .primary)
                         Spacer()
                         Image(systemName: "chevron.down").foregroundColor(.gray)
@@ -251,9 +252,9 @@ struct RegistrationFlowView: View {
                 inlineFieldError(personalInfoError("gender"))
             }
             
-            sectionHeader("Identification")
+            sectionHeader(AppStrings.identification)
             
-            CustomTextField(title: "National ID*", text: $registrationData.documentId, error: personalInfoError("documentId"))
+            CustomTextField(title: AppStrings.nationalId2, text: $registrationData.documentId, error: personalInfoError("documentId"))
 
             // Nationality and branch selectors mirror the Android registration form.
             SearchableNationalityPicker(
@@ -270,14 +271,14 @@ struct RegistrationFlowView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Menu {
                     ForEach(branches, id: \.id) { branch in
-                        Button(branch.name ?? branch.id ?? "Branch") {
+                        Button(branch.name ?? branch.id ?? AppStrings.branch) {
                             registrationData.branchCode = branch.id ?? ""
                             registrationData.branchDisplay = branch.name ?? branch.id ?? ""
                         }
                     }
                 } label: {
                     HStack {
-                        Text(registrationData.branchDisplay.isEmpty ? "Choose a branch" : registrationData.branchDisplay)
+                        Text(registrationData.branchDisplay.isEmpty ? AppStrings.chooseABranch : registrationData.branchDisplay)
                             .foregroundColor(registrationData.branchDisplay.isEmpty ? .gray : .primary)
                         Spacer()
                         Image(systemName: "chevron.down").foregroundColor(.gray)
@@ -291,15 +292,15 @@ struct RegistrationFlowView: View {
                 inlineFieldError(personalInfoError("branchCode"))
             }
             
-            CustomTextField(title: "Residential Address*", text: $registrationData.address, icon: "location.circle", error: personalInfoError("address"))
+            CustomTextField(title: AppStrings.residentialAddress, text: $registrationData.address, icon: "location.circle", error: personalInfoError("address"))
 
 
-            sectionHeader("Security")
+            sectionHeader(AppStrings.security)
             
             // Secret Question Picker with API
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("Secret Question*")
+                    Text(AppStrings.secretQuestion)
                         .font(.system(size: 16, weight: .medium))
                     
                     if isLoadingSecretQuestions {
@@ -310,7 +311,7 @@ struct RegistrationFlowView: View {
                 
                 Menu {
                     if secretQuestions.isEmpty {
-                        Button("Loading...") { }
+                        Button(AppStrings.loading) { }
                             .disabled(true)
                     } else {
                         ForEach(secretQuestions, id: \.id) { question in
@@ -326,7 +327,7 @@ struct RegistrationFlowView: View {
                             .foregroundColor(.blueH)
                             .frame(width: 20)
                         
-                        Text(registrationData.secretQDisplay.isEmpty ? "Select a question" : registrationData.secretQDisplay)
+                        Text(registrationData.secretQDisplay.isEmpty ? AppStrings.selectAQuestion : registrationData.secretQDisplay)
                             .foregroundColor(registrationData.secretQDisplay.isEmpty ? .gray : .primary)
                         
                         Spacer()
@@ -343,11 +344,11 @@ struct RegistrationFlowView: View {
                 inlineFieldError(personalInfoError("secretQ"))
             }
             
-            CustomTextField(title: "Your Answer*", text: $registrationData.answer, error: personalInfoError("answer"))
+            CustomTextField(title: AppStrings.yourAnswer, text: $registrationData.answer, error: personalInfoError("answer"))
             
-            sectionHeader("Next Of Kin")
-            CustomTextField(title: "Next Of Kin Name*", text: $registrationData.nkinName, error: personalInfoError("nkinName"))
-            CustomTextField(title: "Next Of Kin Phone*", text: $registrationData.nkinPhone, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("nkinPhone"), digitLimit: 10)
+            sectionHeader(AppStrings.nextOfKin2)
+            CustomTextField(title: AppStrings.nextOfKinName, text: $registrationData.nkinName, error: personalInfoError("nkinName"))
+            CustomTextField(title: AppStrings.nextOfKinPhone, text: $registrationData.nkinPhone, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("nkinPhone"), digitLimit: 10)
 
         }
         .padding(.vertical, 20)
@@ -357,15 +358,15 @@ struct RegistrationFlowView: View {
     // MARK: - Step 2: PIN Setup
     private var step2PinSetupView: some View {
         VStack(alignment: .leading, spacing: 20) {
-                Text("Create Your PIN Code")
+                Text(AppStrings.createYourPinCode)
                 .font(.system(size: 24, weight: .semibold))
             
-            Text("This PIN code will secure your account and confirm your transactions.")
+            Text(AppStrings.thisPinCodeWillSecureYourAccountAndConfirmYour)
                 .font(.system(size: 16))
                 .foregroundColor(.secondary)
             
             VStack(spacing: 16) {
-                SecureField("Enter your 4-digit PIN code", text: $registrationData.pin)
+                SecureField(AppStrings.enterYour4DigitPinCode, text: $registrationData.pin)
                     .keyboardType(.numberPad)
                     .padding(18)
                     .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
@@ -377,7 +378,7 @@ struct RegistrationFlowView: View {
                     }
                 inlineFieldError(showPinErrors ? pinError : nil)
                 
-                SecureField("Confirm your PIN code", text: $registrationData.confirmPin)
+                SecureField(AppStrings.confirmYourPinCode, text: $registrationData.confirmPin)
                     .keyboardType(.numberPad)
                     .padding(18)
                     .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
@@ -394,7 +395,7 @@ struct RegistrationFlowView: View {
                         HStack {
                             Image(systemName: registrationData.pin.count == 4 ? "checkmark.circle.fill" : "xmark.circle.fill")
                                 .foregroundColor(registrationData.pin.count == 4 ? .green : .red)
-                            Text("PIN must contain exactly 4 digits")
+                            Text(AppStrings.pinMustContainExactly4Digits)
                                 .font(.caption)
                         }
                         
@@ -403,8 +404,8 @@ struct RegistrationFlowView: View {
                                 Image(systemName: isWeakPin(registrationData.pin) ? "xmark.circle.fill" : "checkmark.circle.fill")
                                     .foregroundColor(isWeakPin(registrationData.pin) ? .red : .green)
                                 Text(isWeakPin(registrationData.pin)
-                                     ? "Choose a less predictable PIN"
-                                     : "PIN looks secure")
+                                     ? AppStrings.chooseALessPredictablePin
+                                     : AppStrings.pinLooksSecure)
                                     .font(.caption)
                                     .foregroundColor(isWeakPin(registrationData.pin) ? .red : .primary)
                             }
@@ -414,7 +415,7 @@ struct RegistrationFlowView: View {
                             HStack {
                                 Image(systemName: registrationData.pin == registrationData.confirmPin ? "checkmark.circle.fill" : "xmark.circle.fill")
                                     .foregroundColor(registrationData.pin == registrationData.confirmPin ? .green : .red)
-                                Text("PINs must match")
+                                Text(AppStrings.pinsMustMatch)
                                     .font(.caption)
                             }
                         }
@@ -429,10 +430,10 @@ struct RegistrationFlowView: View {
     // MARK: - Step 3: Document Scan View
     private var step3DocumentScanView: some View {
         VStack(spacing: 25) {
-            Text("Scan your identification documents")
+            Text(AppStrings.scanYourIdentificationDocuments)
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(RegistrationTheme.ink)
-            Text("To validate your account, scan the requested documents. Make sure each image is clear and readable.")
+            Text(AppStrings.toValidateYourAccountScanTheRequestedDocumentsMakeSure)
                 .font(.system(size: 16))
                 .foregroundColor(RegistrationTheme.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -462,9 +463,9 @@ struct RegistrationFlowView: View {
 
                 VStack(spacing: 20) {
             identificationCard(
-                title: "Personal Photo",
-                description: "Take a well-lit photo of your face without glasses or a hat, against a plain background.",
-                buttonText: registrationData.selfieBase64.isEmpty ? "Take a Photo" : "Retake Photo",
+                title: AppStrings.personalPhoto,
+                description: AppStrings.takeAWellLitPhotoOfYourFaceWithoutGlasses,
+                buttonText: registrationData.selfieBase64.isEmpty ? AppStrings.takeAPhoto : AppStrings.retakePhoto,
                 systemIcon: "person.circle.fill",
                 isCompleted: !registrationData.selfieBase64.isEmpty,
                 isEnabled: true
@@ -474,9 +475,9 @@ struct RegistrationFlowView: View {
             }
             
             identificationCard(
-                    title: "Front of ID Card",
-                    description: "Make sure all information is clearly visible and the photo is not reflective.",
-                    buttonText: registrationData.idFrontBase64.isEmpty ? "Take Front Photo" : "Retake Front",
+                    title: AppStrings.frontOfIdCard,
+                    description: AppStrings.makeSureAllInformationIsClearlyVisibleAndThePhoto,
+                    buttonText: registrationData.idFrontBase64.isEmpty ? AppStrings.takeFrontPhoto : AppStrings.retakeFront,
                     systemIcon: "creditcard.fill",
                     isCompleted: !registrationData.idFrontBase64.isEmpty,
                     isEnabled: true
@@ -486,9 +487,9 @@ struct RegistrationFlowView: View {
             }
             
             identificationCard(
-                    title: "Back of ID Card",
-                    description: "Make sure all information is clearly visible and the document is complete.",
-                    buttonText: registrationData.idBackBase64.isEmpty ? "Take Back Photo" : "Retake Back",
+                    title: AppStrings.backOfIdCard,
+                    description: AppStrings.makeSureAllInformationIsClearlyVisibleAndTheDocument,
+                    buttonText: registrationData.idBackBase64.isEmpty ? AppStrings.takeBackPhoto : AppStrings.retakeBack,
                     systemIcon: "creditcard.and.123",
                     isCompleted: !registrationData.idBackBase64.isEmpty,
                     isEnabled: true
@@ -502,7 +503,7 @@ struct RegistrationFlowView: View {
             let completedDocs = [registrationData.selfieBase64, registrationData.idFrontBase64, registrationData.idBackBase64].filter { !$0.isEmpty }.count
             
             HStack {
-                Text("Documents captured: \(completedDocs)/3")
+                Text(AppStrings.documentsCapturedValue3(String(describing: completedDocs)))
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
@@ -514,7 +515,7 @@ struct RegistrationFlowView: View {
             .padding(.horizontal)
             
             if completedDocs == 3 {
-                Text("All documents are captured. You can continue.")
+                Text(AppStrings.allDocumentsAreCapturedYouCanContinue)
                     .font(.caption)
                     .foregroundColor(.green)
                     .padding(.top, 10)
@@ -531,7 +532,7 @@ struct RegistrationFlowView: View {
     // MARK: - Step 4: Terms and Conditions (COMPLETE VERSION)
     private var step4TermsAndConditionsView: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Terms and Conditions")
+            Text(AppStrings.terms)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.primary)
             
@@ -539,7 +540,7 @@ struct RegistrationFlowView: View {
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.blueH)
             
-            Text("Please review and accept the terms to continue.")
+            Text(AppStrings.pleaseReviewAndAcceptTheTermsToContinue)
                 .font(.system(size: 13))
                 .foregroundColor(.secondary)
             
@@ -549,206 +550,206 @@ struct RegistrationFlowView: View {
                     // Definitions Section
                     termsSection(
                         icon: "book.fill",
-                        title: "Definitions",
+                        title: AppStrings.definitions2,
                         id: "definitions"
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Pour les besoins du présent contrat, il convient d'entendre par :")
+                            termsParagraph(AppStrings.pourLesBesoinsDuPresentContratIlConvientD)
                             
-                            termsDefinitionItem("Banque", "La DIAMA BANK SA.")
-                            termsDefinitionItem("Contrat", "Désigne le présent contrat d'adhésion au service DIAMACASH, ses Conditions Générales de fonctionnement, ses Conditions Particulières ainsi que tout document annexe et avenant, qui constitue un tout indivisible.")
-                            termsDefinitionItem("Application mobile", "Une application mobile est un logiciel applicatif développé pour un appareil électronique mobile, tel qu'un assistant personnel, un téléphone portable, un smartphone…")
-                            termsDefinitionItem("Wallet", "Constitue un moyen de paiement permettant à son détenteur de stocker de façon sécurisée dans un portefeuille numérique, de la monnaie électronique en vue d'effectuer des paiements, d'émettre ou de recevoir des transferts d'argent ainsi que de faire du cash in et du cash out.")
-                            termsDefinitionItem("Etablissement", "Désigne tout établissement bancaire ou les établissements de paiement.")
-                            termsDefinitionItem("Cash-In", "Il s'agit d'une opération de dépôt d'espèce au niveau du Wallet.")
-                            termsDefinitionItem("Cash-Out", "Il s'agit d'une opération de retrait d'espèce à partir du Wallet, auprès d'un distributeur agréé par la DIAMA BANK SA.")
-                            termsDefinitionItem("Compte de rattachement", "Désigne le compte ouvert dans les livres de la Banque tel que précisé dans le Bulletin d'Adhésion et sur lequel est rattaché le Wallet.")
-                            termsDefinitionItem("Détenteur du Wallet", "Peut-être le titulaire du compte ou toute autre personne nommément désignée dans le présent contrat.")
-                            termsDefinitionItem("DIAMACASH", "Désigne l'application de paiement mobile pour les clients à titre privé.")
-                            termsDefinitionItem("DAB/GAB", "Appareils de distribution automatique de billets de Banque.")
-                            termsDefinitionItem("TPE", "Terminal de Paiement Electronique.")
+                            termsDefinitionItem(AppStrings.banque, AppStrings.laDiamaBankSa)
+                            termsDefinitionItem(AppStrings.contrat, AppStrings.designeLePresentContratDAdhesionAuServiceDiamacash)
+                            termsDefinitionItem(AppStrings.applicationMobile, AppStrings.uneApplicationMobileEstUnLogicielApplicatifDeveloppePour)
+                            termsDefinitionItem(AppStrings.wallet, AppStrings.constitueUnMoyenDePaiementPermettantASonDetenteur)
+                            termsDefinitionItem(AppStrings.etablissement, AppStrings.designeToutEtablissementBancaireOuLesEtablissementsDePaiement)
+                            termsDefinitionItem("Cash-In", AppStrings.ilSAgitDUneOperationDeDepotD)
+                            termsDefinitionItem("Cash-Out", AppStrings.ilSAgitDUneOperationDeRetraitD)
+                            termsDefinitionItem(AppStrings.compteDeRattachement, AppStrings.designeLeCompteOuvertDansLesLivresDeLa)
+                            termsDefinitionItem(AppStrings.detenteurDuWallet, AppStrings.peutEtreLeTitulaireDuCompteOuTouteAutre)
+                            termsDefinitionItem("DIAMACASH", AppStrings.designeLApplicationDePaiementMobilePourLesClients)
+                            termsDefinitionItem("DAB/GAB", AppStrings.appareilsDeDistributionAutomatiqueDeBilletsDeBanque)
+                            termsDefinitionItem(AppStrings.tpe, AppStrings.terminalDePaiementElectronique)
                         }
                     }
                     
                     // Object Section
                     termsSection(
                         icon: "target",
-                        title: "Object",
+                        title: AppStrings.object,
                         id: "object"
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Le Wallet DIAMACASH est un moyen de paiement électronique sécurisé, pouvant être lié au compte bancaire du client ouvert dans les livres de la DIAMA BANK SA, qui permet à son titulaire d'effectuer en temps réel différents services de paiement et de transfert d'argent et ce, via l'application mobile DIAMACASH.")
-                            termsParagraph("Cette application est téléchargeable à partir de Google Play et Apple Store.")
+                            termsParagraph(AppStrings.leWalletDiamacashEstUnMoyenDePaiementElectronique)
+                            termsParagraph(AppStrings.cetteApplicationEstTelechargeableAPartirDeGooglePlay)
                         }
                     }
                     
                     // Features Section
                     termsSection(
                         icon: "star.fill",
-                        title: "Service Features",
+                        title: AppStrings.serviceFeatures,
                         id: "features"
                     ) {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Les fonctionnalités disponibles au niveau de l'application DIAMACASH sont :")
+                            termsParagraph(AppStrings.lesFonctionnalitesDisponiblesAuNiveauDeLApplicationDiamacash)
                             
-                            termsDefinitionItem("La souscription", "Le client peut initier directement son inscription sur l'application DIAMACASH en renseignant les formulaires associés ou se rendre soit chez un agent agréé, soit en agence pour se faire assister pour son inscription.")
-                            termsDefinitionItem("La connexion", "Le client se connecte à son compte DIAMACASH à l'aide de son numéro de téléphone et de son code secret. Lors de la toute première connexion, il lui sera demandé de saisir un code de confirmation qu'il recevra par sms pour des raisons de sécurité.")
-                            termsDefinitionItem("La liaison de son compte bancaire", "Le client qui a un compte bancaire ouvert dans les livres de la DIAMA BANK SA peut se rendre en agence pour demander la liaison de son compte et ainsi effectuer les opérations de transfert gratuitement entre son compte DIAMACASH et son compte bancaire.")
-                            termsDefinitionItem("Le déplafonnement du wallet", "Par défaut, le compte DIAMACASH du client est limité à un solde maximum de 5.000.000 GNF lors de l'ouverture de son compte à distance. Il peut cependant se rendre en agence ou chez un distributeur agréé pour signer la convention de contrat et demander le déplafonnement de son compte DIAMACASH.")
-                            termsDefinitionItem("Le Chargement du Wallet (Cash-In)", "Le détenteur du Wallet peut bénéficier de deux canaux de chargement : Chargement au niveau des distributeurs en faisant un versement espèces, ou Chargement via son compte bancaire DIAMA BANK SA lié à son wallet.")
-                            termsDefinitionItem("Retrait d'argent (Cash-Out)", "Le client peut se rendre chez n'importe quels distributeurs pour effectuer un retrait sur son compte DIAMACASH.")
-                            termsDefinitionItem("Transfert vers un autre compte DIAMACASH", "Le client peut à tout moment effectuer des transferts d'argent à un autre wallet client dans la limite de son solde et de ces autorisations.")
-                            termsDefinitionItem("Transfert vers ma banque", "Le client peut à tout moment effectuer des transferts d'argent vers son compte bancaire DIAMA BANK SA qui a été au préalable lié à son wallet.")
-                            termsDefinitionItem("Transfert de ma banque", "Le client peut à tout moment effectuer des transferts d'argent depuis son compte bancaire DIAMA BANK SA qui a été au préalable lié à son wallet.")
-                            termsDefinitionItem("Mise à disposition", "Le client peut à tout moment effectuer des transferts d'argent à une personne n'ayant pas de compte DIAMACASH.")
-                            termsDefinitionItem("Parrainage", "Le client peut à tout moment effectuer le parrainage d'un autre compte DIAMACASH.")
-                            termsDefinitionItem("Virement permanent", "Le client peut à tout moment initier des virements permanents vers un autre compte DIAMACASH.")
-                            termsDefinitionItem("Paiement chez le commerçant", "Le Client peut payer ses achats à partir de son Wallet DIAMACASH, auprès des commerçants accepteurs détenant un Wallet DIAMACASH PRO.")
+                            termsDefinitionItem(AppStrings.laSouscription, AppStrings.leClientPeutInitierDirectementSonInscriptionSurL)
+                            termsDefinitionItem(AppStrings.laConnexion, AppStrings.leClientSeConnecteASonCompteDiamacashA)
+                            termsDefinitionItem(AppStrings.laLiaisonDeSonCompteBancaire, AppStrings.leClientQuiAUnCompteBancaireOuvertDans)
+                            termsDefinitionItem(AppStrings.leDeplafonnementDuWallet, AppStrings.parDefautLeCompteDiamacashDuClientEstLimite)
+                            termsDefinitionItem(AppStrings.leChargementDuWalletCashIn, AppStrings.leDetenteurDuWalletPeutBeneficierDeDeuxCanaux)
+                            termsDefinitionItem(AppStrings.retraitDArgentCashOut, AppStrings.leClientPeutSeRendreChezNImporteQuels)
+                            termsDefinitionItem(AppStrings.transfertVersUnAutreCompteDiamacash, AppStrings.leClientPeutAToutMomentEffectuerDesTransferts)
+                            termsDefinitionItem(AppStrings.transfertVersMaBanque, AppStrings.leClientPeutAToutMomentEffectuerDesTransferts2)
+                            termsDefinitionItem(AppStrings.transfertDeMaBanque, AppStrings.leClientPeutAToutMomentEffectuerDesTransferts3)
+                            termsDefinitionItem(AppStrings.moneyVoucher, AppStrings.leClientPeutAToutMomentEffectuerDesTransferts4)
+                            termsDefinitionItem(AppStrings.sponsorship, AppStrings.leClientPeutAToutMomentEffectuerLeParrainage)
+                            termsDefinitionItem(AppStrings.virementPermanent, AppStrings.leClientPeutAToutMomentInitierDesVirements)
+                            termsDefinitionItem(AppStrings.paiementChezLeCommercant, AppStrings.leClientPeutPayerSesAchatsAPartirDe)
                         }
                     }
                     
                     // Article 1
-                    termsArticle(number: 1, title: "Conditions d'inscription au service", id: "article1") {
+                    termsArticle(number: 1, title: AppStrings.conditionsDInscriptionAuService, id: "article1") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Le Service est réservé à la clientèle des particuliers, personnes physiques majeures titulaires disposant :")
-                            termsBulletPoint("D'un smartphone compatible avec Play Store ou Apple Store")
-                            termsBulletPoint("D'un numéro mobile guinéen en leur nom")
-                            termsParagraph("L'utilisation de DIAMACASH se fait en Guinée comme à l'étranger.")
+                            termsParagraph(AppStrings.leServiceEstReserveALaClienteleDesParticuliers)
+                            termsBulletPoint(AppStrings.dUnSmartphoneCompatibleAvecPlayStoreOuApple)
+                            termsBulletPoint(AppStrings.dUnNumeroMobileGuineenEnLeurNom)
+                            termsParagraph(AppStrings.lUtilisationDeDiamacashSeFaitEnGuineeComme)
                         }
                     }
                     
                     // Article 2
-                    termsArticle(number: 2, title: "Accès au service", id: "article2") {
+                    termsArticle(number: 2, title: AppStrings.accesAuService, id: "article2") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("L'accès au service est subordonné au respect par l'Utilisateur des dispositions de ce contrat.")
+                            termsParagraph(AppStrings.lAccesAuServiceEstSubordonneAuRespectPar)
                             
-                            Text("Moyens techniques :")
+                            Text(AppStrings.moyensTechniques)
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.primary)
                                 .padding(.top, 8)
                             
-                            termsParagraph("L'accès au Service se fait via l'utilisation d'Internet au moyen d'un terminal mobile. L'Utilisateur s'assure de disposer à minima :")
-                            termsBulletPoint("D'un smartphone, de sa mise en service et de sa maintenance")
-                            termsBulletPoint("D'un accès à Internet sur son terminal mobile")
-                            termsBulletPoint("De la compatibilité du matériel et des logiciels destinés à utiliser le Service")
+                            termsParagraph(AppStrings.lAccesAuServiceSeFaitViaLUtilisation)
+                            termsBulletPoint(AppStrings.dUnSmartphoneDeSaMiseEnServiceEt)
+                            termsBulletPoint(AppStrings.dUnAccesAInternetSurSonTerminalMobile)
+                            termsBulletPoint(AppStrings.deLaCompatibiliteDuMaterielEtDesLogicielsDestines)
                         }
                     }
                     
                     // Article 3
-                    termsArticle(number: 3, title: "Codes et sécurité", id: "article3") {
+                    termsArticle(number: 3, title: AppStrings.codesEtSecurite, id: "article3") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Le code personnel défini lors de l'inscription à DIAMACASH est strictement confidentiel. Le Client s'engage à le tenir secret et s'interdit de le communiquer à quiconque.")
-                            termsParagraph("Le Client est entièrement responsable de la conservation et de l'utilisation de ses codes et, le cas échéant, des conséquences de leur divulgation et/ou de leur utilisation par des tiers.")
-                            termsParagraph("Il appartient notamment au client de s'assurer que la conservation et la saisie de ses codes personnels soient effectuées dans des conditions parfaites de sécurité et de confidentialité.")
-                            termsParagraph("Pour des raisons de sécurité, l'accès au Service pourra être bloqué temporairement au Client après composition à trois reprises d'un mot de passe erroné.")
-                            termsParagraph("La Banque recommande de modifier le mot de passe de l'application DIAMACASH chaque 3 mois.")
+                            termsParagraph(AppStrings.leCodePersonnelDefiniLorsDeLInscriptionA)
+                            termsParagraph(AppStrings.leClientEstEntierementResponsableDeLaConservationEt)
+                            termsParagraph(AppStrings.ilAppartientNotammentAuClientDeSAssurerQue)
+                            termsParagraph(AppStrings.pourDesRaisonsDeSecuriteLAccesAuService)
+                            termsParagraph(AppStrings.laBanqueRecommandeDeModifierLeMotDePasse)
                         }
                     }
                     
                     // Article 4
-                    termsArticle(number: 4, title: "Évolutions du service", id: "article4") {
+                    termsArticle(number: 4, title: AppStrings.evolutionsDuService, id: "article4") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("En fonction notamment des évolutions technologiques, la Banque apportera aux services de DIAMACASH les adaptations qui lui sembleront souhaitables. Elle en informera le client par tout moyen.")
+                            termsParagraph(AppStrings.enFonctionNotammentDesEvolutionsTechnologiquesLaBanqueApportera)
                         }
                     }
                     
                     // Article 5
-                    termsArticle(number: 5, title: "Assistance", id: "article5") {
+                    termsArticle(number: 5, title: AppStrings.assistance, id: "article5") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("La Banque met à disposition de l'utilisateur un service d'assistance via son Centre de relations clients (CRC).")
+                            termsParagraph(AppStrings.laBanqueMetADispositionDeLUtilisateurUn)
                         }
                     }
                     
                     // Article 6
-                    termsArticle(number: 6, title: "Secret professionnel", id: "article6") {
+                    termsArticle(number: 6, title: AppStrings.secretProfessionnel, id: "article6") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("La DIAMA BANK SA est tenue au secret professionnel conformément à la loi bancaire de la République de Guinée. Obligation légale est faite à son personnel de ne pas révéler les informations confidentielles dont il peut avoir connaissance. Cependant lorsque la loi le prévoit, le secret professionnel ne peut être opposé aux personnes, autorités ou organismes visés par cette dernière.")
+                            termsParagraph(AppStrings.laDiamaBankSaEstTenueAuSecretProfessionnel)
                         }
                     }
                     
                     // Article 7
-                    termsArticle(number: 7, title: "Responsabilité", id: "article7") {
+                    termsArticle(number: 7, title: AppStrings.responsabilite, id: "article7") {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("LA BANQUE")
+                            Text(AppStrings.laBanque)
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.blueH)
                             
-                            termsParagraph("La DIAMA BANK SA s'engage à fournir le service selon les modalités définies au présent Contrat.")
-                            termsParagraph("La Banque décline toute responsabilité en cas de dysfonctionnement dû à un défaut de compatibilité de l'équipement personnel du client ou de la configuration de son matériel.")
-                            termsParagraph("La Banque n'est pas responsable des dysfonctionnements imputables aux fournisseurs d'accès et opérateurs de téléphonie mobile choisis par l'Utilisateur.")
+                            termsParagraph(AppStrings.laDiamaBankSaSEngageAFournirLe)
+                            termsParagraph(AppStrings.laBanqueDeclineTouteResponsabiliteEnCasDeDysfonctionnement)
+                            termsParagraph(AppStrings.laBanqueNEstPasResponsableDesDysfonctionnementsImputables)
                             
-                            Text("LE CLIENT")
+                            Text(AppStrings.leClient)
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.blueH)
                                 .padding(.top, 8)
                             
-                            termsParagraph("Le Client doit prendre toute mesure pour conserver à tout moment en sa possession son smartphone et préserver la confidentialité de ses codes.")
-                            termsParagraph("Le Client doit utiliser le service conformément aux finalités spécifiées dans le présent Contrat. Il assume les conséquences de l'utilisation du Service tant qu'il n'a pas fait une demande d'opposition (ou de blocage).")
-                            termsParagraph("Le Client s'engage à mettre à jour les informations communiquées lors de l'inscription, en cas de changement de celles-ci.")
-                            termsParagraph("Le Client est responsable des opérations effectuées via son Wallet DIAMACASH. La banque décline toute responsabilité liée à l'exécution d'une transaction par erreur à un autre bénéficiaire différent que celui souhaité ou un montant autre que celui voulu lors de l'action.")
+                            termsParagraph(AppStrings.leClientDoitPrendreTouteMesurePourConserverA)
+                            termsParagraph(AppStrings.leClientDoitUtiliserLeServiceConformementAuxFinalites)
+                            termsParagraph(AppStrings.leClientSEngageAMettreAJourLes)
+                            termsParagraph(AppStrings.leClientEstResponsableDesOperationsEffectueesViaSon)
                         }
                     }
                     
                     // Article 8
-                    termsArticle(number: 8, title: "Interruption du service", id: "article8") {
+                    termsArticle(number: 8, title: AppStrings.interruptionDuService, id: "article8") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("La Banque peut bloquer l'accès total aux services DIAMACASH pour des raisons de sécurité ou de présomption d'opération non autorisée ou frauduleuse. Cette décision de blocage sera notifiée dans tous les cas au Client.")
-                            termsParagraph("Le Service pourra être ponctuellement interrompu pour de courtes périodes pour des raisons d'ordre technique, notamment pour effectuer des opérations de maintenance.")
+                            termsParagraph(AppStrings.laBanquePeutBloquerLAccesTotalAuxServices)
+                            termsParagraph(AppStrings.leServicePourraEtrePonctuellementInterrompuPourDeCourtes)
                         }
                     }
                     
                     // Article 9
-                    termsArticle(number: 9, title: "Opposition ou blocage par le client", id: "article9") {
+                    termsArticle(number: 9, title: AppStrings.oppositionOuBlocageParLeClient, id: "article9") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("En cas de vol, de détournement ou de toute utilisation frauduleuse de ses codes d'accès ou de son smartphone, le Client doit en informer sans tarder la Banque aux fins de blocage de l'accès au Service.")
-                            termsParagraph("Dans tous les cas, le client doit immédiatement :")
-                            termsBulletPoint("Alerter la banque")
-                            termsBulletPoint("Ou appeler le centre de relations clients (CRC) de la banque par téléphone")
+                            termsParagraph(AppStrings.enCasDeVolDeDetournementOuDeToute)
+                            termsParagraph(AppStrings.dansTousLesCasLeClientDoitImmediatement)
+                            termsBulletPoint(AppStrings.alerterLaBanque)
+                            termsBulletPoint(AppStrings.ouAppelerLeCentreDeRelationsClientsCrcDe)
                         }
                     }
                     
                     // Article 10
-                    termsArticle(number: 10, title: "Tarification du service", id: "article10") {
+                    termsArticle(number: 10, title: AppStrings.tarificationDuService, id: "article10") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Les services ci-après sont offerts gratuitement pour le détenteur du Wallet DIAMACASH :")
-                            termsBulletPoint("La souscription au Wallet DIAMACASH")
-                            termsBulletPoint("Le chargement du Wallet DIAMACASH")
-                            termsBulletPoint("Le paiement chez le commerçant ou autres prestataires")
-                            termsBulletPoint("La désinscription")
-                            termsParagraph("Le Client conserve à sa charge les coûts de connexion facturés par son fournisseur d'accès Internet lors de l'utilisation du Service.")
+                            termsParagraph(AppStrings.lesServicesCiApresSontOffertsGratuitementPourLe)
+                            termsBulletPoint(AppStrings.laSouscriptionAuWalletDiamacash)
+                            termsBulletPoint(AppStrings.leChargementDuWalletDiamacash)
+                            termsBulletPoint(AppStrings.lePaiementChezLeCommercantOuAutresPrestataires)
+                            termsBulletPoint(AppStrings.laDesinscription)
+                            termsParagraph(AppStrings.leClientConserveASaChargeLesCoutsDe)
                         }
                     }
                     
                     // Article 11
-                    termsArticle(number: 11, title: "Durée du contrat - Résiliation", id: "article11") {
+                    termsArticle(number: 11, title: AppStrings.dureeDuContratResiliation, id: "article11") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Le présent Contrat est conclu pour une durée indéterminée.")
-                            termsParagraph("Il peut être résilié à tout moment par le Client dans son compte DIAMACASH ou par la Banque.")
-                            termsParagraph("La résiliation par le Client prend effet trente (30) jours après la date de réception de sa demande de résiliation sous réserve de la bonne exécution des opérations de paiement effectuées au moyen du Service et encore en cours.")
-                            termsParagraph("La résiliation par La Banque prend effet quinze jours (15) après la date d'envoi de sa notification au Client.")
+                            termsParagraph(AppStrings.lePresentContratEstConcluPourUneDureeIndeterminee)
+                            termsParagraph(AppStrings.ilPeutEtreResilieAToutMomentParLe)
+                            termsParagraph(AppStrings.laResiliationParLeClientPrendEffetTrente30)
+                            termsParagraph(AppStrings.laResiliationParLaBanquePrendEffetQuinzeJours)
                         }
                     }
                     
                     // Article 12
-                    termsArticle(number: 12, title: "Modification du contrat", id: "article12") {
+                    termsArticle(number: 12, title: AppStrings.modificationDuContrat, id: "article12") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("La Banque se réserve le droit d'apporter des modifications au présent Contrat, qui seront communiquées au Client par l'envoi d'un message via les canaux de communication de la banque, 30 jours avant la date de leur entrée en vigueur.")
-                            termsParagraph("L'absence de contestation notifiée à La Banque avant l'expiration du délai précité vaut acceptation de ces modifications.")
+                            termsParagraph(AppStrings.laBanqueSeReserveLeDroitDApporterDes)
+                            termsParagraph(AppStrings.lAbsenceDeContestationNotifieeALaBanqueAvant)
                         }
                     }
                     
                     // Article 13
-                    termsArticle(number: 13, title: "Arrêt du service", id: "article13") {
+                    termsArticle(number: 13, title: AppStrings.arretDuService, id: "article13") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("En cas d'arrêt de la fourniture du Service, le Client sera informé avec un préavis de trois (3) mois des dates et conditions d'arrêt de la fourniture du Service.")
+                            termsParagraph(AppStrings.enCasDArretDeLaFournitureDuService)
                         }
                     }
                     
                     // Article 14
-                    termsArticle(number: 14, title: "Loi applicable - Juridiction - Litiges", id: "article14") {
+                    termsArticle(number: 14, title: AppStrings.loiApplicableJuridictionLitiges, id: "article14") {
                         VStack(alignment: .leading, spacing: 12) {
-                            termsParagraph("Le contrat est régi et interprété selon le droit Guinéen. Les parties déclarent se soumettre aux lois et règlements en vigueur en République de Guinée.")
-                            termsParagraph("Tout différend y relatif quant à son interprétation ou son exécution, et qui n'aura pas été résolu à l'amiable sera porté devant les tribunaux compétents de Conakry.")
+                            termsParagraph(AppStrings.leContratEstRegiEtInterpreteSelonLeDroit)
+                            termsParagraph(AppStrings.toutDifferendYRelatifQuantASonInterpretationOu)
                         }
                     }
                     
@@ -779,7 +780,7 @@ struct RegistrationFlowView: View {
                             .font(.system(size: 22))
                             .foregroundColor(registrationData.acceptTerms ? .blueH : .gray)
                         
-                        Text("I have read and accept the terms and conditions")
+                        Text(AppStrings.iHaveReadAndAcceptTheTermsAndConditions)
                             .font(.system(size: 14))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.leading)
@@ -796,7 +797,7 @@ struct RegistrationFlowView: View {
                             .font(.system(size: 22))
                             .foregroundColor(registrationData.acceptPrivacy ? .blueH : .gray)
                         
-                        Text("I agree to the processing of my personal data under the privacy policy")
+                        Text(AppStrings.iAgreeToTheProcessingOfMyPersonalDataUnder)
                             .font(.system(size: 14))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.leading)
@@ -967,11 +968,11 @@ struct RegistrationFlowView: View {
     // MARK: - Step 5: OTP Verification
     private var step5OtpVerificationView: some View {
         VStack(alignment: .leading, spacing: 22) {
-            Text("Verify your phone number")
+            Text(AppStrings.verifyYourPhoneNumber)
                 .font(.system(size: 26, weight: .semibold))
                 .foregroundColor(.gray)
             
-            Text("Enter the verification code sent to \(maskedPhoneNumber)")
+            Text(AppStrings.enterTheVerificationCodeSentToValue(String(describing: maskedPhoneNumber)))
                 .font(.system(size: 17))
                 .foregroundColor(RegistrationTheme.ink)
 
@@ -982,10 +983,10 @@ struct RegistrationFlowView: View {
                 .padding(.vertical, 8)
             
             VStack(alignment: .leading, spacing: 12) {
-                Text("Verification Code")
+                Text(AppStrings.verificationCode)
                     .font(.system(size: 20, weight: .medium))
                     .foregroundColor(.gray)
-                TextField("Enter the verification code", text: $registrationData.otpCode)
+                TextField(AppStrings.enterTheVerificationCode, text: $registrationData.otpCode)
                     .keyboardType(.numberPad)
                     .padding(16)
                     .background(RoundedRectangle(cornerRadius: 14).fill(Color.white)
@@ -998,9 +999,9 @@ struct RegistrationFlowView: View {
                     registrationData.otpCode = String(registrationData.otpCode.filter(\.isNumber).prefix(6))
                     otpServerError = nil
                 }
-            inlineFieldError(otpServerError ?? (showOtpErrors && registrationData.otpCode.count != 6 ? "Enter the 6-digit verification code." : nil))
+            inlineFieldError(otpServerError ?? (showOtpErrors && registrationData.otpCode.count != 6 ? AppStrings.enterThe6DigitVerificationCode : nil))
             
-            Text("Didn't receive the code? Please contact support.")
+            Text(AppStrings.didnTReceiveTheCodePleaseContactSupport)
                 .font(.system(size: 14))
                 .foregroundColor(RegistrationTheme.teal)
                 .frame(maxWidth: .infinity)
@@ -1013,7 +1014,7 @@ struct RegistrationFlowView: View {
         if phone.count > 4 {
             return phone.prefix(3) + "****" + phone.suffix(3)
         }
-        return "your phone"
+        return AppStrings.yourPhone
     }
 
     private func personalInfoError(_ key: String) -> String? {
@@ -1023,34 +1024,34 @@ struct RegistrationFlowView: View {
 
     private var personalInfoErrors: [String: String] {
         var errors: [String: String] = [:]
-        if registrationData.firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["firstName"] = "Enter your first name." }
-        if registrationData.lastName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["lastName"] = "Enter your last name." }
-        if normalizedGambianPhone(registrationData.phoneNumber) == nil { errors["phone"] = "Enter exactly 10 digits, including the country code." }
-        if registrationData.email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["email"] = "Enter your email address." }
+        if registrationData.firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["firstName"] = AppStrings.enterYourFirstName }
+        if registrationData.lastName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["lastName"] = AppStrings.enterYourLastName }
+        if normalizedGambianPhone(registrationData.phoneNumber) == nil { errors["phone"] = AppStrings.enterExactly10DigitsIncludingTheCountryCode }
+        if registrationData.email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["email"] = AppStrings.enterYourEmailAddress }
         else if !isValidEmail(registrationData.email) { errors["email"] = "Enter a valid email address, for example name@example.com." }
-        if registrationData.dateOfBirth.isEmpty { errors["birthDate"] = "Select your date of birth." }
-        if registrationData.gender.isEmpty { errors["gender"] = "Select Male or Female." }
-        if registrationData.nationality.isEmpty { errors["nationality"] = "Choose your nationality." }
-        if registrationData.documentId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["documentId"] = "Enter the number shown on your ID." }
-        if registrationData.branchCode.isEmpty { errors["branchCode"] = "Choose a branch." }
-        if registrationData.address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["address"] = "Enter your residential address." }
-        if registrationData.secretQ.isEmpty { errors["secretQ"] = "Select a security question." }
-        if registrationData.answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["answer"] = "Enter an answer to your security question." }
-        if registrationData.nkinName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["nkinName"] = "Enter your next of kin's name." }
-        if normalizedGambianPhone(registrationData.nkinPhone) == nil { errors["nkinPhone"] = "Enter exactly 10 digits, including the country code." }
-        if APIClient.getDeviceId().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["deviceId"] = "Could not identify this device. Please restart the app and try again." }
+        if registrationData.dateOfBirth.isEmpty { errors["birthDate"] = AppStrings.selectYourDateOfBirth }
+        if registrationData.gender.isEmpty { errors["gender"] = AppStrings.selectMaleOrFemale }
+        if registrationData.nationality.isEmpty { errors["nationality"] = AppStrings.chooseYourNationality }
+        if registrationData.documentId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["documentId"] = AppStrings.enterTheNumberShownOnYourId }
+        if registrationData.branchCode.isEmpty { errors["branchCode"] = AppStrings.chooseABranch2 }
+        if registrationData.address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["address"] = AppStrings.enterYourResidentialAddress }
+        if registrationData.secretQ.isEmpty { errors["secretQ"] = AppStrings.selectASecurityQuestion }
+        if registrationData.answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["answer"] = AppStrings.enterAnAnswerToYourSecurityQuestion }
+        if registrationData.nkinName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["nkinName"] = AppStrings.enterYourNextOfKinSName }
+        if normalizedGambianPhone(registrationData.nkinPhone) == nil { errors["nkinPhone"] = AppStrings.enterExactly10DigitsIncludingTheCountryCode }
+        if APIClient.getDeviceId().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { errors["deviceId"] = AppStrings.couldNotIdentifyThisDevicePleaseRestartTheAppAnd }
         return errors
     }
 
     private var pinError: String? {
-        if registrationData.pin.count != 4 || !registrationData.pin.allSatisfy(\.isNumber) { return "Your PIN must contain exactly 4 digits." }
-        if isWeakPin(registrationData.pin) { return "Choose a less predictable PIN, such as one without repeated or sequential digits." }
+        if registrationData.pin.count != 4 || !registrationData.pin.allSatisfy(\.isNumber) { return AppStrings.yourPinMustContainExactly4Digits }
+        if isWeakPin(registrationData.pin) { return AppStrings.chooseALessPredictablePinSuchAsOneWithoutRepeated }
         return nil
     }
 
     private var confirmPinError: String? {
-        guard !registrationData.confirmPin.isEmpty else { return "Confirm your 4-digit PIN." }
-        return registrationData.pin == registrationData.confirmPin ? nil : "The PINs do not match."
+        guard !registrationData.confirmPin.isEmpty else { return AppStrings.confirmYour4DigitPin }
+        return registrationData.pin == registrationData.confirmPin ? nil : AppStrings.thePinsDoNotMatch
     }
 
     @ViewBuilder
@@ -1078,14 +1079,14 @@ struct RegistrationFlowView: View {
                 .frame(width: 80, height: 80)
                 .foregroundColor(.green)
             
-            Text("Félicitations!")
+            Text(AppStrings.felicitations)
                 .font(.system(size: 22, weight: .bold))
             
             Text("\(registrationData.firstName) \(registrationData.lastName)")
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(.green)
             
-            Text("Votre compte a été créé avec succès.")
+            Text(AppStrings.votreCompteAEteCreeAvecSucces)
                 .font(.system(size: 16))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
@@ -1105,7 +1106,7 @@ struct RegistrationFlowView: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.8)
                         }
-                Text(isLoading ? "LOADING..." : (currentStep == 4 ? "ACCEPT" : (currentStep == 5 ? "VERIFY" : "NEXT")))
+                Text(isLoading ? AppStrings.loading2 : (currentStep == 4 ? AppStrings.accept2 : (currentStep == 5 ? AppStrings.verify2 : AppStrings.next)))
                             .foregroundColor(.white)
                             .fontWeight(.semibold)
                     }
@@ -1116,7 +1117,7 @@ struct RegistrationFlowView: View {
                 }
                 .disabled(isLoading || !canAttemptCurrentStep)
             } else {
-                Button("Go to Login") {
+                Button(AppStrings.goToLogin) {
                     dismiss()
                 }
                 .frame(maxWidth: .infinity)
@@ -1207,29 +1208,29 @@ struct RegistrationFlowView: View {
     
     private func loadFallbackNationalities() {
         nationalities = [
-            Nationality(code: "GH", wording: "Ghanaian"),
-            Nationality(code: "NG", wording: "Nigerian"),
-            Nationality(code: "CI", wording: "Ivorian"),
-            Nationality(code: "SN", wording: "Senegalese"),
-            Nationality(code: "ML", wording: "Malian"),
-            Nationality(code: "BF", wording: "Burkinabé"),
-            Nationality(code: "TG", wording: "Togolese"),
-            Nationality(code: "BJ", wording: "Beninese"),
-            Nationality(code: "GN", wording: "Guinean"),
-            Nationality(code: "LR", wording: "Liberian"),
-            Nationality(code: "SL", wording: "Sierra Leonean"),
-            Nationality(code: "GM", wording: "Gambian"),
-            Nationality(code: "OT", wording: "Other")
+            Nationality(code: "GH", wording: AppStrings.original("ghanaian")),
+            Nationality(code: "NG", wording: AppStrings.original("nigerian")),
+            Nationality(code: "CI", wording: AppStrings.original("ivorian")),
+            Nationality(code: "SN", wording: AppStrings.original("senegalese")),
+            Nationality(code: "ML", wording: AppStrings.original("malian")),
+            Nationality(code: "BF", wording: AppStrings.original("burkinabe")),
+            Nationality(code: "TG", wording: AppStrings.original("togolese")),
+            Nationality(code: "BJ", wording: AppStrings.original("beninese")),
+            Nationality(code: "GN", wording: AppStrings.original("guinean")),
+            Nationality(code: "LR", wording: AppStrings.original("liberian")),
+            Nationality(code: "SL", wording: AppStrings.sierraLeonean),
+            Nationality(code: "GM", wording: AppStrings.original("gambian")),
+            Nationality(code: "OT", wording: AppStrings.other)
         ]
     }
     
     private func loadFallbackSecretQuestions() {
         secretQuestions = [
-            SecretQuestion(id: "01", question: "Quel est le nom de votre animal de compagnie ?"),
-            SecretQuestion(id: "02", question: "Dans quelle ville êtes-vous né(e) ?"),
-            SecretQuestion(id: "03", question: "Quel est le nom de jeune fille de votre mère ?"),
-            SecretQuestion(id: "04", question: "Quel était le nom de votre première école ?"),
-            SecretQuestion(id: "05", question: "Quel est votre livre préféré ?")
+            SecretQuestion(id: "01", question: AppStrings.quelEstLeNomDeVotreAnimalDeCompagnie),
+            SecretQuestion(id: "02", question: AppStrings.dansQuelleVilleEtesVousNeE),
+            SecretQuestion(id: "03", question: AppStrings.quelEstLeNomDeJeuneFilleDeVotreMere),
+            SecretQuestion(id: "04", question: AppStrings.quelEtaitLeNomDeVotrePremiereEcole),
+            SecretQuestion(id: "05", question: AppStrings.quelEstVotreLivrePrefere)
         ]
     }
     
@@ -1255,7 +1256,7 @@ struct RegistrationFlowView: View {
             
         case 3:
             if registrationData.selfieBase64.isEmpty || registrationData.idFrontBase64.isEmpty || registrationData.idBackBase64.isEmpty {
-                alertMessage = "Veuillez capturer tous les documents requis"
+                alertMessage = AppStrings.veuillezCapturerTousLesDocumentsRequis
                 showAlert = true
                 return
             }
@@ -1266,7 +1267,7 @@ struct RegistrationFlowView: View {
         case 4:
          
             if !registrationData.acceptTerms || !registrationData.acceptPrivacy {
-                alertMessage = "Veuillez accepter les conditions pour continuer"
+                alertMessage = AppStrings.veuillezAccepterLesConditionsPourContinuer
                 showAlert = true
                 return
             }
@@ -1337,7 +1338,7 @@ struct RegistrationFlowView: View {
 
     private func handleImageSelection(_ image: UIImage) {
         guard let base64String = image.toBase64() else {
-            alertMessage = "Erreur lors de la conversion de l'image"
+            alertMessage = AppStrings.erreurLorsDeLaConversionDeLImage
             showAlert = true
             return
         }
@@ -1400,7 +1401,7 @@ struct RegistrationFlowView: View {
                 case .success(let response):
                     if response.respCode == "000" {
                         guard let authCode = response.authCode, !authCode.isEmpty else {
-                            self.alertMessage = "Registration succeeded but no verification code was returned. Please contact support."
+                            self.alertMessage = AppStrings.registrationSucceededButNoVerificationCodeWasReturnedPleaseContact
                             self.showAlert = true
                             return
                         }
@@ -1408,16 +1409,16 @@ struct RegistrationFlowView: View {
                         withAnimation { self.currentStep += 1 }
                     } else {
                         if response.respCode == "018" {
-                            self.alertMessage = "Registration failed: Invalid data"
+                            self.alertMessage = AppStrings.registrationFailedInvalidData
                         } else if response.respCode == "017" {
-                            self.alertMessage = "Session expired, please restart registration"
+                            self.alertMessage = AppStrings.sessionExpiredPleaseRestartRegistration
                         } else {
-                            self.alertMessage = response.message ?? "Registration failed"
+                            self.alertMessage = response.message ?? AppStrings.registrationFailed
                         }
                         self.showAlert = true
                     }
                 case .failure(let error):
-                    self.alertMessage = (error as? APIError)?.message ?? "Network error: \(error.localizedDescription)"
+                    self.alertMessage = (error as? APIError)?.message ?? AppStrings.networkErrorValue(String(describing: error.localizedDescription))
                     self.showAlert = true
                 }
             }
@@ -1441,17 +1442,17 @@ struct RegistrationFlowView: View {
                         withAnimation { self.currentStep += 1 }
                     } else {
                         if response.respCode == "018" {
-                            self.alertMessage = "Incorrect OTP, please try again"
+                            self.alertMessage = AppStrings.incorrectOtpPleaseTryAgain
                         } else if response.respCode == "017" {
-                            self.alertMessage = "Session expired, please restart registration"
+                            self.alertMessage = AppStrings.sessionExpiredPleaseRestartRegistration
                         } else {
-                            self.alertMessage = response.message ?? "OTP verification failed"
+                            self.alertMessage = response.message ?? AppStrings.otpVerificationFailed
                         }
                         self.otpServerError = self.alertMessage
                         self.showOtpErrors = true
                     }
                 case .failure(let error):
-                    self.alertMessage = (error as? APIError)?.message ?? "Network error: \(error.localizedDescription)"
+                    self.alertMessage = (error as? APIError)?.message ?? AppStrings.networkErrorValue(String(describing: error.localizedDescription))
                     self.showAlert = true
                 }
             }
@@ -1504,6 +1505,7 @@ struct EmptyRequest: Codable {}
 
 // MARK: - Searchable Nationality Picker
 struct SearchableNationalityPicker: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let nationalities: [Nationality]
     let isLoading: Bool
     @Binding var selectedNationality: String
@@ -1525,7 +1527,7 @@ struct SearchableNationalityPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Nationality*")
+                Text(AppStrings.nationality)
                     .font(.system(size: 16, weight: .medium))
                 
                 if isLoading {
@@ -1542,7 +1544,7 @@ struct SearchableNationalityPicker: View {
                     .foregroundColor(RegistrationTheme.teal)
                         .frame(width: 20)
                     
-                    Text(selectedNationality.isEmpty ? "Choose a nationality" : selectedNationality)
+                    Text(selectedNationality.isEmpty ? AppStrings.chooseANationality : AppStrings.option(selectedNationality))
                         .foregroundColor(selectedNationality.isEmpty ? .gray : .primary)
                     
                     Spacer()
@@ -1565,7 +1567,7 @@ struct SearchableNationalityPicker: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.gray)
                         
-                        TextField("Rechercher une nationalité...", text: $searchText)
+                        TextField(AppStrings.rechercherUneNationalite, text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                         
                         if !searchText.isEmpty {
@@ -1589,7 +1591,7 @@ struct SearchableNationalityPicker: View {
                                 .font(.system(size: 48))
                                 .foregroundColor(.gray)
                             
-                            Text("Aucune nationalité trouvée")
+                            Text(AppStrings.aucuneNationaliteTrouvee)
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
@@ -1603,7 +1605,7 @@ struct SearchableNationalityPicker: View {
                                     showSheet = false
                                 }) {
                                     HStack {
-                                        Text(nationality.wording)
+                                        Text(AppStrings.option(nationality.wording))
                                             .foregroundColor(.primary)
                                         
                                         Spacer()
@@ -1621,11 +1623,11 @@ struct SearchableNationalityPicker: View {
                         .listStyle(PlainListStyle())
                     }
                 }
-                .navigationTitle("Choose a nationality")
+                .navigationTitle(AppStrings.chooseANationality)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Done") {
+                        Button(AppStrings.done) {
                             searchText = ""
                             showSheet = false
                         }
@@ -1638,6 +1640,7 @@ struct SearchableNationalityPicker: View {
 
 // MARK: - Enhanced UI Components
 struct CustomTextField: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     @Binding var text: String
     var icon: String? = nil
@@ -1700,6 +1703,7 @@ struct CustomTextField: View {
 }
 
 struct GenderButton: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     let isSelected: Bool
     let action: () -> Void

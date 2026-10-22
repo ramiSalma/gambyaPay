@@ -17,9 +17,9 @@ enum SourceOfFunds: CaseIterable {
     var title: String {
         switch self {
         case .wallet:
-            return "Mon Portefeuille"
+            return AppStrings.monPortefeuille
         case .sponsor:
-            return "Sponsor"
+            return AppStrings.sponsor
         }
     }
 }

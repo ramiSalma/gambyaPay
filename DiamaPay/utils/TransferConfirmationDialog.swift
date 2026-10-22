@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct TransferConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let amount: String
     let withdrawalFee: Double
     let transferFee: Double
@@ -46,10 +47,10 @@ struct TransferConfirmationDialog: View {
                         .background(Color(hex: "EAF1FB"))
                         .clipShape(Circle())
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("Confirm transfer")
+                        Text(AppStrings.confirmTransfer)
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(Color(hex: "172B4D"))
-                        Text("Review the details and enter your PIN")
+                        Text(AppStrings.reviewTheDetailsAndEnterYourPin)
                             .font(.system(size: 14))
                             .foregroundColor(Color(hex: "5F6B7A"))
                     }
@@ -66,14 +67,14 @@ struct TransferConfirmationDialog: View {
                     VStack(spacing: 16) {
                         // Amount Section with Fees Breakdown
                         VStack(spacing: 12) {
-                            DetailRowView(label: "Transfer amount", value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
+                            DetailRowView(label: AppStrings.transferAmount, value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
                             
                             Divider()
                                 .padding(.vertical, 4)
                             
                             // Fees Breakdown Section
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Applicable fees")
+                                Text(AppStrings.applicableFees)
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundColor(Color(hex: "667085"))
                                 
@@ -84,7 +85,7 @@ struct TransferConfirmationDialog: View {
                                             Image(systemName: "banknote")
                                                 .font(.system(size: 12))
                                                 .foregroundColor(.orange)
-                                            Text("Withdrawal fee")
+                                            Text(AppStrings.withdrawalFee2)
                                                 .font(.system(size: 13))
                                                 .foregroundColor(Color(hex: "263445"))
                                         }
@@ -105,12 +106,12 @@ struct TransferConfirmationDialog: View {
                                         Image(systemName: "paperplane.fill")
                                             .font(.system(size: 12))
                                             .foregroundColor(transferFee > 0 ? .blueH : .green)
-                                        Text("Transfer fee")
+                                        Text(AppStrings.transferFee2)
                                             .font(.system(size: 13))
                                             .foregroundColor(Color(hex: "263445"))
                                     }
                                     Spacer()
-                                    Text(transferFee > 0 ? formatAmount(transferFee) : "Free")
+                                    Text(transferFee > 0 ? formatAmount(transferFee) : AppStrings.free)
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(transferFee > 0 ? .blueH : .green)
                                 }
@@ -124,7 +125,7 @@ struct TransferConfirmationDialog: View {
                                 .padding(.vertical, 4)
                             
                             DetailRowView(
-                                label: "Total to debit",
+                                label: AppStrings.totalToDebit,
                                 value: formatAmount(total),
                                 isHighlighted: true
                             )
@@ -136,12 +137,12 @@ struct TransferConfirmationDialog: View {
                         
                         // Recipient Section
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Recipient")
+                            Text(AppStrings.recipient)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(Color(hex: "667085"))
                             
-                            DetailRowView(label: "Name", value: recipientName)
-                            DetailRowView(label: "Recipient number", value: recipientPhone)
+                            DetailRowView(label: AppStrings.name, value: recipientName)
+                            DetailRowView(label: AppStrings.recipientNumber, value: recipientPhone)
                         }
                         .padding(16)
                         .background(Color.white)
@@ -150,15 +151,15 @@ struct TransferConfirmationDialog: View {
                         
                         // Source of Funds
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Source of funds")
+                            Text(AppStrings.sourceOfFunds2)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(Color(hex: "667085"))
                             
                             if sourceType == .sponsor, let wallet = selectedWallet {
-                                DetailRowView(label: "Type", value: "Sponsor wallet")
-                                DetailRowView(label: "Sponsor", value: wallet.userName)
+                                DetailRowView(label: AppStrings.type, value: AppStrings.sponsorWallet)
+                                DetailRowView(label: AppStrings.sponsor, value: wallet.userName)
                             } else {
-                                DetailRowView(label: "Type", value: "My wallet")
+                                DetailRowView(label: AppStrings.type, value: AppStrings.myWallet)
                             }
                         }
                         .padding(16)
@@ -169,7 +170,7 @@ struct TransferConfirmationDialog: View {
                         // Payment Details
                         if !paymentDetails.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Reason")
+                                Text(AppStrings.reason)
                                     .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(Color(hex: "667085"))
                                 
@@ -186,11 +187,11 @@ struct TransferConfirmationDialog: View {
                         
                         // PIN Entry
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("PIN")
+                            Text(AppStrings.pin)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(Color(hex: "667085"))
                             
-                            SecureField("Enter PIN", text: $pin)
+                            SecureField(AppStrings.enterPin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                                 .padding(.horizontal, 16)
@@ -229,7 +230,7 @@ struct TransferConfirmationDialog: View {
                     Button(action: {
                         onCancel()
                     }) {
-                        Text("Cancel")
+                        Text(AppStrings.cancel)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -248,7 +249,7 @@ struct TransferConfirmationDialog: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text("Confirm")
+                                Text(AppStrings.confirm)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                             }
@@ -276,7 +277,7 @@ struct TransferConfirmationDialog: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
     }
     
@@ -285,7 +286,7 @@ struct TransferConfirmationDialog: View {
         showPinError = false
         
         guard pin.count == 4, pin.allSatisfy({ $0.isASCII && $0.isNumber }) else {
-            pinErrorMessage = "PIN must contain exactly 4 digits"
+            pinErrorMessage = AppStrings.pinMustContainExactly4Digits
             showPinError = true
             return
         }

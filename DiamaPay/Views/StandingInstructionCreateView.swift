@@ -8,20 +8,21 @@
 import SwiftUI
 
 struct StandingInstructionCreateView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     let onSuccess: () -> Void
     
     // MARK: - Transaction Types
     private let transactionTypes = [
-        ("Portefeuille vers Portefeuille", "41")
+        (AppStrings.original("portefeuilleVersPortefeuille"), "41")
     ]
     
     private let frequencies = [
-        ("Quotidien", "D"),
-        ("Hebdomadaire", "W"),
-        ("Mensuel", "M"),
-        ("Annuel", "Y")
+        (AppStrings.original("quotidien"), "D"),
+        (AppStrings.original("hebdomadaire"), "W"),
+        (AppStrings.original("mensuel"), "M"),
+        (AppStrings.original("annuel"), "Y")
     ]
     
     // MARK: - State Variables
@@ -41,7 +42,7 @@ struct StandingInstructionCreateView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Information"
+    @State private var alertTitle = AppStrings.information
     @State private var showPinDialog = false
     @State private var isRecipientVerified = false
     
@@ -56,7 +57,7 @@ struct StandingInstructionCreateView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Create Standing Instruction", headerColor: Color(hex: "174EA6"), onBackToHome: {
+                DiamaPayHeader(title: AppStrings.createStandingInstruction, headerColor: Color(hex: "174EA6"), onBackToHome: {
                     presentationMode.wrappedValue.dismiss()
                 })
 
@@ -67,7 +68,7 @@ struct StandingInstructionCreateView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -106,9 +107,9 @@ struct StandingInstructionCreateView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .overlay(pinDialogOverlay)
     }
@@ -121,7 +122,7 @@ struct StandingInstructionCreateView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Créer un Virement Permanent")
+                Text(AppStrings.creerUnVirementPermanent)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -137,7 +138,7 @@ struct StandingInstructionCreateView: View {
     private var transactionTypeCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Type de Transaction")
+                Text(AppStrings.typeDeTransaction)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -152,12 +153,12 @@ struct StandingInstructionCreateView: View {
                         selectedTrxTypeIndex = index
                         updateUIForTransactionType()
                     }) {
-                        Text(transactionTypes[index].0)
+                        Text(AppStrings.option(transactionTypes[index].0))
                     }
                 }
             } label: {
                 HStack {
-                    Text(transactionTypes[selectedTrxTypeIndex].0)
+                    Text(AppStrings.option(transactionTypes[selectedTrxTypeIndex].0))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
@@ -183,7 +184,7 @@ struct StandingInstructionCreateView: View {
     private var recipientDetailsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Détails du Destinataire")
+                Text(AppStrings.detailsDuDestinataire)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -194,7 +195,7 @@ struct StandingInstructionCreateView: View {
             
             // Bank Code (only for wallet to account)
             if transactionTypes[selectedTrxTypeIndex].1 == "42" {
-                TextField("Code banque", text: $destBank)
+                TextField(AppStrings.codeBanque, text: $destBank)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
                     .frame(height: 48)
@@ -268,7 +269,7 @@ struct StandingInstructionCreateView: View {
     private var amountCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Montant")
+                Text(AppStrings.montant3)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -277,7 +278,7 @@ struct StandingInstructionCreateView: View {
                     .frame(width: 60, height: 2)
             }
             
-            FormattedTextField(placeholder: "Entrer le montant (GNF)", text: $amount)
+            FormattedTextField(placeholder: AppStrings.entrerLeMontantGnf, text: $amount)
         }
         .padding(16)
         .background(Color.white)
@@ -289,7 +290,7 @@ struct StandingInstructionCreateView: View {
     private var descriptionCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Description")
+                Text(AppStrings.description2)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -298,7 +299,7 @@ struct StandingInstructionCreateView: View {
                     .frame(width: 60, height: 2)
             }
             
-            TextField("Entrer une description", text: $details)
+            TextField(AppStrings.entrerUneDescription, text: $details)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
@@ -315,7 +316,7 @@ struct StandingInstructionCreateView: View {
     private var scheduleCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Planification")
+                Text(AppStrings.planification)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -330,12 +331,12 @@ struct StandingInstructionCreateView: View {
                     Button(action: {
                         selectedFrequencyIndex = index
                     }) {
-                        Text(frequencies[index].0)
+                        Text(AppStrings.option(frequencies[index].0))
                     }
                 }
             } label: {
                 HStack {
-                    Text(frequencies[selectedFrequencyIndex].0)
+                    Text(AppStrings.option(frequencies[selectedFrequencyIndex].0))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.primary)
                     
@@ -354,7 +355,7 @@ struct StandingInstructionCreateView: View {
             // Start Date
             Button(action: { showStartDatePicker = true }) {
                 HStack {
-                    Text("Date de début")
+                    Text(AppStrings.dateDeDebut)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.secondary)
                     
@@ -373,13 +374,13 @@ struct StandingInstructionCreateView: View {
                 .cornerRadius(8)
             }
             .sheet(isPresented: $showStartDatePicker) {
-                DatePickerSheetA(selectedDate: $startDate, title: "Date de début")
+                DatePickerSheetA(selectedDate: $startDate, title: AppStrings.dateDeDebut)
             }
             
             // End Date
             Button(action: { showEndDatePicker = true }) {
                 HStack {
-                    Text("Date de fin")
+                    Text(AppStrings.dateDeFin)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.secondary)
                     
@@ -398,7 +399,7 @@ struct StandingInstructionCreateView: View {
                 .cornerRadius(8)
             }
             .sheet(isPresented: $showEndDatePicker) {
-                DatePickerSheetA(selectedDate: $endDate, title: "Date de fin")
+                DatePickerSheetA(selectedDate: $endDate, title: AppStrings.dateDeFin)
             }
         }
         .padding(16)
@@ -410,7 +411,7 @@ struct StandingInstructionCreateView: View {
     // MARK: - Submit Button
     private var submitButton: some View {
         Button(action: validateAndShowPin) {
-            Text("Créer")
+            Text(AppStrings.creer)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -465,10 +466,10 @@ struct StandingInstructionCreateView: View {
         let trxType = transactionTypes[selectedTrxTypeIndex].1
         
         switch trxType {
-        case "41": return "N° de téléphone"
-        case "42": return "N° de compte"
-        case "70": return "N° de téléphone mobile"
-        case "33": return "N° de compte d'épargne"
+        case "41": return AppStrings.nDeTelephone
+        case "42": return AppStrings.nDeCompte
+        case "70": return AppStrings.nDeTelephoneMobile
+        case "33": return AppStrings.nDeCompteDEpargne
         default: return "Destination"
         }
     }
@@ -490,7 +491,7 @@ struct StandingInstructionCreateView: View {
             verifyMobileMoney()
         default:
             isVerifying = false
-            showErrorAlert("Vérification non disponible pour ce type")
+            showErrorAlert(AppStrings.verificationNonDisponiblePourCeType)
         }
     }
     
@@ -515,14 +516,14 @@ struct StandingInstructionCreateView: View {
                         self.receiverName = walletHolder
                         self.isRecipientVerified = true
                     } else {
-                        self.showErrorAlert("Erreur: \(response.message ?? "Vérification échouée")")
+                        self.showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.verificationEchouee)))
                         self.resetVerificationFields()
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                     self.resetVerificationFields()
                 }
@@ -533,44 +534,44 @@ struct StandingInstructionCreateView: View {
     private func verifyWalletToAccount() {
         guard !destBank.isEmpty else {
             isVerifying = false
-            showErrorAlert("Le code banque est requis")
+            showErrorAlert(AppStrings.leCodeBanqueEstRequis)
             return
         }
         
         // Implementation similar to WalletTransferView
         isVerifying = false
-        showErrorAlert("Vérification de compte non implémentée")
+        showErrorAlert(AppStrings.verificationDeCompteNonImplementee)
     }
     
     private func verifyMobileMoney() {
         // Implementation for mobile money verification
         isVerifying = false
-        showErrorAlert("Vérification mobile money non implémentée")
+        showErrorAlert(AppStrings.verificationMobileMoneyNonImplementee)
     }
     
     private func validateAndShowPin() {
         guard !destination.isEmpty else {
-            showErrorAlert("La destination est requise")
+            showErrorAlert(AppStrings.laDestinationEstRequise)
             return
         }
         
         guard !amount.isEmpty else {
-            showErrorAlert("Le montant est requis")
+            showErrorAlert(AppStrings.leMontantEstRequis)
             return
         }
         
         guard isRecipientVerified && !receiverName.isEmpty else {
-            showErrorAlert("Veuillez d'abord vérifier le destinataire")
+            showErrorAlert(AppStrings.veuillezDAbordVerifierLeDestinataire)
             return
         }
      
         guard startDate < endDate else {
-            showErrorAlert("La date de début doit être avant la date de fin")
+            showErrorAlert(AppStrings.laDateDeDebutDoitEtreAvantLaDateDe)
             return
         }
         
         guard endDate > Date() else {
-            showErrorAlert("La date de fin ne peut pas être dans le passé")
+            showErrorAlert(AppStrings.laDateDeFinNePeutPasEtreDansLe)
             return
         }
         
@@ -608,18 +609,18 @@ struct StandingInstructionCreateView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccessAlert("Virement permanent créé avec succès")
+                        self.showSuccessAlert(AppStrings.virementPermanentCreeAvecSucces)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                             self.onSuccess()
                         }
                     } else {
-                        self.showErrorAlert("Erreur: \(response.message ?? "Échec de la création")")
+                        self.showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.echecDeLaCreation)))
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -653,13 +654,13 @@ struct StandingInstructionCreateView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }
@@ -667,6 +668,7 @@ struct StandingInstructionCreateView: View {
 
 // MARK: - PIN Entry Dialog
 struct PinEntryDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var isPresented: Bool
     let onConfirm: (String) -> Void
     let onCancel: () -> Void
@@ -683,13 +685,13 @@ struct PinEntryDialog: View {
                 }
             
             VStack(spacing: 0) {
-                Text("Entrer le code PIN")
+                Text(AppStrings.entrerLeCodePin)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.primary)
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
                 
-                SecureField("Code PIN", text: $pin)
+                SecureField(AppStrings.pin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16, weight: .medium))
                     .padding(.horizontal, 16)
@@ -705,7 +707,7 @@ struct PinEntryDialog: View {
                     }
                 
                 if showError {
-                    Text("Veuillez entrer votre PIN")
+                    Text(AppStrings.veuillezEntrerVotrePin)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
                         .padding(.top, 4)
@@ -713,7 +715,7 @@ struct PinEntryDialog: View {
                 
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color.blueH)
                             .frame(maxWidth: .infinity)
@@ -730,7 +732,7 @@ struct PinEntryDialog: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text("Confirmer")
+                        Text(AppStrings.confirmer)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -753,6 +755,7 @@ struct PinEntryDialog: View {
 
 // MARK: - Date Picker Sheet
 struct DatePickerSheetA: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @Binding var selectedDate: Date
     let title: String
@@ -774,7 +777,7 @@ struct DatePickerSheetA: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Terminé") {
+                    Button(AppStrings.termine) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }

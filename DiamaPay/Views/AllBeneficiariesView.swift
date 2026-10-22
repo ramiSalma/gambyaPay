@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AllBeneficiariesView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     @State private var beneficiaries: [WalletBeneficiary] = []
     @State private var isLoading = false
@@ -32,6 +33,7 @@ struct AllBeneficiariesView: View {
                 || ($0.destination ?? "").localizedCaseInsensitiveContains(searchText)
                 || ($0.bankCode ?? "").localizedCaseInsensitiveContains(searchText)
                 || ($0.destBankCode ?? "").localizedCaseInsensitiveContains(searchText)
+                || $0.transactionTypeTitle.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -40,17 +42,17 @@ struct AllBeneficiariesView: View {
             header
 
             if isLoading {
-                ProgressView("Loading beneficiaries...")
+                ProgressView(AppStrings.loadingBeneficiaries)
                     .tint(blue)
                     .font(.system(size: 13))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let errorMessage {
                 ContentUnavailableView {
-                    Label("Couldn’t load beneficiaries", systemImage: "exclamationmark.circle")
+                    Label(AppStrings.couldntLoadBeneficiaries, systemImage: "exclamationmark.circle")
                 } description: {
-                    Text(errorMessage)
+                    Text(AppStrings.option(errorMessage))
                 } actions: {
-                    Button("Try Again") { loadBeneficiaries() }
+                    Button(AppStrings.tryAgain) { loadBeneficiaries() }
                         .buttonStyle(.borderedProminent)
                         .tint(blue)
                 }
@@ -62,9 +64,9 @@ struct AllBeneficiariesView: View {
 
                         if beneficiaries.isEmpty {
                             ContentUnavailableView(
-                                "No beneficiaries yet",
+                                AppStrings.noBeneficiariesYet,
                                 systemImage: "person.2",
-                                description: Text("Your saved wallet and bank beneficiaries will appear here.")
+                                description: Text(AppStrings.yourSavedWalletAndBankBeneficiariesWillAppearHere)
                             )
                             .frame(minHeight: 300)
                         } else if groupedBeneficiaries.isEmpty {
@@ -90,16 +92,16 @@ struct AllBeneficiariesView: View {
         }
         .navigationBarHidden(true)
         .onAppear { loadBeneficiaries() }
-        .alert("Remove beneficiary?", isPresented: $showDeleteConfirmation) {
-            Button("Remove", role: .destructive) { deleteSelectedBeneficiary() }
-            Button("Cancel", role: .cancel) { beneficiaryToDelete = nil }
+        .alert(AppStrings.removeBeneficiary, isPresented: $showDeleteConfirmation) {
+            Button(AppStrings.remove, role: .destructive) { deleteSelectedBeneficiary() }
+            Button(AppStrings.cancel, role: .cancel) { beneficiaryToDelete = nil }
         } message: {
-            Text("This beneficiary will be removed from your saved list.")
+            Text(AppStrings.thisBeneficiaryWillBeRemovedFromYourSavedList)
         }
-        .alert("Couldn’t remove beneficiary", isPresented: $showDeleteError) {
-            Button("OK", role: .cancel) { }
+        .alert(AppStrings.couldntRemoveBeneficiary, isPresented: $showDeleteError) {
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(deleteErrorMessage.isEmpty ? "Please try again." : deleteErrorMessage)
+            Text(deleteErrorMessage.isEmpty ? AppStrings.pleaseTryAgain : deleteErrorMessage)
         }
     }
 
@@ -112,7 +114,7 @@ struct AllBeneficiariesView: View {
                     .frame(width: 36, height: 36)
             }
             Spacer()
-            Text("My Beneficiaries")
+            Text(AppStrings.beneficiaries)
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             Spacer()
@@ -128,7 +130,7 @@ struct AllBeneficiariesView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 19, weight: .medium))
                 .foregroundColor(cyan)
-            TextField("Search...", text: $searchText)
+            TextField(AppStrings.search, text: $searchText)
                 .font(.system(size: 14))
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
@@ -181,7 +183,7 @@ struct AllBeneficiariesView: View {
                     .foregroundColor(Color(hex: "858585"))
                     .lineLimit(1)
 
-                Text("\(destination)  •  \(bankCode)")
+                Text(AppStrings.valueValue(String(describing: destination), String(describing: bankCode)))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color(hex: "505A69"))
                     .lineLimit(1)
@@ -194,7 +196,7 @@ struct AllBeneficiariesView: View {
                         .padding(.vertical, 3)
                         .overlay(Capsule().stroke(Color(hex: "505A69"), lineWidth: 1.2))
                     Spacer(minLength: 4)
-                    Text("Added: \(date)")
+                    Text(AppStrings.addedValue(String(describing: date)))
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(hex: "505A69"))
                         .lineLimit(1)
@@ -213,7 +215,7 @@ struct AllBeneficiariesView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Remove beneficiary")
+            .accessibilityLabel(AppStrings.removeBeneficiary2)
             .disabled(isDeleting)
         }
         .padding(11)
@@ -252,7 +254,7 @@ struct AllBeneficiariesView: View {
         let user = UserDataManager.shared
         let phoneNumber = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !phoneNumber.isEmpty else {
-            errorMessage = "Please sign in again to load your beneficiaries."
+            errorMessage = AppStrings.pleaseSignInAgainToLoadYourBeneficiaries
             completion()
             return
         }
@@ -272,14 +274,14 @@ struct AllBeneficiariesView: View {
                 switch result {
                 case .success(let response):
                     guard response.respCode == "000" else {
-                        errorMessage = response.message ?? "Unable to load beneficiaries."
+                        errorMessage = response.message ?? AppStrings.unableToLoadBeneficiaries
                         completion()
                         return
                     }
                     beneficiaries = response.result ?? []
                 case .failure(let error):
                     errorMessage = (error as? APIError)?.message
-                        ?? "Unable to load beneficiaries. Please try again."
+                        ?? AppStrings.unableToLoadBeneficiariesPleaseTryAgain
                 }
                 completion()
             }
@@ -290,14 +292,14 @@ struct AllBeneficiariesView: View {
         guard let beneficiary = beneficiaryToDelete,
               let beneficiaryId = beneficiary.beneficiaryId,
               !beneficiaryId.isEmpty else {
-            deleteErrorMessage = "Beneficiary details are incomplete."
+            deleteErrorMessage = AppStrings.beneficiaryDetailsAreIncomplete
             showDeleteError = true
             return
         }
         let user = UserDataManager.shared
         let phoneNumber = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !phoneNumber.isEmpty else {
-            deleteErrorMessage = "Please sign in again to manage beneficiaries."
+            deleteErrorMessage = AppStrings.pleaseSignInAgainToManageBeneficiaries
             showDeleteError = true
             return
         }
@@ -318,11 +320,11 @@ struct AllBeneficiariesView: View {
                 case .success(let response) where response.respCode == "000":
                     beneficiaries.removeAll { $0.beneficiaryId == beneficiaryId }
                 case .success(let response):
-                    deleteErrorMessage = response.message ?? "Unable to remove beneficiary."
+                    deleteErrorMessage = response.message ?? AppStrings.unableToRemoveBeneficiary
                     showDeleteError = true
                 case .failure(let error):
                     deleteErrorMessage = (error as? APIError)?.message
-                        ?? "Unable to remove beneficiary. Please try again."
+                        ?? AppStrings.unableToRemoveBeneficiaryPleaseTryAgain
                     showDeleteError = true
                 }
                 beneficiaryToDelete = nil

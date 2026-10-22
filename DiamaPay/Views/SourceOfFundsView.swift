@@ -9,6 +9,7 @@ import SwiftUI;
 
 // MARK: - Main Component
 struct SourceOfFundsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @State private var hasInitialized = false
     @State private var selectedSource: SourceOfFunds = .wallet
     @State private var selectedWallet: SponsoringWallet? = nil
@@ -66,10 +67,10 @@ struct SourceOfFundsView: View {
             balance = String(format: "%.2f", userDataManager.getAvailableBalance())
             loadSponsoringWallets()
         }
-        .alert("Error!", isPresented: $showAlert) {
-            Button("OK") { }
+        .alert(AppStrings.errorHeading, isPresented: $showAlert) {
+            Button(AppStrings.ok) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .overlay(
             // Loading Overlay
@@ -88,7 +89,7 @@ struct SourceOfFundsView: View {
                 Rectangle()
                     .fill(Color(hex: "0788B9"))
                     .frame(width: 4, height: 32)
-                Text("Source of Funds")
+                Text(AppStrings.sourceOfFunds)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.primary)
             } else {
@@ -96,7 +97,7 @@ struct SourceOfFundsView: View {
                     .fill(Color.blueH.opacity(0.1))
                     .frame(width: 32, height: 32)
                     .overlay(Image(systemName: "creditcard.fill").font(.system(size: 13)).foregroundColor(Color.blueH))
-                Text("Source des Fonds")
+                Text(AppStrings.sourceDesFonds)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
             }
@@ -117,7 +118,7 @@ struct SourceOfFundsView: View {
                     update()
                 }
             }) {
-                Text(walletTransferStyle ? "Wallet" : "Mon Portefeuille")
+                Text(walletTransferStyle ? AppStrings.wallet : AppStrings.monPortefeuille)
                     .font(.system(size: walletTransferStyle ? 14 : 14, weight: .semibold))
                     .foregroundColor(selectedSource == .wallet ? .white : (walletTransferStyle ? Color.gray : Color.blueH))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -138,7 +139,7 @@ struct SourceOfFundsView: View {
                     }
                 }
             }) {
-                Text("Sponsor")
+                Text(AppStrings.sponsor)
                     .font(.system(size: walletTransferStyle ? 14 : 14, weight: .semibold))
                     .foregroundColor(selectedSource == .sponsor ? .white : Color(red: 0.4, green: 0.4, blue: 0.4))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -167,7 +168,7 @@ struct SourceOfFundsView: View {
     private var sponsorSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Sponsor Label (matches Android)
-            Text(walletTransferStyle ? "SPONSOR" : "Sélectionner un Sponsor")
+            Text(walletTransferStyle ? AppStrings.sponsorSection : AppStrings.selectionnerUnSponsor)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(Color(red: 0.38, green: 0.38, blue: 0.38)) // sponsor_label_color
                 .padding(.bottom, 8)
@@ -178,18 +179,18 @@ struct SourceOfFundsView: View {
                     Button(action: {
                         selectedWallet = sponsor
                         onWalletChanged?(sponsor.walletNumber.isEmpty ? nil : sponsor)
-                        if sponsor.userName != "Sélectionner un Sponsor" {
+                        if sponsor.userName != AppStrings.selectionnerUnSponsor {
                             getDailyLimit(for: sponsor)
                         } else {
                             balance = "00.00"
                         }
                     }) {
-                        Text(sponsor.walletNumber.isEmpty ? (walletTransferStyle ? "Select a Sponsor" : "Sélectionner un Sponsor") : (sponsor.userName.isEmpty ? (walletTransferStyle ? "Unnamed Sponsor" : "Sponsor sans nom") : sponsor.userName))
+                        Text(sponsor.walletNumber.isEmpty ? (walletTransferStyle ? AppStrings.selectASponsor : AppStrings.selectionnerUnSponsor) : (sponsor.userName.isEmpty ? (walletTransferStyle ? AppStrings.unnamedSponsor : AppStrings.sponsorSansNom) : sponsor.userName))
                     }
                 }
             } label: {
                 HStack {
-                    Text(selectedWallet?.walletNumber.isEmpty == false ? (selectedWallet?.userName ?? "") : (walletTransferStyle ? "Select a Sponsor" : "Sélectionner un Sponsor"))
+                    Text(selectedWallet?.walletNumber.isEmpty == false ? (selectedWallet?.userName ?? "") : (walletTransferStyle ? AppStrings.selectASponsor : AppStrings.selectionnerUnSponsor))
                         .font(.system(size: walletTransferStyle ? 14 : 14, weight: .medium))
                         .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
                     
@@ -230,7 +231,7 @@ struct SourceOfFundsView: View {
             if walletTransferStyle {
                 HStack {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(walletTransferStyle ? (selectedSource == .wallet ? "Available balance" : "Daily limit (GMD)") : balanceLabel)
+                        Text(walletTransferStyle ? (selectedSource == .wallet ? AppStrings.availableBalance2 : AppStrings.dailyLimitGmd) : balanceLabel)
                             .font(.system(size: 13, weight: .medium))
                             .tracking(0.5)
                             .foregroundColor(.secondary)
@@ -286,9 +287,9 @@ struct SourceOfFundsView: View {
     private var balanceLabel: String {
         switch selectedSource {
         case .wallet:
-            return "Solde disponible"
+            return AppStrings.availableBalance
         case .sponsor:
-            return "Limite quotidienne (GMD)"
+            return AppStrings.limiteQuotidienneGmd
         }
     }
     
@@ -327,15 +328,15 @@ struct SourceOfFundsView: View {
                     if response.respCode == "000" {
                         self.processSponsoringWalletsResponse(response)
                     } else {
-                        let errorMsg = response.message ?? (walletTransferStyle ? "Unable to load sponsor wallets" : "Erreur lors de la récupération des portefeuilles sponsors")
+                        let errorMsg = response.message ?? (walletTransferStyle ? AppStrings.unableToLoadSponsorWallets : AppStrings.erreurLorsDeLaRecuperationDesPortefeuillesSponsors)
                         self.displayAlert(errorMsg)
                         self.disableSponsorOption()
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.displayAlert(walletTransferStyle ? "Error: \(apiError.message)" : "Erreur: \(apiError.message)")
+                        self.displayAlert(walletTransferStyle ? AppStrings.errorValue(AppStrings.option(apiError.message)) : AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.displayAlert(walletTransferStyle ? "Network error: \(error.localizedDescription)" : "Erreur réseau: \(error.localizedDescription)")
+                        self.displayAlert(walletTransferStyle ? AppStrings.networkErrorValue(String(describing: error.localizedDescription)) : AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                     self.disableSponsorOption()
                 }
@@ -386,7 +387,7 @@ struct SourceOfFundsView: View {
                 
                 // Validation
                 if wallet.userName.isEmpty {
-                    wallet.userName = "Sponsor sans nom"
+                    wallet.userName = AppStrings.sponsorSansNom
                 }
                 
                 if wallet.walletNumber.isEmpty {
@@ -409,7 +410,7 @@ struct SourceOfFundsView: View {
     }
     
     private func getDailyLimit(for wallet: SponsoringWallet) {
-        guard wallet.userName != "Sélectionner un Sponsor",
+        guard wallet.userName != AppStrings.selectionnerUnSponsor,
               !wallet.walletNumber.isEmpty else {
             balance = "00.00"
             return
@@ -494,7 +495,7 @@ struct SourceOfFundsView: View {
     func getSelectedWallet() -> SponsoringWallet? {
         if selectedSource == .sponsor,
            let wallet = selectedWallet,
-           wallet.userName != "Sélectionner un Sponsor" {
+           wallet.userName != AppStrings.selectionnerUnSponsor {
             return wallet
         }
         return nil
@@ -510,6 +511,7 @@ struct SourceOfFundsView: View {
 }
 
 struct LoadingOverlay: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     var walletTransferStyle = false
 
     var body: some View {
@@ -522,7 +524,7 @@ struct LoadingOverlay: View {
                     .scaleEffect(1.5)
                     .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                 
-                Text(walletTransferStyle ? "Please wait..." : "Veuillez patienter...")
+                Text(walletTransferStyle ? AppStrings.pleaseWait : AppStrings.veuillezPatienter)
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.primary)
             }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OrderFoodView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     private let initiallyShowingHistory: Bool
 
     init(initiallyShowingHistory: Bool = false) {
@@ -23,7 +24,7 @@ struct OrderFoodView: View {
     @State private var errorMessage: String?
     @State private var notice: String?
     @State private var showAddressForm = false
-    @State private var addressLabel = "Home"
+    @State private var addressLabel = AppStrings.home
     @State private var addressLine1 = ""
     @State private var addressLine2 = ""
     @State private var addressCity = ""
@@ -44,7 +45,7 @@ struct OrderFoodView: View {
             Color.white.ignoresSafeArea()
             VStack(spacing: 0) {
                 DiamaPayHeader(
-                    title: showingOrders ? "Food History" : (selectedRestaurant?.name ?? "Order Food"),
+                    title: showingOrders ? AppStrings.foodHistory2 : (selectedRestaurant?.name ?? AppStrings.orderFood),
                     headerColor: blue,
                     onBackToHome: {
                         if showingOrders {
@@ -58,7 +59,7 @@ struct OrderFoodView: View {
                 if showingOrders {
                     ordersList
                 } else if restaurants.isEmpty && isLoading {
-                    ProgressView("Finding restaurants…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ProgressView(AppStrings.findingRestaurants).frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let selectedRestaurant {
                     menu(for: selectedRestaurant)
                 } else {
@@ -72,12 +73,12 @@ struct OrderFoodView: View {
         }
         .navigationBarHidden(true)
         .task { if showingOrders { loadOrders() } else { loadInitialData() } }
-        .alert("Order food", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("OK", role: .cancel) { errorMessage = nil }
-        } message: { Text(errorMessage ?? "") }
-        .alert("Order placed", isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
-            Button("Done") { notice = nil; dismiss() }
-        } message: { Text(notice ?? "") }
+        .alert(AppStrings.orderFood2, isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button(AppStrings.ok, role: .cancel) { errorMessage = nil }
+        } message: { Text(AppStrings.option(errorMessage ?? "")) }
+        .alert(AppStrings.orderPlaced, isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
+            Button(AppStrings.done) { notice = nil; dismiss() }
+        } message: { Text(AppStrings.option(notice ?? "")) }
         .sheet(isPresented: $showAddressForm) { addressForm }
         .sheet(item: $complaintOrder) { order in complaintForm(for: order) }
     }
@@ -85,21 +86,21 @@ struct OrderFoodView: View {
     private var restaurantList: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Restaurants near you").font(.system(size: 22, weight: .bold)).padding(.top, 8)
+                Text(AppStrings.restaurantsNearYou).font(.system(size: 22, weight: .bold)).padding(.top, 8)
                 Button { showingOrders = true; showingClosedOrders = false; loadOrders() } label: {
-                    HStack { Image(systemName: "bag"); Text("My orders"); Spacer(); Image(systemName: "chevron.right") }
+                    HStack { Image(systemName: "bag"); Text(AppStrings.myOrders); Spacer(); Image(systemName: "chevron.right") }
                         .font(.system(size: 14, weight: .semibold)).foregroundStyle(blue).padding(14).background(blue.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
                 }.buttonStyle(.plain)
                 if isLoading && restaurants.isEmpty { ProgressView().frame(maxWidth: .infinity).padding(40) }
-                else if restaurants.isEmpty { emptyState("No restaurants are available right now.", icon: "storefront") }
+                else if restaurants.isEmpty { emptyState(AppStrings.noRestaurantsAreAvailableRightNow, icon: "storefront") }
                 ForEach(restaurants) { restaurant in
                     Button { select(restaurant) } label: {
                         HStack(spacing: 14) {
                             restaurantLogo(restaurant.logoUrl)
                             VStack(alignment: .leading, spacing: 5) {
-                                Text(restaurant.name ?? "Restaurant").font(.system(size: 16, weight: .semibold)).foregroundStyle(.primary)
+                                Text(restaurant.name ?? AppStrings.restaurant).font(.system(size: 16, weight: .semibold)).foregroundStyle(.primary)
                                 Text([restaurant.address1, restaurant.city].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1)
-                                HStack(spacing: 5) { Circle().fill(restaurant.isOpen ? blue : .orange).frame(width: 7, height: 7); Text(restaurant.isOpen ? "Open now" : (restaurant.status ?? "Check availability")).font(.system(size: 11, weight: .medium)).foregroundStyle(restaurant.isOpen ? blue : .orange) }
+                                HStack(spacing: 5) { Circle().fill(restaurant.isOpen ? blue : .orange).frame(width: 7, height: 7); Text(restaurant.isOpen ? AppStrings.openNow : (restaurant.status ?? AppStrings.checkAvailability)).font(.system(size: 11, weight: .medium)).foregroundStyle(restaurant.isOpen ? blue : .orange) }
                             }
                             Spacer()
                             Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(.tertiary)
@@ -113,28 +114,28 @@ struct OrderFoodView: View {
 
     private func menu(for restaurant: FoodRestaurant) -> some View {
         VStack(spacing: 0) {
-            if isLoading && items.isEmpty { ProgressView("Loading menu…").frame(maxWidth: .infinity, maxHeight: .infinity) }
+            if isLoading && items.isEmpty { ProgressView(AppStrings.loadingMenu).frame(maxWidth: .infinity, maxHeight: .infinity) }
             else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         HStack {
-                            VStack(alignment: .leading, spacing: 3) { Text(restaurant.name ?? "Menu").font(.system(size: 21, weight: .bold)); Text(restaurant.city ?? restaurant.address1 ?? "Menu").font(.system(size: 12)).foregroundStyle(.secondary) }
+                            VStack(alignment: .leading, spacing: 3) { Text(restaurant.name ?? AppStrings.menu).font(.system(size: 21, weight: .bold)); Text(restaurant.city ?? restaurant.address1 ?? AppStrings.menu).font(.system(size: 12)).foregroundStyle(.secondary) }
                             Spacer()
-                            Text("\(items.count) items").font(.system(size: 12, weight: .medium)).foregroundStyle(blue).padding(.horizontal, 11).padding(.vertical, 7).background(blue.opacity(0.1), in: Capsule())
+                            Text(AppStrings.valueItems(String(describing: items.count))).font(.system(size: 12, weight: .medium)).foregroundStyle(blue).padding(.horizontal, 11).padding(.vertical, 7).background(blue.opacity(0.1), in: Capsule())
                         }.padding(.vertical, 6)
                         if !categories.isEmpty {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 8) {
-                                    categoryChip("All", id: nil)
-                                    ForEach(categories) { category in categoryChip(category.name ?? "Menu", id: category.categoryId) }
+                                    categoryChip(AppStrings.all, id: nil)
+                                    ForEach(categories) { category in categoryChip(category.name ?? AppStrings.menu, id: category.categoryId) }
                                 }
                             }
                         }
-                        if items.isEmpty { emptyState("This restaurant has no menu items available.", icon: "takeoutbag.and.cup.and.straw") }
+                        if items.isEmpty { emptyState(AppStrings.thisRestaurantHasNoMenuItemsAvailable, icon: "takeoutbag.and.cup.and.straw") }
                         ForEach(items) { item in
                             HStack(spacing: 12) {
                                 VStack(alignment: .leading, spacing: 5) {
-                                    Text(item.name ?? "Menu item").font(.system(size: 15, weight: .semibold))
+                                    Text(item.name ?? AppStrings.menuItem).font(.system(size: 15, weight: .semibold))
                                     if let description = item.description, !description.isEmpty { Text(description).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(2) }
                                     Text(String(format: "GMD %.2f", item.amount)).font(.system(size: 13, weight: .semibold)).foregroundStyle(blue).padding(.top, 2)
                                 }
@@ -161,21 +162,21 @@ struct OrderFoodView: View {
         VStack(spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: "mappin.and.ellipse").foregroundStyle(blue)
-                VStack(alignment: .leading, spacing: 2) { Text("Deliver to").font(.system(size: 10)).foregroundStyle(.secondary); Text(selectedAddress?.displayName.isEmpty == false ? selectedAddress!.displayName : "Choose delivery address").font(.system(size: 12, weight: .medium)).foregroundStyle(.primary).lineLimit(1) }
+                VStack(alignment: .leading, spacing: 2) { Text(AppStrings.deliverTo).font(.system(size: 10)).foregroundStyle(.secondary); Text(selectedAddress?.displayName.isEmpty == false ? selectedAddress!.displayName : AppStrings.chooseDeliveryAddress).font(.system(size: 12, weight: .medium)).foregroundStyle(.primary).lineLimit(1) }
                 Spacer()
                 if addresses.isEmpty {
-                    Button("Add address") { showAddressForm = true }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
+                    Button(AppStrings.addAddress) { showAddressForm = true }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
                 } else {
                     Menu {
-                        ForEach(addresses) { address in Button(address.displayName.isEmpty ? "Delivery address" : address.displayName) { selectedAddress = address } }
-                        Button { showAddressForm = true } label: { Label("Add new address", systemImage: "plus") }
+                        ForEach(addresses) { address in Button(address.displayName.isEmpty ? AppStrings.deliveryAddress : address.displayName) { selectedAddress = address } }
+                        Button { showAddressForm = true } label: { Label(AppStrings.addNewAddress, systemImage: "plus") }
                     } label: { Image(systemName: "chevron.up.chevron.down").font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary) }
                 }
             }.padding(10).background(Color(.systemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
             Button(action: submitOrder) {
                 HStack {
-                    Text(isSubmitting ? "Placing order…" : "Place order · GMD \(String(format: "%.2f", cartTotal))").font(.system(size: 15, weight: .semibold))
-                    Spacer(); if isSubmitting { ProgressView().tint(.white) } else { Text("\(cartCount) items").font(.system(size: 12, weight: .medium)).opacity(0.85) }
+                    Text(isSubmitting ? AppStrings.placingOrder : AppStrings.placeOrderGmdValue(String(describing: String(format: "%.2f", cartTotal)))).font(.system(size: 15, weight: .semibold))
+                    Spacer(); if isSubmitting { ProgressView().tint(.white) } else { Text(AppStrings.valueItems(String(describing: cartCount))).font(.system(size: 12, weight: .medium)).opacity(0.85) }
                 }.foregroundStyle(.white).padding(.horizontal, 16).frame(height: 50).background(blue, in: RoundedRectangle(cornerRadius: 14))
             }.disabled(isSubmitting || selectedAddress == nil || cartCount == 0)
         }.padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 12).background(.white.shadow(.drop(color: .black.opacity(0.07), radius: 8, y: -3)))
@@ -191,16 +192,16 @@ struct OrderFoodView: View {
     private var addressForm: some View {
         NavigationStack {
             Form {
-                TextField("Label (Home, Work…)", text: $addressLabel)
-                TextField("Street address", text: $addressLine1)
-                TextField("Apartment, suite (optional)", text: $addressLine2)
-                TextField("City", text: $addressCity)
+                TextField(AppStrings.labelHomeWork, text: $addressLabel)
+                TextField(AppStrings.streetAddress, text: $addressLine1)
+                TextField(AppStrings.apartmentSuiteOptional, text: $addressLine2)
+                TextField(AppStrings.city, text: $addressCity)
             }
-            .navigationTitle("Delivery address")
+            .navigationTitle(AppStrings.deliveryAddress)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { showAddressForm = false } }
-                ToolbarItem(placement: .confirmationAction) { Button("Save") { saveAddress() }.disabled(addressLine1.trimmingCharacters(in: .whitespaces).isEmpty || addressCity.trimmingCharacters(in: .whitespaces).isEmpty) }
+                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.cancel) { showAddressForm = false } }
+                ToolbarItem(placement: .confirmationAction) { Button(AppStrings.save) { saveAddress() }.disabled(addressLine1.trimmingCharacters(in: .whitespaces).isEmpty || addressCity.trimmingCharacters(in: .whitespaces).isEmpty) }
             }
         }
         .presentationDetents([.medium, .large])
@@ -212,23 +213,23 @@ struct OrderFoodView: View {
     private var ordersList: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                orderTab("Active", active: !showingClosedOrders) { showingClosedOrders = false; loadOrders() }
-                orderTab("Past", active: showingClosedOrders) { showingClosedOrders = true; loadOrders() }
+                orderTab(AppStrings.active, active: !showingClosedOrders) { showingClosedOrders = false; loadOrders() }
+                orderTab(AppStrings.past, active: showingClosedOrders) { showingClosedOrders = true; loadOrders() }
             }.padding(.horizontal, 18).padding(.vertical, 12)
             if isLoading { ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity) }
-            else if orders.isEmpty { emptyState("Your orders will appear here.", icon: "bag").padding(18); Spacer() }
+            else if orders.isEmpty { emptyState(AppStrings.yourOrdersWillAppearHere, icon: "bag").padding(18); Spacer() }
             else {
                 ScrollView {
                     VStack(spacing: 12) {
                         ForEach(orders) { order in
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack {
-                                    VStack(alignment: .leading, spacing: 4) { Text("Order \(order.orderRef ?? order.orderId)").font(.system(size: 15, weight: .semibold)); Text(order.createdAt ?? "").font(.system(size: 11)).foregroundStyle(.secondary) }
-                                    Spacer(); Text((order.status ?? "ORDERED").replacingOccurrences(of: "_", with: " ")).font(.system(size: 10, weight: .bold)).foregroundStyle(blue).padding(.horizontal, 9).padding(.vertical, 6).background(blue.opacity(0.1), in: Capsule())
+                                    VStack(alignment: .leading, spacing: 4) { Text(AppStrings.orderValue(String(describing: order.orderRef ?? order.orderId))).font(.system(size: 15, weight: .semibold)); Text(order.createdAt ?? "").font(.system(size: 11)).foregroundStyle(.secondary) }
+                                    Spacer(); Text(AppStrings.option(order.status ?? "ORDERED")).font(.system(size: 10, weight: .bold)).foregroundStyle(blue).padding(.horizontal, 9).padding(.vertical, 6).background(blue.opacity(0.1), in: Capsule())
                                 }
                                 HStack { Text("GMD \(String(format: "%.2f", order.totalAmount ?? 0))").font(.system(size: 13, weight: .semibold)); Spacer()
-                                    if !showingClosedOrders && ["CREATED", "CONFIRMED"].contains(order.status?.uppercased() ?? "") { Button("Cancel") { cancel(order) }.font(.system(size: 12, weight: .semibold)).foregroundStyle(.red) }
-                                    Button("Get help") { complaintDescription = ""; complaintOrder = order }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
+                                    if !showingClosedOrders && ["CREATED", "CONFIRMED"].contains(order.status?.uppercased() ?? "") { Button(AppStrings.cancel) { cancel(order) }.font(.system(size: 12, weight: .semibold)).foregroundStyle(.red) }
+                                    Button(AppStrings.getHelp) { complaintDescription = ""; complaintOrder = order }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
                                 }
                             }.padding(14).background(.white, in: RoundedRectangle(cornerRadius: 15))
                         }
@@ -250,11 +251,11 @@ struct OrderFoodView: View {
 
     private func complaintForm(for order: FoodOrder) -> some View {
         NavigationStack {
-            Form { Section("Order \(order.orderRef ?? order.orderId)") { TextField("Tell us what happened", text: $complaintDescription, axis: .vertical).lineLimit(4...7) } }
-                .navigationTitle("Contact support").navigationBarTitleDisplayMode(.inline)
+            Form { Section(AppStrings.orderValue(String(describing: order.orderRef ?? order.orderId))) { TextField(AppStrings.tellUsWhatHappened, text: $complaintDescription, axis: .vertical).lineLimit(4...7) } }
+                .navigationTitle(AppStrings.contactSupport).navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItem(placement: .cancellationAction) { Button("Cancel") { complaintOrder = nil } }
-                    ToolbarItem(placement: .confirmationAction) { Button("Send") { sendComplaint(for: order) }.disabled(complaintDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
+                    ToolbarItem(placement: .cancellationAction) { Button(AppStrings.cancel) { complaintOrder = nil } }
+                    ToolbarItem(placement: .confirmationAction) { Button(AppStrings.send) { sendComplaint(for: order) }.disabled(complaintDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
                 }
         }.presentationDetents([.medium, .large])
     }
@@ -265,7 +266,7 @@ struct OrderFoodView: View {
             Task { @MainActor in
                 isLoading = false
                 switch result {
-                case .success(let response): restaurants = response.result ?? []; if response.respCode != "000" { errorMessage = response.message ?? "Could not load restaurants." }
+                case .success(let response): restaurants = response.result ?? []; if response.respCode != "000" { errorMessage = response.message ?? AppStrings.couldNotLoadRestaurants }
                 case .failure(let error): errorMessage = error.localizedDescription
                 }
             }
@@ -300,7 +301,7 @@ struct OrderFoodView: View {
         let base = makeListingRequest()
         let request = FoodyItemsRequest(phoneNumber: base.phoneNumber, restaurantId: restaurant.restaurantId, categoryId: selectedCategoryId, requestId: base.requestId, requestDate: base.requestDate, entityId: base.entityId)
         APIClient.shared.listFoodItems(request: request) { result in
-            Task { @MainActor in isLoading = false; switch result { case .success(let response): items = response.result ?? []; if response.respCode != "000" { errorMessage = response.message ?? "Could not load the menu." }; case .failure(let error): errorMessage = error.localizedDescription } }
+            Task { @MainActor in isLoading = false; switch result { case .success(let response): items = response.result ?? []; if response.respCode != "000" { errorMessage = response.message ?? AppStrings.couldNotLoadTheMenu }; case .failure(let error): errorMessage = error.localizedDescription } }
         }
     }
 
@@ -327,7 +328,7 @@ struct OrderFoodView: View {
         let base = makeListingRequest()
         let request = FoodOrderActionRequest(phoneNumber: base.phoneNumber, orderId: order.orderId, restaurantId: restaurantId, status: "CANCELLED", requestId: base.requestId, requestDate: base.requestDate, entityId: base.entityId)
         APIClient.shared.cancelFoodOrder(request: request) { result in
-            Task { @MainActor in switch result { case .success(let response) where response.respCode == "000": loadOrders(); case .success(let response): errorMessage = response.message ?? "Could not cancel this order."; case .failure(let error): errorMessage = error.localizedDescription } }
+            Task { @MainActor in switch result { case .success(let response) where response.respCode == "000": loadOrders(); case .success(let response): errorMessage = response.message ?? AppStrings.couldNotCancelThisOrder; case .failure(let error): errorMessage = error.localizedDescription } }
         }
     }
 
@@ -336,7 +337,7 @@ struct OrderFoodView: View {
         let base = makeListingRequest()
         let request = FoodComplaintRequest(phoneNumber: base.phoneNumber, orderId: order.orderId, restaurantId: restaurantId, description: complaintDescription, reason: "CUSTOMER_SUPPORT", complaintType: "ORDER", productId: "", bank: UserDataManager.shared.getBankCode(), requestId: base.requestId, requestDate: base.requestDate, entityId: base.entityId)
         APIClient.shared.addFoodComplaint(request: request) { result in
-            Task { @MainActor in switch result { case .success(let response) where response.respCode == "000": complaintOrder = nil; notice = response.message ?? "Your message has been sent."; case .success(let response): errorMessage = response.message ?? "Could not send your message."; case .failure(let error): errorMessage = error.localizedDescription } }
+            Task { @MainActor in switch result { case .success(let response) where response.respCode == "000": complaintOrder = nil; notice = response.message ?? AppStrings.yourMessageHasBeenSent; case .success(let response): errorMessage = response.message ?? AppStrings.couldNotSendYourMessage; case .failure(let error): errorMessage = error.localizedDescription } }
         }
     }
 
@@ -359,8 +360,8 @@ struct OrderFoodView: View {
             Task { @MainActor in
                 isSubmitting = false
                 switch result {
-                case .success(let response) where response.respCode == "000": notice = response.message ?? "Your order has been received."
-                case .success(let response): errorMessage = response.message ?? "Could not place your order."
+                case .success(let response) where response.respCode == "000": notice = response.message ?? AppStrings.yourOrderHasBeenReceived
+                case .success(let response): errorMessage = response.message ?? AppStrings.couldNotPlaceYourOrder
                 case .failure(let error): errorMessage = error.localizedDescription
                 }
             }
@@ -377,7 +378,7 @@ struct OrderFoodView: View {
                     showAddressForm = false
                     addressLine1 = ""; addressLine2 = ""; addressCity = ""
                     refreshAddresses()
-                case .success(let response): errorMessage = response.message ?? "Could not save this address."
+                case .success(let response): errorMessage = response.message ?? AppStrings.couldNotSaveThisAddress
                 case .failure(let error): errorMessage = error.localizedDescription
                 }
             }

@@ -40,6 +40,7 @@ class CurrencyFormatter {
 
 // MARK: - Custom TextField with Formatting
 struct FormattedTextField: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let placeholder: String
     @Binding var text: String
     var maxLength: Int = 15

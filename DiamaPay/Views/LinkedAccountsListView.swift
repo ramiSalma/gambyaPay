@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LinkedAccountsListView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     @State private var accounts: [Account] = []
@@ -26,14 +27,14 @@ struct LinkedAccountsListView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Linked Bank Accounts", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.linkedBankAccounts, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                         .scaleEffect(1.5)
-                    Text("Chargement en cours...")
+                    Text(AppStrings.chargementEnCours)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.secondary)
                         .padding(.top, 16)
@@ -53,9 +54,9 @@ struct LinkedAccountsListView: View {
             showPinDialog = true
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .sheet(isPresented: $showPinDialog) {
             PinDialogViewA(
@@ -81,7 +82,7 @@ struct LinkedAccountsListView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 4) {
-                Text("Comptes bancaires liés")
+                Text(AppStrings.comptesBancairesLies)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -129,7 +130,7 @@ struct LinkedAccountsListView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
             
-            Text("Aucun compte bancaire lié trouvé")
+            Text(AppStrings.aucunCompteBancaireLieTrouve)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -169,13 +170,13 @@ struct LinkedAccountsListView: View {
                     if response.respCode == "000" {
                         self.parseAccounts(response)
                     } else {
-                        self.showError(response.message ?? "Erreur lors de la récupération des comptes")
+                        self.showError(response.message ?? AppStrings.erreurLorsDeLaRecuperationDesComptes)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
                         self.showError(apiError.message)
                     } else {
-                        self.showError("Erreur de connexion: \(error.localizedDescription)")
+                        self.showError(AppStrings.erreurDeConnexionValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -222,16 +223,16 @@ struct LinkedAccountsListView: View {
                         if let balanceInfo = response.data {
                             self.accounts[index].balance = balanceInfo.availableBalance
                             self.accounts[index].currency = balanceInfo.currency
-                            self.showSuccess("Solde mis à jour: \(balanceInfo.availableBalance) \(balanceInfo.currency)")
+                            self.showSuccess(AppStrings.soldeMisAJourValueValue(String(describing: balanceInfo.availableBalance), String(describing: balanceInfo.currency)))
                         }
                     } else {
-                        self.showError(response.message ?? "Impossible de récupérer le solde")
+                        self.showError(response.message ?? AppStrings.impossibleDeRecupererLeSolde)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
                         self.showError(apiError.message)
                     } else {
-                        self.showError("Échec de la connexion")
+                        self.showError(AppStrings.echecDeLaConnexion)
                     }
                 }
             }
@@ -239,19 +240,20 @@ struct LinkedAccountsListView: View {
     }
     
     private func showError(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccess(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }
 }
 
 struct AccountCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let account: Account
     let onTap: () -> Void
     
@@ -290,7 +292,7 @@ struct AccountCard: View {
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.blueH)
                     
-                    Text("Solde")
+                    Text(AppStrings.solde)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                 }
@@ -315,7 +317,7 @@ struct AccountCard: View {
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         formatter.maximumFractionDigits = 0
         
         let formatted = formatter.string(from: NSNumber(value: amount)) ?? "***"
@@ -324,6 +326,7 @@ struct AccountCard: View {
 }
 
 struct PinDialogViewA: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let onPinVerified: (String) -> Void
     let onCancel: () -> Void
     
@@ -346,15 +349,15 @@ struct PinDialogViewA: View {
                         .font(.system(size: 60))
                         .foregroundColor(.blueH)
                     
-                    Text("Vérification du code PIN")
+                    Text(AppStrings.verificationDuCodePin)
                         .font(.system(size: 20, weight: .bold))
                     
-                    Text("Entrez votre code PIN pour continuer")
+                    Text(AppStrings.entrezVotreCodePinPourContinuer)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                     
-                    SecureField("Code PIN", text: $pin)
+                    SecureField(AppStrings.pin, text: $pin)
                         .keyboardType(.numberPad)
                         .font(.system(size: 16, weight: .medium))
                         .padding()
@@ -372,7 +375,7 @@ struct PinDialogViewA: View {
                         .padding(.horizontal, 32)
                     
                     if !errorMessage.isEmpty {
-                        Text(errorMessage)
+                        Text(AppStrings.option(errorMessage))
                             .font(.system(size: 12))
                             .foregroundColor(.red)
                     }
@@ -382,7 +385,7 @@ struct PinDialogViewA: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text("Vérifier")
+                            Text(AppStrings.verifier)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                         }
@@ -397,7 +400,7 @@ struct PinDialogViewA: View {
                     Spacer()
                 }
             }
-            .navigationBarItems(leading: Button("Annuler") { onCancel() })
+            .navigationBarItems(leading: Button(AppStrings.annuler) { onCancel() })
             .navigationBarTitle("", displayMode: .inline)
         }
     }
@@ -405,7 +408,7 @@ struct PinDialogViewA: View {
         errorMessage = ""
         
         guard pin.count == 4 else {
-            errorMessage = "Le PIN doit contenir exactement 4 chiffres"
+            errorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             return
         }
         

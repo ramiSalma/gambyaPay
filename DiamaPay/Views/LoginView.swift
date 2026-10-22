@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LoginView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @EnvironmentObject var authManager: AuthenticationManager
     @State private var otpPhoneNumber = ""
     @State private var otpDeviceId = ""
@@ -11,7 +12,7 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Error"
+    @State private var alertTitle = AppStrings.error
     @State private var navigateToOtp = false
     @State private var navigateToSignUp = false
     @State private var showBiometricButton = false
@@ -75,15 +76,15 @@ struct LoginView: View {
         .ignoresSafeArea(edges: .top)
         .onAppear(perform: setupView)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
-        .alert("Mise à Jour Requise", isPresented: $showVersionUpdateAlert) {
-            Button("Mettre à Jour") {
+        .alert(AppStrings.updateRequired, isPresented: $showVersionUpdateAlert) {
+            Button(AppStrings.update) {
                 openAppStore()
             }
-            Button("Quitter", role: .destructive) {
+            Button(AppStrings.quit, role: .destructive) {
                 exit(0)
             }
         } message: {
@@ -155,9 +156,9 @@ struct LoginView: View {
     
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("Welcome Back to")
+            Text(AppStrings.welcomeBack)
                 .foregroundColor(Color(hex: "174EA6"))
-            Text("Your Secure Digital Wallet")
+            Text(AppStrings.walletTagline)
                 .foregroundColor(Color(hex: "0788B9"))
         }
         .font(.system(size: titleFontSize + 3, weight: .bold))
@@ -169,7 +170,7 @@ struct LoginView: View {
             // Phone number field
             CustomTextField1(
                 icon: "phone.fill",
-                placeholder: "Phone Number",
+                placeholder: AppStrings.phoneNumber,
                 text: $phoneNumber,
                 keyboardType: .phonePad,
                 disabled: isLoading
@@ -183,7 +184,7 @@ struct LoginView: View {
             // PIN field
             CustomSecureField(
                 icon: "lock.fill",
-                placeholder: "PIN",
+                placeholder: AppStrings.pin,
                 text: $pin,
                 showPassword: $showPassword,
                 disabled: isLoading
@@ -195,7 +196,7 @@ struct LoginView: View {
         VStack(spacing: 16) {
             // Login button
             PrimaryButton(
-                title: isLoading ? "LOGGING IN..." : "Login",
+                title: isLoading ? AppStrings.loggingIn : AppStrings.login,
                 isLoading: isLoading,
                 disabled: isLoading || phoneNumber.isEmpty || pin.isEmpty,
                 action: performLogin
@@ -212,7 +213,7 @@ struct LoginView: View {
             
             // Forgot PIN button
             Button(action: showForgotPinAlert) {
-                Text("Forgot PIN?")
+                Text(AppStrings.forgotPin)
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(Color(hex: "0788B9"))
             }
@@ -224,19 +225,19 @@ struct LoginView: View {
     private var footerSection: some View {
         VStack(spacing: 42) {
             HStack(spacing: 8) {
-                Text("No Account?")
+                Text(AppStrings.noAccount)
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(Color(hex: "222222"))
                 
                 Button(action: { navigateToSignUp = true }) {
-                    Text("Sign Up")
+                    Text(AppStrings.signUp)
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "0788B9"))
                 }
                 .disabled(isLoading)
             }
             
-            Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")")
+            Text(AppStrings.versionValue(String(describing: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color(hex: "0788B9"))
         }
@@ -283,13 +284,13 @@ struct LoginView: View {
     }
     
     private func handleTokenExpiration() {
-        showAlertMessage("Session expired. Please login again.", title: "Session Expired")
+        showAlertMessage(AppStrings.loginAgain, title: AppStrings.sessionExpired)
         setupBiometricButton()
     }
     
     private func performLogin() {
         guard !phoneNumber.isEmpty && !pin.isEmpty else {
-            showAlertMessage("Veuillez remplir tous les champs")
+            showAlertMessage(AppStrings.fillAllFields)
             return
         }
         
@@ -312,12 +313,12 @@ struct LoginView: View {
  
         let phoneNumber = UserDataManager.shared.getPhoneNumber()
         guard !phoneNumber.isEmpty else {
-            showAlertMessage("Session expired. Please login with your PIN.", title: "Session Expired")
+            showAlertMessage(AppStrings.loginWithPin, title: AppStrings.sessionExpired)
             return
         }
         
         guard let savedPin = KeychainManager.shared.retrieve(for: "biometric_\(phoneNumber)") else {
-            showAlertMessage("Biometric credentials not found. Please login with your PIN.", title: "Error")
+            showAlertMessage(AppStrings.biometricCredentialsNotFoundPleaseLoginWithYourPin, title: AppStrings.error)
             UserDataManager.shared.setUseBiometric(false)
             setupBiometricButton()
             return
@@ -325,7 +326,7 @@ struct LoginView: View {
         
         guard BiometricHelper.isBiometricAvailable() else {
             let status = BiometricHelper.getBiometricStatus()
-            showAlertMessage(status.message, title: "Biometric Unavailable")
+            showAlertMessage(status.message, title: AppStrings.biometricUnavailable)
             return
         }
         
@@ -354,7 +355,7 @@ struct LoginView: View {
                         return
                     }
                     
-                    self.showAlertMessage(error.localizedDescription, title: "Authentication Failed")
+                    self.showAlertMessage(error.localizedDescription, title: AppStrings.authenticationFailed)
                 }
             }
         }
@@ -391,7 +392,7 @@ struct LoginView: View {
                 // CHECK 1: Rate Limiting (HIGHEST PRIORITY)
                 // ============================================================
                 if message.contains("Too many") || message.contains("try again later") {
-                    showAlertMessage("Trop de tentatives. Veuillez réessayer dans quelques minutes.", title: "Limite Atteinte")
+                    showAlertMessage(AppStrings.tropDeTentativesVeuillezReessayerDansQuelquesMinutes, title: AppStrings.limiteAtteinte)
                     return
                 }
                 
@@ -415,7 +416,7 @@ struct LoginView: View {
                    apiError.details == "VERSION_UPDATE_REQUIRED" &&
                    !message.contains("OTP") {
                     
-                    let updateMessage = "Une nouvelle version de l'application est disponible. Veuillez mettre à jour pour continuer."
+                    let updateMessage = AppStrings.uneNouvelleVersionDeLApplicationEstDisponibleVeuillezMettre
                     showVersionUpdateAlert(message: updateMessage)
                     return
                 }
@@ -425,7 +426,7 @@ struct LoginView: View {
                 // ============================================================
                 if apiError.respCode == "805"
                    {
-                    showAlertMessage("Votre compte est bloqué. Veuillez contacter le service client.",title: "Compte Bloqué")
+                    showAlertMessage(AppStrings.votreCompteEstBloqueVeuillezContacterLeServiceClient,title: AppStrings.compteBloque)
                     return
                 }
                 
@@ -456,7 +457,7 @@ struct LoginView: View {
                     print("🟢 phoneNumber =", phoneNumber)
                     print("🟢 reason = FIRST_CONNECTION")
 
-                    self.alertTitle = "Premier accès"
+                    self.alertTitle = AppStrings.premierAcces
                     self.alertMessage = message
                     self.showAlert = true
 
@@ -480,9 +481,9 @@ struct LoginView: View {
                     print("🔵 PIN change required")
                     print("🔵 reason = PIN_EXPIRED")
 
-                    alertTitle = "Code PIN Expiré"
+                    alertTitle = AppStrings.codePinExpire
                     alertMessage = apiError.message ??
-                        "Votre code PIN a expiré. Vous devez le modifier pour continuer."
+                        AppStrings.votreCodePinAExpireVousDevezLeModifierPour2
 
                     showAlert = true
 
@@ -500,7 +501,7 @@ struct LoginView: View {
                 // ============================================================
                 if message.lowercased().contains("locked") ||
                    message.lowercased().contains("bloqué") {
-                    showAlertMessage("Votre compte est bloqué. Veuillez contacter le service client.", title: "Compte Bloqué")
+                    showAlertMessage(AppStrings.votreCompteEstBloqueVeuillezContacterLeServiceClient, title: AppStrings.compteBloque)
                     return
                 }
                 
@@ -510,7 +511,7 @@ struct LoginView: View {
                 if message.contains("Invalid credentials") ||
                    message.contains("Incorrect") ||
                    message.contains("incorrect") {
-                    showAlertMessage("Numéro de téléphone ou PIN incorrect.", title: "Erreur de Connexion")
+                    showAlertMessage(AppStrings.numeroDeTelephoneOuPinIncorrect, title: AppStrings.erreurDeConnexion)
                     return
                 }
                 
@@ -519,21 +520,21 @@ struct LoginView: View {
                 // ============================================================
                 if message.contains("not found") ||
                    message.contains("introuvable") {
-                    showAlertMessage("Compte introuvable. Veuillez vérifier votre numéro de téléphone.", title: "Compte Introuvable")
+                    showAlertMessage(AppStrings.compteIntrouvableVeuillezVerifierVotreNumeroDeTelephone, title: AppStrings.compteIntrouvable)
                     return
                 }
                 
                 // ============================================================
                 // CHECK 8: Generic API Error (DEFAULT)
                 // ============================================================
-                showAlertMessage(apiError.message ?? "Une erreur est survenue", title: "Erreur")
+                showAlertMessage(apiError.message ?? AppStrings.uneErreurEstSurvenue, title: AppStrings.error)
                 
             } else {
                 // ============================================================
                 // Network Error (not API error)
                 // ============================================================
-                let errorMessage = "Erreur de connexion: \(error.localizedDescription)"
-                showAlertMessage(errorMessage, title: "Erreur Réseau")
+                let errorMessage = AppStrings.erreurDeConnexionValue(String(describing: error.localizedDescription))
+                showAlertMessage(errorMessage, title: AppStrings.erreurReseau)
             }
         }
     }
@@ -551,9 +552,9 @@ struct LoginView: View {
                         print("🔵 PIN change required")
                         print("🔵 reason = PIN_EXPIRED")
 
-                        alertTitle = "Code PIN Expiré"
+                        alertTitle = AppStrings.codePinExpire
                         alertMessage = authResponse.message ??
-                            "Votre code PIN a expiré. Vous devez le modifier pour continuer."
+                            AppStrings.votreCodePinAExpireVousDevezLeModifierPour2
 
                         showAlert = true
 
@@ -600,8 +601,8 @@ struct LoginView: View {
             return
         }
         
-        let errorMessage = message ?? "Login failed"
-        showAlertMessage(errorMessage, title: "Login Failed")
+        let errorMessage = message ?? AppStrings.loginFailed
+        showAlertMessage(errorMessage, title: AppStrings.loginFailed2)
     }
     
     private func handleLoginSuccess(_ authResponse: AuthResponse, pin: String) {
@@ -609,7 +610,7 @@ struct LoginView: View {
         guard let token = authResponse.token?.trimmingCharacters(in: .whitespacesAndNewlines),
               !token.isEmpty else {
         
-            showAlertMessage("Login error: No authentication token received", title: "Login Error")
+            showAlertMessage(AppStrings.loginErrorNoAuthenticationTokenReceived, title: AppStrings.loginError)
             return
         }
         
@@ -619,7 +620,7 @@ struct LoginView: View {
         let savedToken = UserDataManager.shared.getToken()
         
         if savedToken.isEmpty {
-            showAlertMessage("Login error: Could not save authentication data", title: "Login Error")
+            showAlertMessage(AppStrings.loginErrorCouldNotSaveAuthenticationData, title: AppStrings.loginError)
             return
         }
         
@@ -644,17 +645,17 @@ struct LoginView: View {
         let biometricType = BiometricHelper.getBiometricTypeString()
         
         let alert = UIAlertController(
-            title: "Activer \(biometricType)?",
-            message: "Voulez-vous utiliser \(biometricType) pour un accès plus rapide et plus sécurisé à votre portefeuille?",
+            title: AppStrings.activerValue2(String(describing: biometricType)),
+            message: AppStrings.voulezVousUtiliserValuePourUnAccesPlusRapideEt(String(describing: biometricType)),
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Activer", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: AppStrings.activer, style: .default) { _ in
             BiometricHelper.markBiometricSetupPrompted()
             UserDataManager.shared.setUseBiometric(true)
         })
         
-        alert.addAction(UIAlertAction(title: "Pas maintenant", style: .cancel) { _ in
+        alert.addAction(UIAlertAction(title: AppStrings.pasMaintenant, style: .cancel) { _ in
             BiometricHelper.markBiometricSetupPrompted()
         })
         
@@ -673,15 +674,15 @@ struct LoginView: View {
         }
     }
     
-    private func showAlertMessage(_ message: String, title: String = "Error") {
+    private func showAlertMessage(_ message: String, title: String = AppStrings.error) {
         alertTitle = title
         alertMessage = message
         showAlert = true
     }
     
     private func showForgotPinAlert() {
-        alertTitle = "Code PIN Oublié"
-        alertMessage = "Merci de contacter le service client muni de votre pièce d'identité pour des questions de sécurité"
+        alertTitle = AppStrings.forgotPinTitle
+        alertMessage = AppStrings.forgotPinHelp
         showAlert = true
     }
     
@@ -718,6 +719,7 @@ private struct LoginHeaderShape: Shape {
 // MARK: - Custom Components
 
 struct CustomTextField1: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let icon: String
     let placeholder: String
     @Binding var text: String
@@ -751,6 +753,7 @@ struct CustomTextField1: View {
 }
 
 struct CustomSecureField: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let icon: String
     let placeholder: String
     @Binding var text: String
@@ -804,6 +807,7 @@ struct CustomSecureField: View {
 }
 
 struct PrimaryButton: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     var isLoading: Bool = false
     var disabled: Bool = false
@@ -841,6 +845,7 @@ struct PrimaryButton: View {
 }
 
 struct BiometricButton: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     var disabled: Bool = false
     let action: () -> Void
     

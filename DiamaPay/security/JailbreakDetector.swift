@@ -223,12 +223,12 @@ class JailbreakDetector {
     // MARK: - User-Friendly Alert
     func showJailbreakAlert(on viewController: UIViewController, completion: (() -> Void)? = nil) {
         let alert = UIAlertController(
-            title: "⚠️ Appareil Non Sécurisé",
-            message: "Votre appareil semble être jailbreaké. Pour votre sécurité, DIAMACASH ne peut pas fonctionner sur des appareils compromis.\n\nVeuillez utiliser un appareil iOS sécurisé.",
+            title: AppStrings.appareilNonSecurise,
+            message: AppStrings.votreAppareilSembleEtreJailbreakePourVotreSecuriteDiamacash,
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Quitter", style: .destructive) { _ in
+        alert.addAction(UIAlertAction(title: AppStrings.quit, style: .destructive) { _ in
             completion?()
             exit(0)
         })

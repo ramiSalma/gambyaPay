@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct VoucherConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let amount: String
     let withdrawalFee: Double
     let fee: Double
@@ -15,7 +16,7 @@ struct VoucherConfirmationDialog: View {
     let currency: String
     let recipientName: String
     let recipientPhone: String
-    var title = "Confirmer la Mise à Disposition"
+    var title = AppStrings.confirmerLaMiseADisposition
     var providerName = ""
     var recipientIdNumber = ""
     var mobileMoneyStyle = false
@@ -52,7 +53,7 @@ struct VoucherConfirmationDialog: View {
                             Text(title)
                                 .font(.system(size: 22, weight: .bold))
                         }
-                        Text("Verify your transaction details")
+                        Text(AppStrings.verifyYourTransactionDetails)
                             .font(.system(size: 16, weight: .medium))
                             .padding(.leading, 34)
                     } else {
@@ -77,22 +78,22 @@ struct VoucherConfirmationDialog: View {
                     VStack(spacing: 16) {
                         VStack(spacing: 12) {
                             DetailRowView(
-                                label: (mobileMoneyStyle || moneyVoucherStyle) ? "Amount" : "Montant",
+                                label: (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.amount : AppStrings.montant3,
                                 value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0)
                             )
                             
                             // Withdrawal Fee (conditional)
                             if withdrawalFee > 0 {
                                 DetailRowView(
-                                    label: moneyVoucherStyle ? "Availability fee" : (mobileMoneyStyle ? "Withdrawal fee" : "Frais de retrait"),
+                                    label: moneyVoucherStyle ? AppStrings.availabilityFee : (mobileMoneyStyle ? AppStrings.withdrawalFee2 : AppStrings.fraisDeRetrait),
                                     value: formatAmount(withdrawalFee)
                                 )
                             }
                             
                             // Transaction/Sending Fee
                             DetailRowView(
-                                label: moneyVoucherStyle ? "Voucher fee" : (mobileMoneyStyle ? "Mobile Money fee" : "Frais de mise à disposition"),
-                                value: fee > 0 ? formatAmount(fee) : ((mobileMoneyStyle || moneyVoucherStyle) ? "Free" : "Gratuit")
+                                label: moneyVoucherStyle ? AppStrings.voucherFee : (mobileMoneyStyle ? AppStrings.mobileMoneyFee : AppStrings.fraisDeMiseADisposition),
+                                value: fee > 0 ? formatAmount(fee) : ((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.free : AppStrings.gratuit)
                             )
                             
                             Divider()
@@ -100,7 +101,7 @@ struct VoucherConfirmationDialog: View {
                             
                             // Total to Debit
                             DetailRowView(
-                                label: (mobileMoneyStyle || moneyVoucherStyle) ? "Total to Debit" : "Total à débiter",
+                                label: (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.totalToDebit2 : AppStrings.totalADebiter,
                                 value: formatAmount(total),
                                 isHighlighted: true
                             )
@@ -117,17 +118,17 @@ struct VoucherConfirmationDialog: View {
                         
                         // Recipient Section
                         VStack(alignment: .leading, spacing: 12) {
-                            Text((mobileMoneyStyle || moneyVoucherStyle) ? "Recipient Information" : "Destinataire")
+                            Text((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.recipientInformation2 : AppStrings.destinataire2)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
                             
-                            DetailRowView(label: (mobileMoneyStyle || moneyVoucherStyle) ? "Recipient" : "Nom", value: recipientName)
-                            DetailRowView(label: (mobileMoneyStyle || moneyVoucherStyle) ? "Phone" : "Téléphone", value: recipientPhone)
+                            DetailRowView(label: (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.recipient : AppStrings.nom2, value: recipientName)
+                            DetailRowView(label: (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.phone : AppStrings.telephone2, value: recipientPhone)
                             if moneyVoucherStyle && !recipientIdNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                DetailRowView(label: "ID Number", value: recipientIdNumber)
+                                DetailRowView(label: AppStrings.idNumber, value: recipientIdNumber)
                             }
                             if !providerName.isEmpty {
-                                DetailRowView(label: "Provider", value: providerName)
+                                DetailRowView(label: AppStrings.provider, value: providerName)
                             }
                         }
                         .padding(16)
@@ -135,15 +136,15 @@ struct VoucherConfirmationDialog: View {
                         
                         // Source of Funds
                         VStack(alignment: .leading, spacing: 12) {
-                            Text((mobileMoneyStyle || moneyVoucherStyle) ? "Source of Funds" : "Source des fonds")
+                            Text((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.sourceOfFunds : AppStrings.sourceDesFonds2)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
                             
                             if sourceType == .sponsor, let wallet = selectedWallet {
-                                DetailRowView(label: "Type", value: (mobileMoneyStyle || moneyVoucherStyle) ? "Sponsor wallet" : "Portefeuille Sponsor")
-                                DetailRowView(label: "Sponsor", value: wallet.userName)
+                                DetailRowView(label: AppStrings.type, value: (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.sponsorWallet : AppStrings.portefeuilleSponsor)
+                                DetailRowView(label: AppStrings.sponsor, value: wallet.userName)
                             } else {
-                                DetailRowView(label: "Type", value: (mobileMoneyStyle || moneyVoucherStyle) ? "My wallet" : "Mon Portefeuille")
+                                DetailRowView(label: AppStrings.type, value: (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.myWallet : AppStrings.monPortefeuille)
                             }
                         }
                         .padding(16)
@@ -152,7 +153,7 @@ struct VoucherConfirmationDialog: View {
                         // Payment Details
                         if !paymentDetails.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text((mobileMoneyStyle || moneyVoucherStyle) ? "Reason" : "Commentaire")
+                                Text((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.reason : AppStrings.commentaire)
                                     .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(.secondary)
                                 
@@ -167,7 +168,7 @@ struct VoucherConfirmationDialog: View {
                         
                         // PIN Entry
                         VStack(alignment: .leading, spacing: 12) {
-                            Text((mobileMoneyStyle || moneyVoucherStyle) ? "Authentication" : "Code PIN")
+                            Text((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.authentication2 : AppStrings.pin)
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
                             
@@ -177,9 +178,9 @@ struct VoucherConfirmationDialog: View {
                                     .foregroundColor((mobileMoneyStyle || moneyVoucherStyle) ? Color(hex: "0788B9") : .blueH)
                                 Group {
                                     if isPinVisible {
-                                        TextField((mobileMoneyStyle || moneyVoucherStyle) ? "PIN Code" : "Entrer le code PIN", text: $pin)
+                                        TextField((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinCode : AppStrings.entrerLeCodePin, text: $pin)
                                     } else {
-                                        SecureField((mobileMoneyStyle || moneyVoucherStyle) ? "PIN Code" : "Entrer le code PIN", text: $pin)
+                                        SecureField((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinCode : AppStrings.entrerLeCodePin, text: $pin)
                                     }
                                 }
                                 .keyboardType(.numberPad)
@@ -220,7 +221,7 @@ struct VoucherConfirmationDialog: View {
                     Button(action: {
                         onCancel()
                     }) {
-                        Text((mobileMoneyStyle || moneyVoucherStyle) ? "Cancel" : "Annuler")
+                        Text((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.cancel : AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(moneyVoucherStyle ? .white : .blueH)
                             .frame(maxWidth: .infinity)
@@ -239,7 +240,7 @@ struct VoucherConfirmationDialog: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text(moneyVoucherStyle ? "Transfer" : (mobileMoneyStyle ? "Confirm" : "Confirmer"))
+                                Text(moneyVoucherStyle ? AppStrings.transfer : (mobileMoneyStyle ? AppStrings.confirm : AppStrings.confirmer))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                             }
@@ -265,7 +266,7 @@ struct VoucherConfirmationDialog: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
     }
 
@@ -273,7 +274,7 @@ struct VoucherConfirmationDialog: View {
         showPinError = false
         
         guard pin.count == 4 else {
-            pinErrorMessage = (mobileMoneyStyle || moneyVoucherStyle) ? "PIN must contain exactly 4 digits" : "Le PIN doit contenir exactement 4 chiffres"
+            pinErrorMessage = (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinMustContainExactly4Digits : AppStrings.lePinDoitContenirExactement4Chiffres
             showPinError = true
             return
         }
@@ -305,6 +306,7 @@ private struct ConfirmationCardStyle: ViewModifier {
 }
 
 struct DetailRowView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let label: String
     let value: String
     var isHighlighted: Bool = false

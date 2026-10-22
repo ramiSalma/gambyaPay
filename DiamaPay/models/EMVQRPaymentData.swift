@@ -28,7 +28,7 @@ struct EMVQRPaymentData {
     
     
     var formattedExpiration: String {
-        guard let expiresAt = expiresAt else { return "N/A" }
+        guard let expiresAt = expiresAt else { return AppStrings.nA }
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yyyy HH:mm"
         return formatter.string(from: expiresAt)

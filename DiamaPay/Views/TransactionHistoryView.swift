@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct TransactionHistoryView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @State private var startDate = "23/08/2025"
     @State private var endDate = "22/09/2025"
@@ -43,7 +44,7 @@ struct TransactionHistoryView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Loading transactions...")
+                        Text(AppStrings.loadingTransactions)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -82,23 +83,23 @@ struct TransactionHistoryView: View {
             setDefaultDateRange()
             loadLast30DaysTransactions()
         }
-        .alert("Error", isPresented: $showError) {
-            Button("OK", role: .cancel) { }
+        .alert(AppStrings.error, isPresented: $showError) {
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(errorMessage ?? "Something went wrong.")
+            Text(errorMessage ?? AppStrings.somethingWentWrong)
         }
         .sheet(isPresented: $showStartDatePicker) {
             DatePickerSheet(
                 selectedDate: $selectedStartDate,
                 dateString: $startDate,
-                title: "Start date"
+                title: AppStrings.startDate
             )
         }
         .sheet(isPresented: $showEndDatePicker) {
             DatePickerSheet(
                 selectedDate: $selectedEndDate,
                 dateString: $endDate,
-                title: "End date"
+                title: AppStrings.endDate
             )
         }
         .sheet(isPresented: $showExportSheet) {
@@ -119,7 +120,7 @@ struct TransactionHistoryView: View {
                     .frame(width: 36, height: 36)
             }
             Spacer()
-            Text("Transaction History")
+            Text(AppStrings.transactionHistory)
                 .font(.system(size: 19, weight: .semibold))
                 .foregroundColor(.white)
             Spacer()
@@ -133,16 +134,16 @@ struct TransactionHistoryView: View {
     // MARK: - Filter Section
     private var filterSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("Filter by Date")
+            sectionTitle(AppStrings.filterByDate)
 
             HStack(spacing: 12) {
-                dateInput(title: "Start Date", value: startDate) { showStartDatePicker = true }
-                dateInput(title: "End Date", value: endDate) { showEndDatePicker = true }
+                dateInput(title: AppStrings.startDate2, value: startDate) { showStartDatePicker = true }
+                dateInput(title: AppStrings.endDate2, value: endDate) { showEndDatePicker = true }
             }
 
             HStack(spacing: 12) {
                 Button(action: resetFilters) {
-                    Text("Reset")
+                    Text(AppStrings.reset)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -151,7 +152,7 @@ struct TransactionHistoryView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 Button(action: filterTransactions) {
-                    Text("Filter")
+                    Text(AppStrings.filter)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -211,7 +212,7 @@ struct TransactionHistoryView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 5) {
-                    sectionTitle("Last 30 Days")
+                    sectionTitle(AppStrings.last30Days)
                 }
                 Spacer(minLength: 8)
                 exportMenu
@@ -237,13 +238,13 @@ struct TransactionHistoryView: View {
     private var exportMenu: some View {
         Menu {
             Button { exportTransactions(as: .pdf) } label: {
-                Label("PDF", systemImage: "doc.richtext")
+                Label(AppStrings.pdf, systemImage: "doc.richtext")
             }
             Button { exportTransactions(as: .excel) } label: {
-                Label("Excel", systemImage: "tablecells")
+                Label(AppStrings.excel, systemImage: "tablecells")
             }
             Button { exportTransactions(as: .csv) } label: {
-                Label("CSV", systemImage: "doc.text")
+                Label(AppStrings.csv, systemImage: "doc.text")
             }
         } label: {
             Image(systemName: "arrow.down.to.line")
@@ -253,27 +254,27 @@ struct TransactionHistoryView: View {
                 .background(Color(hex: "174EA6"))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
-        .accessibilityLabel("Export transactions")
+        .accessibilityLabel(AppStrings.exportTransactions)
     }
  
     private func transactionRow(_ transaction: Transaction) -> some View {
         NavigationLink(destination: TransactionDetailView(transaction: transaction)) {
             HStack(alignment: .center, spacing: 8) {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(transaction.date)
+                        Text(transaction.displayDate)
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(Color(hex: "505A69"))
                         
-                        Text(transaction.title)
+                        Text(transaction.displayTitle)
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.primary)
                             .lineLimit(2)
                         
-                        Text(transaction.reference)
+                        Text(transaction.displayReference)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Color(hex: "252525"))
 
-                        Text(transaction.balance)
+                        Text(transaction.displayBalance)
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(Color(hex: "717171"))
                     }
@@ -307,9 +308,10 @@ struct TransactionHistoryView: View {
             fileData = makeTransactionsPDF()
         case .excel, .csv:
             fileName = format == .excel ? "Transaction_History_Excel.csv" : "Transaction_History.csv"
-            let rows = ["Date,Type,Reference,Amount,Balance,Status,Details"] + filteredTransactions.map { transaction in
-                [transaction.date, transaction.title, transaction.reference, transaction.amount,
-                 transaction.balance, transaction.status ?? "", transaction.details ?? ""]
+            let headers = [AppStrings.date, AppStrings.type, AppStrings.reference, AppStrings.amount, AppStrings.balance, AppStrings.status, AppStrings.details]
+            let rows = [headers.map(csvEscaped).joined(separator: ",")] + filteredTransactions.map { transaction in
+                [transaction.displayDate, transaction.displayTitle, transaction.displayReference, transaction.amount,
+                 transaction.displayBalance, transaction.status ?? "", transaction.details ?? ""]
                     .map(csvEscaped)
                     .joined(separator: ",")
             }
@@ -322,7 +324,7 @@ struct TransactionHistoryView: View {
             exportedFileURL = fileURL
             showExportSheet = true
         } catch {
-            showErrorMessage("Unable to create the export file. Please try again.")
+            showErrorMessage(AppStrings.unableToCreateTheExportFilePleaseTryAgain)
         }
     }
 
@@ -341,9 +343,9 @@ struct TransactionHistoryView: View {
             let textColor = UIColor(Color(hex: "172B4D"))
 
             context.beginPage()
-            "Transaction History".draw(at: CGPoint(x: left, y: y), withAttributes: [.font: titleFont, .foregroundColor: UIColor(Color(hex: "174EA6"))])
+            AppStrings.transactionHistory.draw(at: CGPoint(x: left, y: y), withAttributes: [.font: titleFont, .foregroundColor: UIColor(Color(hex: "174EA6"))])
             y += 32
-            "Date range: \(startDate) - \(endDate)".draw(at: CGPoint(x: left, y: y), withAttributes: [.font: bodyFont, .foregroundColor: textColor])
+            AppStrings.dateRangeValueValue(String(describing: startDate), String(describing: endDate)).draw(at: CGPoint(x: left, y: y), withAttributes: [.font: bodyFont, .foregroundColor: textColor])
             y += 28
 
             for transaction in filteredTransactions {
@@ -351,8 +353,8 @@ struct TransactionHistoryView: View {
                     context.beginPage()
                     y = 48
                 }
-                let lines = [transaction.date, transaction.title, transaction.reference,
-                             transaction.amount, transaction.balance, transaction.status ?? ""]
+                let lines = [transaction.displayDate, transaction.displayTitle, transaction.displayReference,
+                             transaction.amount, transaction.displayBalance, transaction.status ?? ""]
                 for line in lines where !line.isEmpty {
                     line.draw(at: CGPoint(x: left, y: y), withAttributes: [.font: bodyFont, .foregroundColor: textColor])
                     y += 16
@@ -370,17 +372,17 @@ struct TransactionHistoryView: View {
         .font(.system(size: 38))
                 .foregroundColor(.gray)
             
-            Text("No transactions found")
+            Text(AppStrings.noTransactionsFound)
                 .font(.system(size: 18))
                 .fontWeight(.medium)
                 .foregroundColor(.primary)
             
-            Text("There are no transactions for the selected date range.")
+            Text(AppStrings.thereAreNoTransactionsForTheSelectedDateRange)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button("Refresh") {
+            Button(AppStrings.refresh) {
                 loadLast30DaysTransactions()
             }
             .font(.system(size: 16, weight: .medium))
@@ -401,7 +403,7 @@ struct TransactionHistoryView: View {
     private var paginationSection: some View {
         VStack(spacing: 12) {
             // Page info
-            Text("Page \(currentPage) of \(totalPages)")
+            Text(AppStrings.pageValueOfValue(String(describing: currentPage), String(describing: totalPages)))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.secondary)
             
@@ -461,7 +463,7 @@ struct TransactionHistoryView: View {
         let pin = UserDataManager.shared.getPinForAPI()
         
         guard !walletNumber.isEmpty else {
-            showErrorMessage("Wallet number not found. Please sign in again.")
+            showErrorMessage(AppStrings.walletNumberNotFoundPleaseSignInAgain)
             return
         }
         
@@ -490,16 +492,16 @@ struct TransactionHistoryView: View {
                         self.processTransactionsResponse(response)
                     } else {
                         print("[TransactionHistory] Request failed: \(response.message ?? "no message")")
-                        self.showErrorMessage("Unable to load transactions. \(response.message ?? "Please try again.")")
+                        self.showErrorMessage(AppStrings.unableToLoadTransactionsValue(String(describing: response.message ?? AppStrings.pleaseTryAgain)))
                     }
                     
                 case .failure(let error):
                     if let apiError = error as? APIError {
                         print("[TransactionHistory] API error: code=\(apiError.respCode ?? "nil"), message=\(apiError.message)")
-                        self.showErrorMessage("Error: \(apiError.message)")
+                        self.showErrorMessage(AppStrings.errorValue(AppStrings.option(apiError.message)))
                     } else {
                         print("[TransactionHistory] Request error: \(error.localizedDescription)")
-                        self.showErrorMessage("Connection error: \(error.localizedDescription)")
+                        self.showErrorMessage(AppStrings.connectionErrorValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -569,7 +571,7 @@ struct TransactionHistoryView: View {
     
     private func filterTransactions() {
         guard !startDate.isEmpty, !endDate.isEmpty else {
-            showErrorMessage("Please select a start and end date.")
+            showErrorMessage(AppStrings.pleaseSelectAStartAndEndDate)
             return
         }
         
@@ -578,7 +580,7 @@ struct TransactionHistoryView: View {
         dateFormatter.dateFormat = "dd/MM/yyyy"
         guard let fromDate = dateFormatter.date(from: startDate),
               let toDate = dateFormatter.date(from: endDate), fromDate <= toDate else {
-            showErrorMessage("The start date must be on or before the end date.")
+            showErrorMessage(AppStrings.theStartDateMustBeOnOrBeforeThe)
             return
         }
 
@@ -659,6 +661,7 @@ struct PageNumberButtonStyle: ButtonStyle {
 
 // MARK: - Date Picker Sheet
 struct DatePickerSheet: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var selectedDate: Date
     @Binding var dateString: String
     let title: String
@@ -686,10 +689,10 @@ struct DatePickerSheet: View {
             }
             .navigationTitle(title)
             .navigationBarItems(
-                leading: Button("Cancel") {
+                leading: Button(AppStrings.cancel) {
                     presentationMode.wrappedValue.dismiss()
                 },
-                trailing: Button("Done") {
+                trailing: Button(AppStrings.done) {
                     dateString = dateFormatter.string(from: selectedDate)
                     presentationMode.wrappedValue.dismiss()
                 }

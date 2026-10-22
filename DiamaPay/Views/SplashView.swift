@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct SplashView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @State private var isActive = false
 
     var body: some View {

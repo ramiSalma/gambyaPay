@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct WalletDeactivationView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
@@ -42,7 +43,7 @@ struct WalletDeactivationView: View {
     @State private var isLoading = false
     @State private var isVerifying = false
     @State private var showAlert = false
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     @State private var alertMessage = ""
     @State private var showConfirmationDialog = false
     @State private var showOtpDialog = false
@@ -52,16 +53,20 @@ struct WalletDeactivationView: View {
     // Deactivation auth code for OTP verification
     @State private var deactivationAuthCode = ""
     
+    private let androidBlue = Color(hex: "174EA6")
+    private let androidAccent = Color(hex: "0083B7")
+    private let androidText = Color(hex: "545D69")
+
     private let userDataManager = UserDataManager.shared
     private let deactivationReasons = [
-        "Sélectionner une raison",
-        "Je n'utilise plus le service",
-        "Problèmes de sécurité",
-        "Interface difficile à utiliser",
-        "Frais trop élevés",
-        "Service client insatisfaisant",
-        "Changement de situation financière",
-        "Autre raison"
+        AppStrings.original("selectionnerUneRaison"),
+        AppStrings.original("jeNUtilisePlusLeService"),
+        AppStrings.original("problemesDeSecurite"),
+        AppStrings.original("interfaceDifficileAUtiliser"),
+        AppStrings.original("fraisTropEleves"),
+        AppStrings.original("serviceClientInsatisfaisant"),
+        AppStrings.original("changementDeSituationFinanciere"),
+        AppStrings.original("autreRaison")
     ]
     
     var body: some View {
@@ -70,7 +75,7 @@ struct WalletDeactivationView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Deactivate Wallet", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.deactivateWallet, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -79,7 +84,7 @@ struct WalletDeactivationView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -100,13 +105,11 @@ struct WalletDeactivationView: View {
                             submitButton
                         }
                         .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 24)
                     }
                 }
             }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .navigationBarHidden(true)
         .overlay(confirmationDialogOverlay)
@@ -123,78 +126,65 @@ struct WalletDeactivationView: View {
     }
     
     private var headerCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-            
-            VStack(spacing: 8) {
-                Text("Désactivation du Portefeuille")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 80, height: 3)
-                
-                Text("Fermez définitivement votre portefeuille et transférez votre solde")
-                    .font(.system(size: 14))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            }
-            .padding(.vertical, 16)
+        Text(AppStrings.deactivationIntro)
+            .font(.system(size: 14))
+            .foregroundColor(.white)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 28)
+            .frame(maxWidth: .infinity, minHeight: 78)
+            .background(androidAccent)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.18), radius: 5, x: 0, y: 3)
+    }
+
+    private func sectionHeading(_ title: String) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(title)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(androidBlue)
+            Rectangle()
+                .fill(androidAccent)
+                .frame(width: 38, height: 3)
         }
     }
-    
+
     // MARK: - Reason Card
     private var reasonCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Raison de la Désactivation")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            Text("Sélectionnez la raison principale")
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
-            
+        VStack(alignment: .leading, spacing: 0) {
+            sectionHeading(AppStrings.deactivationReasonTitle)
+                .padding(.bottom, 22)
+
+            Text(AppStrings.deactivationSelectReason)
+                .font(.system(size: 13))
+                .foregroundColor(androidText)
+                .padding(.bottom, 9)
+
             Menu {
                 ForEach(0..<deactivationReasons.count, id: \.self) { index in
-                    Button(deactivationReasons[index]) {
+                    Button(AppStrings.option(deactivationReasons[index])) {
                         selectedReasonIndex = index
                     }
                 }
             } label: {
-                HStack {
-                    Text(deactivationReasons[selectedReasonIndex])
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+                Text(selectedReasonIndex == 0 ? AppStrings.deactivationSelectReason : AppStrings.option(deactivationReasons[selectedReasonIndex]))
+                    .font(.system(size: 16))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 22)
+                    .frame(height: 50)
+                    .background(Color.white)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(androidText, lineWidth: 1))
+                    .contentShape(RoundedRectangle(cornerRadius: 8))
             }
-            
+
             if selectedReasonIndex == deactivationReasons.count - 1 {
-                TextField("Détails supplémentaires (max 50 caractères)", text: $customReason, axis: .vertical)
-                    .font(.system(size: 14, weight: .medium))
+                TextField(AppStrings.detailsSupplementairesMax50Caracteres, text: $customReason, axis: .vertical)
+                    .font(.system(size: 14))
                     .padding(12)
                     .frame(height: 100, alignment: .top)
-                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                    .background(Color(hex: "F5F5F5"))
                     .cornerRadius(8)
+                    .padding(.top, 16)
                     .onChange(of: customReason) {
                         if customReason.count > 50 {
                             customReason = String(customReason.prefix(50))
@@ -202,46 +192,47 @@ struct WalletDeactivationView: View {
                     }
             }
         }
-        .padding(16)
+        .padding(.horizontal, 19)
+        .padding(.top, 24)
+        .padding(.bottom, 34)
         .background(Color.white)
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.04), lineWidth: 1))
+        .shadow(color: .black.opacity(0.18), radius: 3, x: 0, y: 3)
     }
-    
+
     // MARK: - Payment Method Card
     private var paymentMethodCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Méthode de Transfert du Solde")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            Text("Choisissez comment recevoir votre solde restant")
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
-            
-            VStack(spacing: 1) {
-                paymentMethodButton(.account, title: "Compte bancaire")
-                paymentMethodButton(.wallet, title: "Autre portefeuille mobile")
-                paymentMethodButton(.branch, title: "Retrait en agence")
+        VStack(alignment: .leading, spacing: 0) {
+            sectionHeading(AppStrings.deactivationTransferTitle)
+                .padding(.bottom, 22)
+
+            Text(AppStrings.deactivationTransferHelp)
+                .font(.system(size: 13))
+                .foregroundColor(androidText)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, 13)
+
+            VStack(spacing: 0) {
+                paymentMethodButton(.account, title: AppStrings.deactivationLinkedAccount)
+                paymentMethodButton(.wallet, title: AppStrings.wallet)
+                paymentMethodButton(.branch, title: AppStrings.deactivationCashOut)
             }
         }
-        .padding(16)
+        .padding(.horizontal, 19)
+        .padding(.top, 24)
+        .padding(.bottom, 18)
         .background(Color.white)
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black.opacity(0.04), lineWidth: 1))
+        .shadow(color: .black.opacity(0.18), radius: 3, x: 0, y: 3)
     }
-    
+
     private func paymentMethodButton(_ method: PaymentMethod, title: String) -> some View {
         Button(action: {
             selectedPaymentMethod = method
             resetTransferDetails()
-            
+
             switch method {
             case .account:
                 loadLinkedAccounts()
@@ -251,27 +242,32 @@ struct WalletDeactivationView: View {
                 break
             }
         }) {
-            HStack {
-                Image(systemName: selectedPaymentMethod == method ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(selectedPaymentMethod == method ? .blueH : .gray)
-                
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().stroke(selectedPaymentMethod == method ? androidAccent : Color.gray, lineWidth: 2)
+                    if selectedPaymentMethod == method {
+                        Circle().fill(androidAccent).padding(5)
+                    }
+                }
+                .frame(width: 18, height: 18)
                 Text(title)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.primary)
-                
+                    .foregroundColor(.black)
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .frame(height: 48)
-            .cornerRadius(8)
+            .padding(.horizontal, 6)
+            .frame(height: 50)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selectedPaymentMethod == method ? .isSelected : [])
     }
-    
+
     // MARK: - Transfer Details Card
     private var transferDetailsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Détails du Destinataire")
+                Text(AppStrings.detailsDuDestinataire)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -297,12 +293,12 @@ struct WalletDeactivationView: View {
     // MARK: - Wallet Transfer Section (Optimized with Auto-Verify)
     private var walletTransferSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Numéro de téléphone du destinataire")
+            Text(AppStrings.numeroDeTelephoneDuDestinataire)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.secondary)
             
             HStack(spacing: 8) {
-                TextField("Numéro de téléphone", text: $receiverPhone)
+                TextField(AppStrings.phoneNumber, text: $receiverPhone)
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.leading, 12)
@@ -339,7 +335,7 @@ struct WalletDeactivationView: View {
             
             if isRecipientVerified && !walletHolderName.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Nom du titulaire")
+                    Text(AppStrings.nomDuTitulaire)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.secondary)
                     
@@ -365,13 +361,13 @@ struct WalletDeactivationView: View {
     
     private var accountTransferSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Compte bancaire lié")
+            Text(AppStrings.compteBancaireLie)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.secondary)
             
             if linkedAccounts.isEmpty {
                 HStack {
-                    Text("Chargement des comptes...")
+                    Text(AppStrings.chargementDesComptes)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                     Spacer()
@@ -389,7 +385,7 @@ struct WalletDeactivationView: View {
                     }
                 } label: {
                     HStack {
-                        Text(selectedAccount != nil ? "\(selectedAccount!.accountNumber) - \(selectedAccount!.accountHolder)" : "Sélectionner un compte")
+                        Text(selectedAccount != nil ? "\(selectedAccount!.accountNumber) - \(selectedAccount!.accountHolder)" : AppStrings.selectionnerUnCompte)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primary)
                         
@@ -409,7 +405,7 @@ struct WalletDeactivationView: View {
             
             if !accountHolderName.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Nom du titulaire du compte")
+                    Text(AppStrings.nomDuTitulaireDuCompte)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.secondary)
                     
@@ -431,13 +427,13 @@ struct WalletDeactivationView: View {
     
     private var branchTransferSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Agence de retrait")
+            Text(AppStrings.agenceDeRetrait)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.secondary)
             
             if branches.isEmpty {
                 HStack {
-                    Text("Chargement des agences...")
+                    Text(AppStrings.chargementDesAgences)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                     Spacer()
@@ -454,7 +450,7 @@ struct WalletDeactivationView: View {
                     }
                 } label: {
                     HStack {
-                        Text(selectedBranch != nil ? "\(selectedBranch!.id ?? "") - \(selectedBranch!.name ?? "")" : "Sélectionner une agence")
+                        Text(selectedBranch != nil ? "\(selectedBranch!.id ?? "") - \(selectedBranch!.name ?? "")" : AppStrings.selectionnerUneAgence)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.primary)
                         
@@ -472,7 +468,7 @@ struct WalletDeactivationView: View {
                 }
             }
             
-            Text("💡 Vous pourrez retirer votre solde directement en agence avec une pièce d'identité")
+            Text(AppStrings.vousPourrezRetirerVotreSoldeDirectementEnAgenceAvecUne)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
@@ -481,17 +477,17 @@ struct WalletDeactivationView: View {
     // MARK: - PIN Card
     private var pinCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Confirmation de Sécurité")
+            Text(AppStrings.confirmationDeSecurite)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.red)
             
-            Text("Entrez votre code PIN pour confirmer la désactivation définitive de votre portefeuille")
+            Text(AppStrings.entrezVotreCodePinPourConfirmerLaDesactivationDefinitiveDe)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
             
             HStack {
                 if showPin {
-                    TextField("Code PIN", text: $pin)
+                    TextField(AppStrings.pin, text: $pin)
                         .keyboardType(.numberPad)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.horizontal, 12)
@@ -504,7 +500,7 @@ struct WalletDeactivationView: View {
                             }
                         }
                 } else {
-                    SecureField("Code PIN", text: $pin)
+                    SecureField(AppStrings.pin, text: $pin)
                         .keyboardType(.numberPad)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.horizontal, 12)
@@ -535,43 +531,47 @@ struct WalletDeactivationView: View {
     
     // MARK: - Warning Card
     private var warningCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Informations Importantes")
-                .font(.system(size: 14, weight: .bold))
+        VStack(alignment: .leading, spacing: 18) {
+            Text(AppStrings.importantInformation)
+                .font(.system(size: 15, weight: .bold))
                 .foregroundColor(Color(red: 230/255, green: 81/255, blue: 0/255))
             
-            VStack(alignment: .leading, spacing: 4) {
-                warningText("• Le solde restant sera transféré vers le destinataire choisi")
-                warningText("• Votre portefeuille sera définitivement fermé")
-                warningText("• Cette action ne peut pas être annulée")
-                warningText("• Vous devrez créer un nouveau compte pour utiliser nos services")
-                warningText("• Un code OTP sera envoyé pour confirmation finale")
+            VStack(alignment: .leading, spacing: 12) {
+                warningText(AppStrings.leSoldeRestantSeraTransfereVersLeDestinataireChoisi)
+                warningText(AppStrings.votrePortefeuilleSeraDefinitivementFerme)
+                warningText(AppStrings.cetteActionNePeutPasEtreAnnulee)
+                warningText(AppStrings.vousDevrezCreerUnNouveauComptePourUtiliserNosServices)
+                warningText(AppStrings.unCodeOtpSeraEnvoyePourConfirmationFinale)
             }
         }
-        .padding(16)
+        .padding(.horizontal, 19)
+        .padding(.vertical, 24)
         .background(Color(red: 255/255, green: 243/255, blue: 224/255))
         .cornerRadius(12)
+        .shadow(color: .black.opacity(0.18), radius: 3, x: 0, y: 3)
     }
     
     private func warningText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 12))
+            .font(.system(size: 13))
             .foregroundColor(Color(red: 230/255, green: 81/255, blue: 0/255))
     }
     
     // MARK: - Submit Button
     private var submitButton: some View {
         Button(action: validateAndShowConfirmation) {
-            Text("Désactiver le Portefeuille")
-                .font(.system(size: 14, weight: .semibold))
+            Text(AppStrings.submit)
+                .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(Color.red)
+                .background(androidBlue)
                 .cornerRadius(8)
         }
         .disabled(isLoading)
-        .padding(.vertical, 20)
+        .padding(.horizontal, 30)
+        .padding(.top, 14)
+        .padding(.bottom, 20)
     }
     
     // MARK: - Dialog Overlays
@@ -674,9 +674,9 @@ struct WalletDeactivationView: View {
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                     self.resetWalletVerificationFields()
                 }
@@ -691,7 +691,7 @@ struct WalletDeactivationView: View {
             
             let phoneSuffix = String(phoneConfirmed.suffix(9))
             if !receiverPhone.hasSuffix(phoneSuffix) && receiverPhone != phoneConfirmed {
-                showErrorAlert("Le numéro vérifié ne correspond pas au numéro saisi")
+                showErrorAlert(AppStrings.leNumeroVerifieNeCorrespondPasAuNumeroSaisi)
                 resetWalletVerificationFields()
                 return
             }
@@ -701,7 +701,7 @@ struct WalletDeactivationView: View {
             walletHolderName = clientName
             isRecipientVerified = true
         } else {
-            showErrorAlert("Information du destinataire non disponible")
+            showErrorAlert(AppStrings.informationDuDestinataireNonDisponible)
             resetWalletVerificationFields()
         }
     }
@@ -709,12 +709,12 @@ struct WalletDeactivationView: View {
     private func handleVerificationError(_ response: ResponseServiceJson) {
         let errorMessage = response.message ?? {
             switch response.respCode {
-            case "001": return "Portefeuille non trouvé"
-            case "003": return "Données manquantes dans la requête"
-            case "005": return "Code PIN incorrect"
-            case "006": return "Code PIN bloqué"
-            case "021": return "Utilisateur non autorisé"
-            default: return "Échec de la vérification. Code: \(response.respCode ?? "N/A")"
+            case "001": return AppStrings.portefeuilleNonTrouve
+            case "003": return AppStrings.donneesManquantesDansLaRequete
+            case "005": return AppStrings.codePinIncorrect
+            case "006": return AppStrings.codePinBloque
+            case "021": return AppStrings.utilisateurNonAutorise
+            default: return AppStrings.echecDeLaVerificationCodeValue(String(describing: response.respCode ?? "N/A"))
             }
         }()
         
@@ -753,13 +753,13 @@ struct WalletDeactivationView: View {
                     if response.respCode == "000" {
                         self.parseLinkedAccounts(response)
                     } else {
-                        self.showErrorAlert("Erreur: \(response.message ?? "Impossible de charger les comptes")")
+                        self.showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.impossibleDeChargerLesComptes)))
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -788,7 +788,7 @@ struct WalletDeactivationView: View {
         }
         
         if linkedAccounts.isEmpty {
-            showErrorAlert("Aucun compte bancaire lié trouvé")
+            showErrorAlert(AppStrings.aucunCompteBancaireLieTrouve)
         }
     }
     
@@ -805,13 +805,13 @@ struct WalletDeactivationView: View {
                 case .success(let branchList):
                     self.branches = branchList
                     if self.branches.isEmpty {
-                        self.showErrorAlert("Aucune agence trouvée")
+                        self.showErrorAlert(AppStrings.aucuneAgenceTrouvee)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -820,49 +820,49 @@ struct WalletDeactivationView: View {
     
     private func validateAndShowConfirmation() {
         if selectedReasonIndex == 0 {
-            showErrorAlert("Veuillez sélectionner une raison de désactivation")
+            showErrorAlert(AppStrings.veuillezSelectionnerUneRaisonDeDesactivation)
             return
         }
         
         if selectedReasonIndex == deactivationReasons.count - 1 && customReason.trimmingCharacters(in: .whitespaces).isEmpty {
-            showErrorAlert("Veuillez préciser la raison de désactivation")
+            showErrorAlert(AppStrings.veuillezPreciserLaRaisonDeDesactivation)
             return
         }
         
         guard let paymentMethod = selectedPaymentMethod else {
-            showErrorAlert("Veuillez sélectionner une méthode de transfert")
+            showErrorAlert(AppStrings.veuillezSelectionnerUneMethodeDeTransfert)
             return
         }
         
         switch paymentMethod {
         case .wallet:
             if receiverPhone.trimmingCharacters(in: .whitespaces).isEmpty {
-                showErrorAlert("Veuillez saisir le numéro du destinataire")
+                showErrorAlert(AppStrings.veuillezSaisirLeNumeroDuDestinataire)
                 return
             }
             if !isRecipientVerified || verifiedWalletHolder.isEmpty {
-                showErrorAlert("Veuillez d'abord vérifier le destinataire")
+                showErrorAlert(AppStrings.veuillezDAbordVerifierLeDestinataire)
                 return
             }
         case .account:
             if selectedAccount == nil {
-                showErrorAlert("Veuillez sélectionner un compte")
+                showErrorAlert(AppStrings.veuillezSelectionnerUnCompte)
                 return
             }
         case .branch:
             if selectedBranch == nil {
-                showErrorAlert("Veuillez sélectionner une agence")
+                showErrorAlert(AppStrings.veuillezSelectionnerUneAgence)
                 return
             }
         }
         
         if pin.trimmingCharacters(in: .whitespaces).isEmpty {
-            showErrorAlert("Veuillez saisir votre code PIN")
+            showErrorAlert(AppStrings.veuillezSaisirVotreCodePin)
             return
         }
         
         if pin.count < 4 {
-            showErrorAlert("Le code PIN doit contenir au moins 4 chiffres")
+            showErrorAlert(AppStrings.leCodePinDoitContenirAuMoins4Chiffres)
             return
         }
         
@@ -910,7 +910,7 @@ struct WalletDeactivationView: View {
             let branchId = selectedBranch?.id ?? ""
             let branchName = selectedBranch?.name ?? ""
             request.receiver = branchId
-            request.beneficiaryName = "Branch Cash Out - \(branchName)"
+            request.beneficiaryName = AppStrings.branchCashOutValue(String(describing: branchName))
             let userBankCode = userDataManager.getBankCode().isEmpty ? "00100" : userDataManager.getBankCode()
             request.institution = userBankCode
             //print("Branch transfer - Branch ID: \(branchId), Branch Name: \(branchName), Institution: \(userBankCode)")
@@ -959,7 +959,7 @@ struct WalletDeactivationView: View {
                         }
                     } else {
                         //print("Deactivation request failed with code: \(response.respCode ?? "nil")")
-                        let errorMsg = response.message ?? "Erreur lors de la désactivation du portefeuille"
+                        let errorMsg = response.message ?? AppStrings.erreurLorsDeLaDesactivationDuPortefeuille
                         self.showErrorAlert(errorMsg)
                     }
                     
@@ -967,10 +967,10 @@ struct WalletDeactivationView: View {
                     //print("=== DEACTIVATION REQUEST FAILED ===")
                     if let apiError = error as? APIError {
                         //print("Error: \(apiError.message)")
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
                         //print("Network error: \(error.localizedDescription)")
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -983,12 +983,12 @@ struct WalletDeactivationView: View {
         //print("AuthCode: \(deactivationAuthCode)")
         
         guard !otp.trimmingCharacters(in: .whitespaces).isEmpty else {
-            showErrorAlert("Veuillez saisir le code OTP")
+            showErrorAlert(AppStrings.veuillezSaisirLeCodeOtp)
             return
         }
         
         guard otp.count == 6 else {
-            showErrorAlert("Le code OTP doit contenir exactement 6 chiffres")
+            showErrorAlert(AppStrings.leCodeOtpDoitContenirExactement6Chiffres)
             return
         }
         
@@ -1020,7 +1020,7 @@ struct WalletDeactivationView: View {
                         self.showSuccessDialog = true
                     } else {
                         //print("OTP verification failed: \(response.respCode ?? "nil")")
-                        let errorMsg = response.message ?? "Code OTP invalide. Veuillez réessayer."
+                        let errorMsg = response.message ?? AppStrings.codeOtpInvalideVeuillezReessayer
                         self.showErrorAlert(errorMsg)
                     }
                     
@@ -1028,10 +1028,10 @@ struct WalletDeactivationView: View {
                     //print("=== OTP VERIFICATION REQUEST FAILED ===")
                     if let apiError = error as? APIError {
                         //print("Error: \(apiError.message)")
-                        self.showErrorAlert("Erreur: \(apiError.message)")
+                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                     } else {
                         //print("Network error: \(error.localizedDescription)")
-                        self.showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -1039,13 +1039,13 @@ struct WalletDeactivationView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }
@@ -1060,6 +1060,7 @@ enum PaymentMethod {
 
 // MARK: - Deactivation Confirmation Dialog
 struct DeactivationConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var isPresented: Bool
     let onConfirm: () -> Void
     let onCancel: () -> Void
@@ -1073,11 +1074,11 @@ struct DeactivationConfirmationDialog: View {
                 }
             
             VStack(spacing: 20) {
-                Text("Confirmation de Désactivation")
+                Text(AppStrings.confirmationDeDesactivation)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.primary)
                 
-                Text("Êtes-vous sûr de vouloir désactiver définitivement votre portefeuille ?\n\nCette action est irréversible et votre compte sera fermé.")
+                Text(AppStrings.etesVousSurDeVouloirDesactiverDefinitivementVotrePortefeuilleCette)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -1085,7 +1086,7 @@ struct DeactivationConfirmationDialog: View {
                 
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -1095,7 +1096,7 @@ struct DeactivationConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text("Oui, Désactiver")
+                        Text(AppStrings.ouiDesactiver)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -1117,6 +1118,7 @@ struct DeactivationConfirmationDialog: View {
 
 // MARK: - OTP Verification Dialog
 struct OtpVerificationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var otpCode: String
     @Binding var isPresented: Bool
     let onVerify: () -> Void
@@ -1131,17 +1133,17 @@ struct OtpVerificationDialog: View {
                 }
             
             VStack(spacing: 20) {
-                Text("Vérification OTP")
+                Text(AppStrings.verificationOtp)
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.primary)
                 
-                Text("Un code de vérification a été envoyé à votre numéro. Veuillez saisir le code pour confirmer la désactivation.")
+                Text(AppStrings.unCodeDeVerificationAEteEnvoyeAVotreNumero)
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                TextField("Code OTP", text: $otpCode)
+                TextField(AppStrings.codeOtp, text: $otpCode)
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
@@ -1157,7 +1159,7 @@ struct OtpVerificationDialog: View {
                 
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -1172,7 +1174,7 @@ struct OtpVerificationDialog: View {
                         }
                         onVerify()
                     }) {
-                        Text("Vérifier")
+                        Text(AppStrings.verifier)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -1193,6 +1195,7 @@ struct OtpVerificationDialog: View {
 }
 
 struct DeactivationSuccessDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var isPresented: Bool
     @Binding var navigateToLogin: Bool
     
@@ -1206,17 +1209,11 @@ struct DeactivationSuccessDialog: View {
                     .font(.system(size: 60))
                     .foregroundColor(.green)
                 
-                Text("Demande Envoyée")
+                Text(AppStrings.demandeEnvoyee)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.primary)
                 
-                Text("""
-                Votre demande de désactivation a été transmise avec succès.
-
-                Le solde restant sera transféré selon vos instructions.
-
-                Merci d'avoir utilisé nos services.
-                """)
+                Text(AppStrings.votreDemandeDeDesactivationAEteTransmiseAvecSuccesLe)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -1225,7 +1222,7 @@ struct DeactivationSuccessDialog: View {
                 Button(action: {
                     closeAndNavigate()
                 }) {
-                    Text("Fermer")
+                    Text(AppStrings.fermer)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)

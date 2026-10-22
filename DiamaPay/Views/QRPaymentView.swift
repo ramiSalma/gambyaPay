@@ -117,7 +117,7 @@ final class QRViewModel: ObservableObject {
     
     func process(qr: String) {
         guard !qr.isEmpty, EMVQRParser.isEMVQRCode(qr) else {
-            showError("Code QR invalide")
+            showError(AppStrings.codeQrInvalide)
             return
         }
 
@@ -142,12 +142,12 @@ final class QRViewModel: ObservableObject {
                 case .success(let resp):
                     guard resp["respCode"] as? String == "000",
                           let data = resp["result"] as? [String: Any] else {
-                        self.showError("QR invalide ou expiré")
+                        self.showError(AppStrings.qrInvalideOuExpire)
                         return
                     }
                     self.handleDynamicData(data, qr: qr)
                 case .failure:
-                    self.showError("Erreur de validation")
+                    self.showError(AppStrings.erreurDeValidation)
                 }
             }
         }
@@ -169,7 +169,7 @@ final class QRViewModel: ObservableObject {
         }
 
         guard payment.isValid, !payment.isExpired else {
-            showError("QR expiré ou invalide")
+            showError(AppStrings.qrExpireOuInvalide)
             return
         }
 
@@ -184,7 +184,7 @@ final class QRViewModel: ObservableObject {
 
     private func processStatic(_ qr: String) {
         guard let merchant = EMVQRParser.parseStatic(qr) else {
-            showError("Code QR invalide")
+            showError(AppStrings.codeQrInvalide)
             return
         }
 
@@ -254,13 +254,13 @@ final class QRViewModel: ObservableObject {
                     } else {
                         self.isProcessing = false
                         self.sendingFee = 0
-                        self.showError("Impossible de calculer les frais")
+                        self.showError(AppStrings.impossibleDeCalculerLesFrais)
                     }
                     
                 case .failure(let error):
                     self.isProcessing = false
                     self.sendingFee = 0
-                    self.showError("Erreur lors du calcul des frais: \(error.localizedDescription)")
+                    self.showError(AppStrings.erreurLorsDuCalculDesFraisValue(String(describing: error.localizedDescription)))
                 }
             }
         }
@@ -350,7 +350,7 @@ final class QRViewModel: ObservableObject {
         req.amount = String(format: "%.2f", finalAmount)
         req.currency = "270"
         req.qrData = qrData
-        req.reason = String("Payment to \(merchantName)".prefix(25))
+        req.reason = String(AppStrings.paymentToValue(String(describing: merchantName)).prefix(25))
         req.pin = pin
         req.entityId = user.getUserCode()
         
@@ -373,10 +373,10 @@ final class QRViewModel: ObservableObject {
                         if resp.respCode == "000" {
                             self.handleSuccess(resp, merchantName: merchantName)
                         } else {
-                            self.showError("Paiement échoué: \(resp.message ?? "")")
+                            self.showError(AppStrings.paiementEchoueValue(String(describing: resp.message ?? "")))
                         }
                     case .failure:
-                        self.showError("Erreur réseau")
+                        self.showError(AppStrings.erreurReseau2)
                     }
                 }
             }
@@ -459,6 +459,7 @@ final class QRViewModel: ObservableObject {
 
 // MARK: - Main View
 struct QRPaymentView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var vm = QRViewModel()
     @State private var showScanner = false
@@ -472,17 +473,17 @@ struct QRPaymentView: View {
             Color(UIColor.systemGroupedBackground).ignoresSafeArea()
             
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Merchant Payment", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.merchantPayment, headerColor: Color(hex: "174EA6"))
                 
                 if vm.isProcessing {
                     Spacer()
                     ProgressView().scaleEffect(1.5)
-                    Text("Processing...").padding(.top)
+                    Text(AppStrings.processing).padding(.top)
                     Spacer()
                 } else {
                     ScrollView {
                         VStack(spacing: 22) {
-                            Text("Choose Scan Method")
+                            Text(AppStrings.chooseScanMethod)
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(Color(hex: "245C2A"))
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -490,16 +491,16 @@ struct QRPaymentView: View {
                             HStack(spacing: 14) {
                                 scanMethodCard(
                                     icon: "qrcode.viewfinder",
-                                    title: "Camera",
-                                    subtitle: "Scan now",
+                                    title: AppStrings.camera,
+                                    subtitle: AppStrings.scanNow,
                                     color: Color(hex: "2368B8"),
                                     tint: Color(hex: "E7F3FC"),
                                     action: checkCamera
                                 )
                                 scanMethodCard(
                                     icon: "photo.badge.magnifyingglass",
-                                    title: "Gallery",
-                                    subtitle: "From photos",
+                                    title: AppStrings.gallery,
+                                    subtitle: AppStrings.fromPhotos,
                                     color: Color(hex: "378C4A"),
                                     tint: Color(hex: "E9F5E9"),
                                     action: { showPicker = true }
@@ -522,8 +523,8 @@ struct QRPaymentView: View {
             )
         }
         .navigationBarHidden(true)
-        .alert("Erreur", isPresented: $vm.showAlert) {
-            Button("OK") { }
+        .alert(AppStrings.error, isPresented: $vm.showAlert) {
+            Button(AppStrings.ok) { }
         } message: {
             Text(vm.alertMessage)
         }
@@ -604,9 +605,9 @@ struct QRPaymentView: View {
                 Image(systemName: "info.circle.fill")
                     .font(.system(size: 22))
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Quick Tip")
+                    Text(AppStrings.quickTip)
                         .font(.system(size: 16, weight: .bold))
-                    Text("Scan the QR code displayed at the merchant location to complete your payment")
+                    Text(AppStrings.scanTheQrCodeDisplayedAtTheMerchantLocationTo)
                         .font(.system(size: 13, weight: .medium))
                 }
             }
@@ -667,7 +668,7 @@ struct QRPaymentView: View {
             withdrawalFee: data.withdrawalFee,  // ✅ Already filtered
             total: data.total,
             currency: "GMD",
-            paymentDetails: "Paiement QR Code EMV",
+            paymentDetails: AppStrings.paiementQrCodeEmv,
             recipientType: vm.recipientType,
             onClose: {
                 vm.showSuccess = false
@@ -684,11 +685,11 @@ struct QRPaymentView: View {
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 DispatchQueue.main.async {
                     if granted { showScanner = true }
-                    else { vm.showError("Permission caméra requise") }
+                    else { vm.showError(AppStrings.permissionCameraRequise) }
                 }
             }
         default:
-            vm.showError("Activez la caméra dans les réglages")
+            vm.showError(AppStrings.activezLaCameraDansLesReglages)
         }
     }
     
@@ -698,7 +699,7 @@ struct QRPaymentView: View {
                                        options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]),
               let feature = (detector.features(in: ci) as? [CIQRCodeFeature])?.first,
               let qr = feature.messageString else {
-            vm.showError("Aucun QR détecté")
+            vm.showError(AppStrings.aucunQrDetecte)
             return
         }
         vm.process(qr: qr)

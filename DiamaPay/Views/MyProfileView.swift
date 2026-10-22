@@ -1,17 +1,18 @@
 import SwiftUI
 
 struct MyProfileView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @State private var profile: WalletProfile?
     @State private var isLoading = false
     @State private var errorMessage: String?
 
     var body: some View {
         VStack(spacing: 0) {
-            DiamaPayHeader(title: "My Profile", headerColor: Color(hex: "174EA6"))
+            DiamaPayHeader(title: AppStrings.myProfile, headerColor: Color(hex: "174EA6"))
             if isLoading {
                 VStack(spacing: 14) {
                     ProgressView().tint(Color(hex: "0788B9"))
-                    Text("Loading profile...")
+                    Text(AppStrings.loadingProfile)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
                 }
@@ -22,15 +23,15 @@ struct MyProfileView: View {
                     Image(systemName: "person.crop.circle.badge.exclamationmark")
                         .font(.system(size: 42))
                         .foregroundColor(Color(hex: "0788B9"))
-                    Text("Profile unavailable")
+                    Text(AppStrings.profileUnavailable)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(Color(hex: "174EA6"))
-                    Text(errorMessage)
+                    Text(AppStrings.option(errorMessage))
                         .font(.system(size: 14))
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                     Button(action: loadProfile) {
-                        Label("Try Again", systemImage: "arrow.clockwise")
+                        Label(AppStrings.tryAgain, systemImage: "arrow.clockwise")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 22)
@@ -45,32 +46,32 @@ struct MyProfileView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         profileHero(profile)
-                        profileSection("Personal Information", icon: "person.text.rectangle", fields: [
-                            ("Customer name", profile.customerName),
-                            ("First name", profile.firstName),
-                            ("Family name", profile.familyName),
-                            ("Phone number", profile.phoneNumber),
-                            ("Email", profile.email),
-                            ("Address", profile.address)
+                        profileSection(AppStrings.personalInformation, icon: "person.text.rectangle", fields: [
+                            (AppStrings.customerName, profile.customerName),
+                            (AppStrings.firstName, profile.firstName),
+                            (AppStrings.familyName, profile.familyName),
+                            (AppStrings.phoneNumber2, profile.phoneNumber),
+                            (AppStrings.email, profile.email),
+                            (AppStrings.address, profile.address)
                         ])
-                        profileSection("Wallet Information", icon: "wallet.pass", fields: [
-                            ("Wallet number", profile.walletNumber),
-                            ("Wallet type", profile.walletType),
-                            ("Wallet status", profile.walletStatus),
-                            ("KYC level", profile.kycLevel),
-                            ("Registration date", profile.registrationDate),
-                            ("Bank code", profile.bankCode)
+                        profileSection(AppStrings.walletInformation2, icon: "wallet.pass", fields: [
+                            (AppStrings.walletNumber2, profile.walletNumber),
+                            (AppStrings.walletType, AppStrings.profileTypeValue(profile.walletType)),
+                            (AppStrings.walletStatus, AppStrings.profileStatusValue(profile.walletStatus)),
+                            (AppStrings.kycLevel, profile.kycLevel),
+                            (AppStrings.registrationDate, profile.registrationDate),
+                            (AppStrings.bankCode, profile.bankCode)
                         ])
-                        profileSection("Identification", icon: "person.text.rectangle.fill", fields: [
-                            ("National ID", profile.nationalId),
-                            ("Document code", profile.documentCode)
+                        profileSection(AppStrings.identification, icon: "person.text.rectangle.fill", fields: [
+                            (AppStrings.nationalId, profile.nationalId),
+                            (AppStrings.documentCode, profile.documentCode)
                         ])
-                        profileSection("Next of Kin", icon: "person.2", fields: [
-                            ("Name", profile.nextOfKinName),
-                            ("Phone number", profile.nextOfKinPhone)
+                        profileSection(AppStrings.nextOfKin, icon: "person.2", fields: [
+                            (AppStrings.name, profile.nextOfKinName),
+                            (AppStrings.phoneNumber2, profile.nextOfKinPhone)
                         ])
                         Button(action: loadProfile) {
-                            Label("Refresh profile", systemImage: "arrow.clockwise")
+                            Label(AppStrings.refreshProfile, systemImage: "arrow.clockwise")
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(Color(hex: "174EA6"))
                                 .frame(maxWidth: .infinity)
@@ -123,7 +124,7 @@ struct MyProfileView: View {
                     .lineLimit(1)
                     .textSelection(.enabled)
                 Spacer(minLength: 4)
-                Text(displayValue(profile.walletStatus))
+                Text(displayValue(AppStrings.profileStatusValue(profile.walletStatus)))
                     .font(.system(size: 12, weight: .bold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -194,7 +195,7 @@ struct MyProfileView: View {
             .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
             .joined(separator: " ")
-        return name.isEmpty ? "My Profile" : name
+        return name.isEmpty ? AppStrings.myProfile : name
     }
 
     private func profileInitials(_ profile: WalletProfile) -> String {
@@ -209,7 +210,7 @@ struct MyProfileView: View {
 
     private func displayValue(_ value: String?) -> String {
         let value = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return value.isEmpty ? "Not provided" : value
+        return value.isEmpty ? AppStrings.notProvided : value
     }
 
     private func loadProfile() {
@@ -218,7 +219,7 @@ struct MyProfileView: View {
         let wallet = user.getWalletNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         let phone = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !wallet.isEmpty || !phone.isEmpty else {
-            errorMessage = "Your wallet details are missing. Please sign in again."
+            errorMessage = AppStrings.yourWalletDetailsAreMissingPleaseSignInAgain
             return
         }
         errorMessage = nil
@@ -238,10 +239,10 @@ struct MyProfileView: View {
                     if response.respCode == "000", let details = response.result {
                         profile = details
                     } else {
-                        errorMessage = response.message ?? "Unable to load your profile. Please try again."
+                        errorMessage = response.message ?? AppStrings.unableToLoadYourProfilePleaseTryAgain
                     }
                 case .failure(let error):
-                    errorMessage = (error as? APIError)?.message ?? "Unable to load your profile. Please check your connection and try again."
+                    errorMessage = (error as? APIError)?.message ?? AppStrings.unableToLoadYourProfilePleaseCheckYourConnectionAnd
                 }
             }
         }

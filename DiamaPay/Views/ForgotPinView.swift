@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ForgotPinView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
@@ -33,7 +34,7 @@ struct ForgotPinView: View {
     // UI State
     @State private var isLoading = false
     @State private var showAlert = false
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     @State private var alertMessage = ""
     
     var prefilledPhone: String?
@@ -52,7 +53,7 @@ struct ForgotPinView: View {
                         .padding(.top, 10)
                         .padding(.bottom, 40)
                     
-                    DiamaPayHeader(title: "Forgot PIN", headerColor: Color(hex: "174EA6"))
+                    DiamaPayHeader(title: AppStrings.forgotPinTitle, headerColor: Color(hex: "174EA6"))
                         .padding(.bottom, 32)
                     
                     mainCard
@@ -74,9 +75,9 @@ struct ForgotPinView: View {
             loadSecurityQuestions()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
     }
     
@@ -146,7 +147,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                TextField("N° de téléphone", text: $phoneNumber)
+                TextField(AppStrings.nDeTelephone, text: $phoneNumber)
                     .keyboardType(.phonePad)
                     .font(.system(size: 16))
             }
@@ -177,7 +178,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                TextField("Votre réponse", text: $answer)
+                TextField(AppStrings.votreReponse, text: $answer)
                     .font(.system(size: 16))
                     .textInputAutocapitalization(.words)
             }
@@ -194,7 +195,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                SecureField("Nouveau PIN", text: $newPin)
+                SecureField(AppStrings.nouveauPin, text: $newPin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
@@ -207,7 +208,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                SecureField("Confirmer PIN", text: $confirmPin)
+                SecureField(AppStrings.confirmerPin, text: $confirmPin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
@@ -224,7 +225,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                TextField("Entrer OTP", text: $finalOtp)
+                TextField(AppStrings.entrerOtp, text: $finalOtp)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
@@ -238,7 +239,7 @@ struct ForgotPinView: View {
     private var actionButtons: some View {
         HStack(spacing: 16) {
             Button(action: handleBackButton) {
-                Text(currentStep == 1 ? "Retour à la connexion" : "Retour")
+                Text(currentStep == 1 ? AppStrings.retourALaConnexion : "Retour")
                     .font(.system(size: 16))
                     .foregroundColor(.blueH)
                     .frame(maxWidth: .infinity)
@@ -263,17 +264,17 @@ struct ForgotPinView: View {
     private var stepTitle: String {
         if useFullFlow {
             switch currentStep {
-            case 1: return "Entrer votre numéro de téléphone"
-            case 2: return "Question secrète"
-            case 3: return "Réinitialiser PIN"
-            case 4: return "Vérifier OTP"
+            case 1: return AppStrings.entrerVotreNumeroDeTelephone
+            case 2: return AppStrings.questionSecrete
+            case 3: return AppStrings.reinitialiserPin
+            case 4: return AppStrings.verifierOtp
             default: return ""
             }
         } else {
             switch currentStep {
-            case 1: return "Entrer votre numéro de téléphone"
-            case 2: return "Réinitialiser PIN"
-            case 3: return "Vérifier OTP"
+            case 1: return AppStrings.entrerVotreNumeroDeTelephone
+            case 2: return AppStrings.reinitialiserPin
+            case 3: return AppStrings.verifierOtp
             default: return ""
             }
         }
@@ -282,17 +283,17 @@ struct ForgotPinView: View {
     private var stepDescription: String {
         if useFullFlow {
             switch currentStep {
-            case 1: return "Saisissez votre numéro de téléphone enregistré"
-            case 2: return "Répondez à votre question de sécurité pour vérifier votre identité"
-            case 3: return "Saisissez votre nouveau code PIN à 4 chiffres"
-            case 4: return "Entrez le code à 6 chiffres envoyé à \(maskPhoneNumber(phoneNumber))"
+            case 1: return AppStrings.saisissezVotreNumeroDeTelephoneEnregistre
+            case 2: return AppStrings.repondezAVotreQuestionDeSecuritePourVerifierVotreIdentite
+            case 3: return AppStrings.saisissezVotreNouveauCodePinA4Chiffres
+            case 4: return AppStrings.entrezLeCodeA6ChiffresEnvoyeAValue(String(describing: maskPhoneNumber(phoneNumber)))
             default: return ""
             }
         } else {
             switch currentStep {
-            case 1: return "Saisissez votre numéro de téléphone enregistré"
-            case 2: return "Saisissez votre nouveau code PIN à 4 chiffres"
-            case 3: return "Entrez le code à 6 chiffres envoyé à \(maskPhoneNumber(phoneNumber))"
+            case 1: return AppStrings.saisissezVotreNumeroDeTelephoneEnregistre
+            case 2: return AppStrings.saisissezVotreNouveauCodePinA4Chiffres
+            case 3: return AppStrings.entrezLeCodeA6ChiffresEnvoyeAValue(String(describing: maskPhoneNumber(phoneNumber)))
             default: return ""
             }
         }
@@ -319,7 +320,7 @@ struct ForgotPinView: View {
     
     private var displayedQuestionText: String {
         guard let question = securityQuestion else {
-            return "Chargement de la question..."
+            return AppStrings.chargementDeLaQuestion
         }
         
         if let questionText = question.question, !questionText.isEmpty {
@@ -327,11 +328,11 @@ struct ForgotPinView: View {
         }
         
         guard let questionId = question.actualId else {
-            return "Question non disponible"
+            return AppStrings.questionNonDisponible
         }
         
         let matchedQuestion = securityQuestionsList.first { $0.id == questionId }
-        return matchedQuestion?.question ?? "Question ID: \(questionId)"
+        return matchedQuestion?.question ?? AppStrings.questionIdValue(String(describing: questionId))
     }
     
     // MARK: - Action Handlers
@@ -405,7 +406,7 @@ struct ForgotPinView: View {
     // Step 1: Initiate - gets sessionToken and maybe question
     private func initiateForgotPin() {
         guard !phoneNumber.isEmpty else {
-            showErrorAlert("Veuillez entrer votre numéro de téléphone")
+            showErrorAlert(AppStrings.veuillezEntrerVotreNumeroDeTelephone)
             return
         }
         
@@ -434,7 +435,7 @@ struct ForgotPinView: View {
                             self.resetToken = self.sessionToken
                         }
                         
-                        self.showSuccessAlert(response.message ?? "Veuillez répondre à votre question")
+                        self.showSuccessAlert(response.message ?? AppStrings.veuillezRepondreAVotreQuestion)
                         self.currentStep = 2  // Always go to question step
                     } else {
                         self.handleErrorResponse(response)
@@ -448,7 +449,7 @@ struct ForgotPinView: View {
     // Step 2 (full flow): Verify Security Question
     private func verifySecurityQuestion() {
         guard !answer.isEmpty else {
-            showErrorAlert("Veuillez entrer votre réponse")
+            showErrorAlert(AppStrings.veuillezEntrerVotreReponse)
             return
         }
         
@@ -467,7 +468,7 @@ struct ForgotPinView: View {
                 case .success(let response):
                     if response.isSuccessful {
                         self.resetToken = response.resetToken ?? ""
-                        self.showSuccessAlert(response.message ?? "Vérification réussie")
+                        self.showSuccessAlert(response.message ?? AppStrings.verificationReussie)
                         self.currentStep = 3
                     } else {
                         self.handleErrorResponse(response)
@@ -482,17 +483,17 @@ struct ForgotPinView: View {
     // Step 3 (full) or 2 (short): Reset PIN
     private func resetPin() {
         guard !newPin.isEmpty, !confirmPin.isEmpty else {
-            showErrorAlert("Veuillez remplir tous les champs PIN")
+            showErrorAlert(AppStrings.veuillezRemplirTousLesChampsPin)
             return
         }
         
         guard newPin.count == 4 else {
-            showErrorAlert("Le PIN doit contenir 4 chiffres")
+            showErrorAlert(AppStrings.lePinDoitContenir4Chiffres)
             return
         }
         
         guard newPin == confirmPin else {
-            showErrorAlert("Les PINs ne correspondent pas")
+            showErrorAlert(AppStrings.lesPinsNeCorrespondentPas)
             return
         }
         
@@ -513,10 +514,10 @@ struct ForgotPinView: View {
                 case .success(let response):
                     if response.respCode == "OTP_SENT_BY_BACKEND" {
                         self.resetToken = response.authCode ?? ""
-                        self.showSuccessAlert(response.message ?? "OTP envoyé")
+                        self.showSuccessAlert(response.message ?? AppStrings.otpEnvoye)
                         self.currentStep += 1
                     } else if response.isSuccessful {
-                        self.showSuccessAlert("PIN réinitialisé avec succès!")
+                        self.showSuccessAlert(AppStrings.pinReinitialiseAvecSucces)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                             self.presentationMode.wrappedValue.dismiss()
                         }
@@ -533,12 +534,12 @@ struct ForgotPinView: View {
     // Step 4 (full) or 3 (short): Verify Final OTP
     private func verifyFinalOtp() {
         guard !finalOtp.isEmpty, finalOtp.count == 6 else {
-            showErrorAlert("Veuillez entrer un OTP à 6 chiffres valide")
+            showErrorAlert(AppStrings.veuillezEntrerUnOtpA6ChiffresValide)
             return
         }
         
         guard !resetToken.isEmpty else {
-            showErrorAlert("Token non trouvé. Veuillez recommencer")
+            showErrorAlert(AppStrings.tokenNonTrouveVeuillezRecommencer)
             return
         }
         
@@ -557,7 +558,7 @@ struct ForgotPinView: View {
                 switch result {
                 case .success(let response):
                     if response.isSuccessful {
-                        self.showSuccessAlert("PIN réinitialisé avec succès!")
+                        self.showSuccessAlert(AppStrings.pinReinitialiseAvecSucces)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                             self.presentationMode.wrappedValue.dismiss()
                         }
@@ -573,18 +574,18 @@ struct ForgotPinView: View {
     
     // MARK: - Error Handling
     private func handleErrorResponse(_ response: ForgotPinResponse) {
-        var message = response.message ?? "Une erreur s'est produite"
+        var message = response.message ?? AppStrings.uneErreurSEstProduite
         
         if let respCode = response.respCode {
             switch respCode {
             case "RATE_LIMIT_EXCEEDED":
-                message = "Trop de tentatives. Veuillez réessayer plus tard"
+                message = AppStrings.tropDeTentativesVeuillezReessayerPlusTard
             case "ACCOUNT_BLOCKED":
-                message = "Votre compte est bloqué. Veuillez contacter le support client"
+                message = AppStrings.votreCompteEstBloqueVeuillezContacterLeSupportClient
             case "INVALID_OTP":
-                message = "OTP invalide. Veuillez vérifier et réessayer"
+                message = AppStrings.otpInvalideVeuillezVerifierEtReessayer
             case "INVALID_ANSWER":
-                message = "Réponse incorrecte. Veuillez réessayer"
+                message = AppStrings.reponseIncorrecteVeuillezReessayer
             default:
                 break
             }
@@ -595,20 +596,20 @@ struct ForgotPinView: View {
     
     private func handleNetworkError(_ error: Error) {
         if let apiError = error as? APIError {
-            showErrorAlert(apiError.message)
+            showErrorAlert(AppStrings.option(apiError.message))
         } else {
-            showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+            showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
         }
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
     
     private func showSuccessAlert(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }

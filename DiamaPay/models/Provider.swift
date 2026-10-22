@@ -12,7 +12,7 @@ struct Provider: Codable, Hashable {
     let code: String?
     let type: String?
 
-    var displayName: String { name ?? code ?? "Provider" }
+    var displayName: String { name ?? code ?? AppStrings.provider }
 
     enum CodingKeys: String, CodingKey { case id, name, code, type }
 

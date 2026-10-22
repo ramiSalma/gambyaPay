@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ForcePinChangeView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authManager: AuthenticationManager
     
@@ -11,7 +12,7 @@ struct ForcePinChangeView: View {
     
     @State private var isLoading: Bool = false
     @State private var showAlert: Bool = false
-    @State private var alertTitle: String = "Erreur"
+    @State private var alertTitle: String = AppStrings.error
     @State private var alertMessage: String = ""
     
     @State private var showCurrentPinError: Bool = false
@@ -45,7 +46,7 @@ struct ForcePinChangeView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -73,17 +74,17 @@ struct ForcePinChangeView: View {
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             if pinChangeSuccess {
-                Button("OK") {
+                Button(AppStrings.ok) {
                     // Delay before navigating to login
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         navigateToLogin = true
                     }
                 }
             } else {
-                Button("OK", role: .cancel) { }
+                Button(AppStrings.ok, role: .cancel) { }
             }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .fullScreenCover(isPresented: $navigateToLogin) {
             LoginView()
@@ -106,7 +107,7 @@ struct ForcePinChangeView: View {
                
                 
 //                Text("Pin expiré")
-                Text(reason == "FIRST_CONNECTION" ? "Premier accès" : "PIN expiré")
+                Text(reason == "FIRST_CONNECTION" ? AppStrings.premierAcces : AppStrings.pinExpire)
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.white)
                 
@@ -127,15 +128,15 @@ struct ForcePinChangeView: View {
                 .foregroundColor(.orange)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Changement Obligatoire")
+                Text(AppStrings.changementObligatoire)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.primary)
                 
 //                Text("Votre code PIN a expiré. Vous devez le modifier pour continuer à utiliser l'application.")
                 Text(
                     reason == "FIRST_CONNECTION"
-                    ? "Bienvenue. Vous devez créer votre code PIN pour votre premier accès."
-                    : "Votre code PIN a expiré. Vous devez le modifier pour continuer à utiliser l'application."
+                    ? AppStrings.bienvenueVousDevezCreerVotreCodePinPourVotrePremier
+                    : AppStrings.votreCodePinAExpireVousDevezLeModifierPour
                 )
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
@@ -158,7 +159,7 @@ struct ForcePinChangeView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
-                Text("Modifier votre code PIN")
+                Text(AppStrings.modifierVotreCodePin)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -169,7 +170,7 @@ struct ForcePinChangeView: View {
             
             // Current PIN
             VStack(alignment: .leading, spacing: 8) {
-                Text("Code PIN actuel")
+                Text(AppStrings.codePinActuel)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
@@ -198,7 +199,7 @@ struct ForcePinChangeView: View {
             
             // New PIN
             VStack(alignment: .leading, spacing: 8) {
-                Text("Nouveau code PIN")
+                Text(AppStrings.nouveauCodePin)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
@@ -223,7 +224,7 @@ struct ForcePinChangeView: View {
                         .font(.system(size: 12))
                         .foregroundColor(.red)
                 } else if newPin.count >= 4 && isWeakPin(newPin) {
-                    Text("Ce PIN n'est pas sécurisé, veuillez en choisir un autre")
+                    Text(AppStrings.cePinNEstPasSecuriseVeuillezEnChoisirUn)
                         .font(.system(size: 12))
                         .foregroundColor(.red)
                 }
@@ -231,7 +232,7 @@ struct ForcePinChangeView: View {
             
             // Confirm PIN
             VStack(alignment: .leading, spacing: 8) {
-                Text("Confirmer le nouveau PIN")
+                Text(AppStrings.confirmerLeNouveauPin)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
@@ -262,7 +263,7 @@ struct ForcePinChangeView: View {
             Button(action: {
                 showChangePinConfirmationDialog()
             }) {
-                Text("Changer le PIN")
+                Text(AppStrings.changerLePin)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -292,13 +293,13 @@ struct ForcePinChangeView: View {
                     
                     VStack(spacing: 20) {
                         // Title
-                        Text("Confirmation de changement de PIN")
+                        Text(AppStrings.confirmationDeChangementDePin)
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                         
                         // Message
-                        Text("Confirmez-vous le changement de votre code PIN?\n\nCette action est irréversible et vous devrez utiliser le nouveau code PIN pour vos futures transactions.")
+                        Text(AppStrings.confirmezVousLeChangementDeVotreCodePinCetteAction)
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -311,7 +312,7 @@ struct ForcePinChangeView: View {
                             Button(action: {
                                 showConfirmationDialog = false
                             }) {
-                                Text("Annuler")
+                                Text(AppStrings.annuler)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.blueH)
                                     .frame(maxWidth: .infinity)
@@ -324,7 +325,7 @@ struct ForcePinChangeView: View {
                                 showConfirmationDialog = false
                                 changePin()
                             }) {
-                                Text("Changer le PIN")
+                                Text(AppStrings.changerLePin)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
@@ -392,41 +393,41 @@ struct ForcePinChangeView: View {
         
         // Validate current PIN
         if currentPin.isEmpty {
-            currentPinError = "Le code PIN actuel est requis"
+            currentPinError = AppStrings.leCodePinActuelEstRequis
             showCurrentPinError = true
             isValid = false
         } else if currentPin.count < 4 {
-            currentPinError = "Le code PIN doit contenir au moins 4 chiffres"
+            currentPinError = AppStrings.leCodePinDoitContenirAuMoins4Chiffres
             showCurrentPinError = true
             isValid = false
         }
         
         // Validate new PIN
         if newPin.isEmpty {
-            newPinError = "Le nouveau code PIN est requis"
+            newPinError = AppStrings.leNouveauCodePinEstRequis
             showNewPinError = true
             isValid = false
         } else if newPin.count < 4 {
-            newPinError = "Le code PIN doit contenir au moins 4 chiffres"
+            newPinError = AppStrings.leCodePinDoitContenirAuMoins4Chiffres
             showNewPinError = true
             isValid = false
         } else if newPin == currentPin {
-            newPinError = "Le nouveau PIN doit être différent de l'ancien"
+            newPinError = AppStrings.leNouveauPinDoitEtreDifferentDeLAncien
             showNewPinError = true
             isValid = false
         } else if isWeakPin(newPin) {
-            newPinError = "Ce code PIN n'est pas sécurisé (ex: 0000, 1111, 1234). Veuillez en choisir un autre."
+            newPinError = AppStrings.ceCodePinNEstPasSecuriseEx00001111
             showNewPinError = true
             isValid = false
         }
         
         // Validate confirm PIN
         if confirmPin.isEmpty {
-            confirmPinError = "La confirmation du code PIN est requise"
+            confirmPinError = AppStrings.laConfirmationDuCodePinEstRequise
             showConfirmPinError = true
             isValid = false
         } else if confirmPin != newPin {
-            confirmPinError = "Les codes PIN ne correspondent pas"
+            confirmPinError = AppStrings.lesCodesPinNeCorrespondentPas
             showConfirmPinError = true
             isValid = false
         }
@@ -514,7 +515,7 @@ struct ForcePinChangeView: View {
             if let apiError = error as? APIError {
                 handlePinChangeError(message: apiError.message)
             } else {
-                handlePinChangeError(message: "Erreur réseau: \(error.localizedDescription)")
+                handlePinChangeError(message: AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
             }
         }
     }
@@ -529,23 +530,23 @@ struct ForcePinChangeView: View {
         
         // Show success message
         pinChangeSuccess = true
-        alertTitle = "Code PIN modifié"
-        alertMessage = "Votre code PIN a été modifié avec succès. Utilisez ce nouveau code PIN pour vos prochaines transactions."
+        alertTitle = AppStrings.codePinModifie
+        alertMessage = AppStrings.votreCodePinAEteModifieAvecSuccesUtilisezCe
         showAlert = true
     }
     
     private func handlePinChangeError(message: String?) {
-        let errorMessage = message ?? "Erreur lors du changement de PIN"
+        let errorMessage = message ?? AppStrings.erreurLorsDuChangementDePin
         
         if let msg = message?.lowercased() {
             if msg.contains("invalid") || msg.contains("incorrect") || msg.contains("actuel") {
-                currentPinError = "Code PIN actuel incorrect"
+                currentPinError = AppStrings.codePinActuelIncorrect
                 showCurrentPinError = true
                 return
             }
         }
         
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = errorMessage
         showAlert = true
     }
@@ -568,7 +569,7 @@ private var securityTipsCard: some View {
                 .font(.system(size: 28))
                 .foregroundColor(.orange)
             
-            Text("Conseils de sécurité")
+            Text(AppStrings.conseilsDeSecurite)
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundColor(.brown)
         }
@@ -578,13 +579,13 @@ private var securityTipsCard: some View {
         // Tips
         VStack(alignment: .leading, spacing: 20) {
             
-            securityTip("Choisissez un code PIN unique et difficile à deviner")
+            securityTip(AppStrings.choisissezUnCodePinUniqueEtDifficileADeviner)
             
-            securityTip("Ne partagez jamais votre code PIN avec personne")
+            securityTip(AppStrings.nePartagezJamaisVotreCodePinAvecPersonne)
             
-            securityTip("Votre code PIN expire tous les 90 jours pour votre sécurité")
+            securityTip(AppStrings.votreCodePinExpireTousLes90JoursPourVotre)
             
-            securityTip("Évitez les codes simples comme 1234 ou 0000")
+            securityTip(AppStrings.evitezLesCodesSimplesComme1234Ou0000)
         }
     }
     .padding(24)

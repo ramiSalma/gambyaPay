@@ -16,6 +16,7 @@
 import SwiftUI
 
 struct DSDBillTypesView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToPrimoArrivant = false
     
@@ -26,14 +27,14 @@ struct DSDBillTypesView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "DSD Bills", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.dsdBills, headerColor: Color(hex: "174EA6"))
                 
                 ScrollView {
                     VStack(spacing: 16) {
                         // Primo Arrivant Card
                         BillTypeCard(
-                            title: "Primo Arrivant",
-                            subtitle: "Paiement pour primo arrivant",
+                            title: AppStrings.primoArrivant,
+                            subtitle: AppStrings.paiementPourPrimoArrivant,
                             icon: "car.fill",
                             color: .green
                         ) {
@@ -79,7 +80,7 @@ struct DSDBillTypesView: View {
             
             Spacer()
             
-            Text("Factures DSD")
+            Text(AppStrings.facturesDsd)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.white)
             
@@ -97,6 +98,7 @@ struct DSDBillTypesView: View {
 
 // MARK: - Bill Type Card Component
 struct BillTypeCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     let subtitle: String
     let icon: String

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SavedAccountRecipientsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     var includeMobileMoneyRecipients = false
     var includeMoneyVoucherRecipients = false
@@ -30,7 +31,7 @@ struct SavedAccountRecipientsView: View {
 
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Saved recipients")
+                    Text(AppStrings.savedRecipients)
                         .font(.system(size: 25, weight: .bold))
                         .foregroundColor(Color(hex: "174EA6"))
                     Text(listSubtitle)
@@ -38,7 +39,7 @@ struct SavedAccountRecipientsView: View {
                         .foregroundColor(Color(hex: "505A69"))
                 }
                 Spacer()
-                Button("Close") { dismiss() }
+                Button(AppStrings.close) { dismiss() }
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "0788B9"))
             }
@@ -49,7 +50,7 @@ struct SavedAccountRecipientsView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 21, weight: .medium))
                     .foregroundColor(Color(hex: "0788B9"))
-                TextField("Search...", text: $search)
+                TextField(AppStrings.search, text: $search)
                     .font(.system(size: 17))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -62,12 +63,12 @@ struct SavedAccountRecipientsView: View {
 
             Group {
                 if isLoading {
-                    ProgressView("Loading saved recipients...")
+                    ProgressView(AppStrings.loadingSavedRecipients)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let errorMessage {
                     VStack(spacing: 14) {
-                        Text(errorMessage).multilineTextAlignment(.center)
-                        Button("Try Again", action: loadRecipients)
+                        Text(AppStrings.option(errorMessage)).multilineTextAlignment(.center)
+                        Button(AppStrings.tryAgain, action: loadRecipients)
                             .buttonStyle(.borderedProminent)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -77,7 +78,7 @@ struct SavedAccountRecipientsView: View {
                         Image(systemName: "person.crop.rectangle.stack")
                             .font(.system(size: 34))
                             .foregroundColor(Color(hex: "0788B9"))
-                        Text("No saved recipients")
+                        Text(AppStrings.noSavedRecipients)
                             .font(.system(size: 17, weight: .semibold))
                         Text(emptyMessage)
                             .font(.system(size: 14))
@@ -85,7 +86,7 @@ struct SavedAccountRecipientsView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if filteredRecipients.isEmpty {
-                    Text("No matching recipients")
+                    Text(AppStrings.noMatchingRecipients)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -131,11 +132,11 @@ struct SavedAccountRecipientsView: View {
                 .background(Circle().fill(Color(hex: "0788B9")))
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(name?.isEmpty == false ? name! : "Saved recipient")
+                Text(name?.isEmpty == false ? name! : AppStrings.savedRecipient)
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(Color(hex: "505A69"))
                     .lineLimit(1)
-                Text("\(recipient.destination ?? "")  •  \(bankCode)")
+                Text(AppStrings.valueValue(String(describing: recipient.destination ?? ""), String(describing: bankCode)))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color(hex: "505A69"))
                     .lineLimit(1)
@@ -152,7 +153,7 @@ struct SavedAccountRecipientsView: View {
         let user = UserDataManager.shared
         let phoneNumber = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !phoneNumber.isEmpty else {
-            errorMessage = "Please sign in again to load saved recipients."
+            errorMessage = AppStrings.pleaseSignInAgainToLoadSavedRecipients
             return
         }
 
@@ -172,7 +173,7 @@ struct SavedAccountRecipientsView: View {
                 switch result {
                 case .success(let response):
                     guard response.respCode == "000" else {
-                        errorMessage = response.message ?? "Unable to load saved recipients."
+                        errorMessage = response.message ?? AppStrings.unableToLoadSavedRecipients
                         return
                     }
                     recipients = (response.result ?? []).filter { recipient in
@@ -182,21 +183,21 @@ struct SavedAccountRecipientsView: View {
                     }
                 case .failure(let error):
                     errorMessage = (error as? APIError)?.message
-                        ?? "Unable to load saved recipients. Please try again."
+                        ?? AppStrings.unableToLoadSavedRecipientsPleaseTryAgain
                 }
             }
         }
     }
 
     private var listSubtitle: String {
-        if includeMoneyVoucherRecipients { return "Select a saved voucher recipient" }
-        if includeMobileMoneyRecipients { return "Select a saved mobile money recipient" }
-        return "Select a recent recipient"
+        if includeMoneyVoucherRecipients { return AppStrings.selectASavedVoucherRecipient }
+        if includeMobileMoneyRecipients { return AppStrings.selectASavedMobileMoneyRecipient }
+        return AppStrings.selectARecentRecipient
     }
 
     private var emptyMessage: String {
-        if includeMoneyVoucherRecipients { return "Saved voucher recipients will appear here." }
-        if includeMobileMoneyRecipients { return "Saved mobile money recipients will appear here." }
-        return "Saved bank accounts will appear here."
+        if includeMoneyVoucherRecipients { return AppStrings.savedVoucherRecipientsWillAppearHere }
+        if includeMobileMoneyRecipients { return AppStrings.savedMobileMoneyRecipientsWillAppearHere }
+        return AppStrings.savedBankAccountsWillAppearHere
     }
 }

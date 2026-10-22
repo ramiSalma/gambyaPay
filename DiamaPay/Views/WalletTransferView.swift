@@ -3,6 +3,7 @@ import ContactsUI
 import SwiftUI
 
 struct WalletTransferView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     var onOpenSettings: () -> Void = {}
     @State private var selectedSource: SourceOfFunds = .wallet
@@ -24,8 +25,9 @@ struct WalletTransferView: View {
     @State private var verificationError: String?
     @State private var isLoading = false
     @State private var showAlert = false
+    @State private var isSavePrompt = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Error"
+    @State private var alertTitle = AppStrings.error
     @State private var isSavingBeneficiary = false
     @State private var calculatedFee = 0.0
     @State private var totalAmountWithFee = 0.0
@@ -55,7 +57,7 @@ struct WalletTransferView: View {
         ZStack {
             Color.white.ignoresSafeArea()
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Wallet to Wallet", headerColor: blue)
+                DiamaPayHeader(title: AppStrings.walletToWallet, headerColor: blue)
                 ScrollView {
                     VStack(spacing: 24) {
                         SourceOfFundsView(
@@ -69,7 +71,7 @@ struct WalletTransferView: View {
                         recipientDetailsCard
                         referenceCard
                         Button(action: prepareConfirmation) {
-                            Text("Submit")
+                            Text(AppStrings.submit)
                                 .font(.system(size: 19, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(width: 170, height: 54)
@@ -89,7 +91,7 @@ struct WalletTransferView: View {
             }
             if isLoading {
                 Color.black.opacity(0.15).ignoresSafeArea()
-                ProgressView("Processing...")
+                ProgressView(AppStrings.processing)
                     .padding(28)
                     .background(.regularMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -111,13 +113,13 @@ struct WalletTransferView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            if alertTitle == "Save recipient?" {
-                Button("Save") { saveCurrentBeneficiary() }
-                Button("Not now", role: .cancel) { presentationMode.wrappedValue.dismiss() }
+            if isSavePrompt {
+                Button(AppStrings.save) { saveCurrentBeneficiary() }
+                Button(AppStrings.notNow, role: .cancel) { presentationMode.wrappedValue.dismiss() }
             } else {
-                Button("OK", role: .cancel) { }
+                Button(AppStrings.ok, role: .cancel) { }
             }
-        } message: { Text(alertMessage) }
+        } message: { Text(AppStrings.option(alertMessage)) }
         .sheet(isPresented: $showContactPicker) {
             ContactPickerView(selectedPhone: $destinationPhone, normalizePhone: WalletTransferRecipient.normalize)
         }
@@ -136,8 +138,9 @@ struct WalletTransferView: View {
                 currency: "GMD", paymentDetails: paymentDetails,
                 onClose: {
                     showSuccessDialog = false
-                    alertTitle = "Save recipient?"
-                    alertMessage = "Would you like to save \(recipientName) for future transfers?"
+                    isSavePrompt = true
+                    alertTitle = AppStrings.saveRecipient
+                    alertMessage = AppStrings.wouldYouLikeToSaveValueForFutureTransfers(String(describing: recipientName))
                     showAlert = true
                 }
             )
@@ -177,8 +180,8 @@ struct WalletTransferView: View {
 
     private var recipientDetailsCard: some View {
         VStack(alignment: .leading, spacing: 20) {
-            sectionTitle("Recipient Details")
-            Picker("Recipient identifier", selection: $recipientKind) {
+            sectionTitle(AppStrings.recipientDetails)
+            Picker(AppStrings.recipientIdentifier, selection: $recipientKind) {
                 ForEach(WalletTransferRecipientKind.allCases, id: \.self) { kind in
                     Text(kind.title).tag(kind)
                 }
@@ -186,12 +189,12 @@ struct WalletTransferView: View {
             .pickerStyle(.segmented)
             HStack(alignment: .top, spacing: 8) {
                 HStack(spacing: 4) {
-                    TextField(recipientKind == .wallet ? "Wallet Number" : "Phone or Customer ID", text: $destinationPhone)
+                    TextField(recipientKind == .wallet ? AppStrings.walletNumber : AppStrings.phoneOrCustomerId, text: $destinationPhone)
                         .keyboardType(.default)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .font(.system(size: 15))
-                        .accessibilityLabel("Recipient number")
+                        .accessibilityLabel(AppStrings.recipientNumber)
                     if isVerifying { ProgressView().scaleEffect(0.8) }
                     else if verifiedRecipientKey == recipientKey && !recipientName.isEmpty {
                         Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
@@ -200,10 +203,10 @@ struct WalletTransferView: View {
                 .padding(.horizontal, 12)
                 .frame(height: 52)
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
-                recipientButton("Saved", icon: "book.closed.fill") { showSavedRecipients = true }
-                recipientButton("Contacts", icon: "person.crop.rectangle.fill") { recipientKind = .phoneOrCustomerID; showContactPicker = true }
+                recipientButton(AppStrings.saved, icon: "book.closed.fill") { showSavedRecipients = true }
+                recipientButton(AppStrings.contacts, icon: "person.crop.rectangle.fill") { recipientKind = .phoneOrCustomerID; showContactPicker = true }
             }
-            Text(recipientName.isEmpty ? "Recipient Name" : recipientName)
+            Text(recipientName.isEmpty ? AppStrings.recipientName : recipientName)
                 .foregroundColor(recipientName.isEmpty ? .secondary : .primary)
                 .font(.system(size: 16))
                 .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
@@ -212,10 +215,10 @@ struct WalletTransferView: View {
             if let verificationError {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(verificationError).font(.caption).foregroundColor(.red)
-                    Button("Verify Again") { verifyRecipient(key: recipientKey) }.font(.caption)
+                    Button(AppStrings.verifyAgain) { verifyRecipient(key: recipientKey) }.font(.caption)
                 }
             }
-            TextField("Amount *", text: $amount)
+            TextField(AppStrings.amount2, text: $amount)
                 .keyboardType(.decimalPad)
                 .font(.system(size: 16))
                 .padding(.horizontal, 12)
@@ -235,8 +238,8 @@ struct WalletTransferView: View {
 
     private var referenceCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            sectionTitle("Reason (optional)")
-            TextField("Enter reason", text: $paymentDetails)
+            sectionTitle(AppStrings.reasonOptional)
+            TextField(AppStrings.enterReason, text: $paymentDetails)
                 .padding(.horizontal, 12)
                 .frame(height: 52)
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
@@ -267,7 +270,7 @@ struct WalletTransferView: View {
             }
             .foregroundColor(cyan)
         }
-        .accessibilityLabel(title == "Saved" ? "Choose saved recipient" : "Choose phone contact")
+        .accessibilityLabel(title == AppStrings.saved ? AppStrings.chooseSavedRecipient : AppStrings.choosePhoneContact)
     }
 
     private func verifyRecipient(key: String) {
@@ -296,13 +299,13 @@ struct WalletTransferView: View {
                     guard response.respCode == "000",
                           let name = response.result?["walletHolder"] as? String,
                           !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                        verificationError = response.message ?? "Unable to verify this recipient."
+                        verificationError = response.message ?? AppStrings.unableToVerifyThisRecipient
                         return
                     }
                     recipientName = name
                     verifiedRecipientKey = key
                 case .failure(let error):
-                    verificationError = (error as? APIError)?.message ?? "Unable to verify the recipient. Please try again."
+                    verificationError = (error as? APIError)?.message ?? AppStrings.unableToVerifyTheRecipientPleaseTryAgain
                 }
             }
         }
@@ -310,22 +313,22 @@ struct WalletTransferView: View {
 
     private func validateTransfer() -> Bool {
         guard WalletTransferRecipient.isValid(destinationPhone) else {
-            showError("Enter the recipient phone number, customer ID, or wallet number."); return false
+            showError(AppStrings.enterTheRecipientPhoneNumberCustomerIdOrWallet); return false
         }
         guard verifiedRecipientKey == recipientKey, !recipientName.isEmpty, !isVerifying else {
-            showError("Please verify the recipient first."); return false
+            showError(AppStrings.pleaseVerifyTheRecipientFirst); return false
         }
         guard recipientIdentifier != WalletTransferRecipient.normalize(user.getPhoneNumber()),
               recipientIdentifier != user.getWalletNumber() else {
-            showError("Please choose another recipient."); return false
+            showError(AppStrings.pleaseChooseAnotherRecipient); return false
         }
         guard let value = amountValue, value.isFinite, value > 0,
               amount.components(separatedBy: ".").count <= 2,
               (amount.split(separator: ".", omittingEmptySubsequences: false).last?.count ?? 0) <= (amount.contains(".") ? 2 : amount.count) else {
-            showError("Enter a valid amount with up to two decimal places."); return false
+            showError(AppStrings.enterAValidAmountWithUpToTwoDecimal); return false
         }
         if selectedSource == .sponsor && (selectedWallet?.walletNumber.isEmpty != false) {
-            showError("Select a sponsor first."); return false
+            showError(AppStrings.selectASponsorFirst); return false
         }
         return true
     }
@@ -347,16 +350,16 @@ struct WalletTransferView: View {
                     guard response.respCode == "000", let quote = response.result,
                           let fee = quote.feeAmount, fee.isFinite, fee >= 0,
                           (quote.taxAmount ?? 0).isFinite, (quote.taxAmount ?? 0) >= 0 else {
-                        showError(response.message ?? "Unable to calculate fees."); return
+                        showError(response.message ?? AppStrings.unableToCalculateFees); return
                     }
                     let total = quote.totalAmount ?? (value + quote.totalFees)
-                    guard total.isFinite, total >= value else { showError("Invalid fee quote. Please try again."); return }
+                    guard total.isFinite, total >= value else { showError(AppStrings.invalidFeeQuotePleaseTryAgain); return }
                     calculatedFee = quote.totalFees
                     totalAmountWithFee = total
                     confirmedQuoteKey = key
                     showConfirmationDialog = true
                 case .failure(let error):
-                    showError((error as? APIError)?.message ?? "Unable to calculate fees. Please try again.")
+                    showError((error as? APIError)?.message ?? AppStrings.unableToCalculateFeesPleaseTryAgain)
                 }
             }
         }
@@ -365,9 +368,9 @@ struct WalletTransferView: View {
     private func processTransfer(pin: String) {
         guard !isLoading, validateTransfer(), let value = amountValue else { return }
         guard confirmedQuoteKey == quoteKey else {
-            showError("Transfer details changed. Please submit again."); return
+            showError(AppStrings.transferDetailsChangedPleaseSubmitAgain); return
         }
-        guard !pin.isEmpty else { showError("Enter your PIN."); return }
+        guard !pin.isEmpty else { showError(AppStrings.enterYourPin); return }
         isLoading = true
         var request = RequestWalletToWallet()
         request.srcWalletNumber = user.getWalletNumber()
@@ -391,13 +394,13 @@ struct WalletTransferView: View {
                 isLoading = false
                 switch result {
                 case .success(let response):
-                    guard response.respCode == "000" else { showError(response.message ?? "Transfer failed."); return }
+                    guard response.respCode == "000" else { showError(response.message ?? AppStrings.transferFailed); return }
                     transactionId = response.resultString ?? (response.result?["transactionReference"] as? String) ?? response.authCode ?? sentRequestId
                     transactionDate = DateFormatter.with(format: "dd/MM/yyyy HH:mm").string(from: Date())
                     confirmedQuoteKey = ""
                     showSuccessDialog = true
                 case .failure(let error):
-                    showError((error as? APIError)?.message ?? "Transfer could not be confirmed. Check transaction history before trying again.")
+                    showError((error as? APIError)?.message ?? AppStrings.transferCouldNotBeConfirmedCheckTransactionHistoryBefore)
                 }
             }
         }
@@ -411,7 +414,7 @@ struct WalletTransferView: View {
         guard !isSavingBeneficiary else { return }
         let phoneNumber = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !phoneNumber.isEmpty, !recipientIdentifier.isEmpty else {
-            showError("Recipient details are unavailable. Please try again.")
+            showError(AppStrings.recipientDetailsAreUnavailablePleaseTryAgain)
             return
         }
 
@@ -433,12 +436,14 @@ struct WalletTransferView: View {
                 case .success(let response) where response.respCode == "000":
                     presentationMode.wrappedValue.dismiss()
                 case .success(let response):
-                    alertTitle = "Unable to save recipient"
-                    alertMessage = response.message ?? "Please try again later."
+                    isSavePrompt = false
+                    alertTitle = AppStrings.unableToSaveRecipient
+                    alertMessage = response.message ?? AppStrings.pleaseTryAgainLater
                     showAlert = true
                 case .failure(let error):
-                    alertTitle = "Unable to save recipient"
-                    alertMessage = (error as? APIError)?.message ?? "Please check your connection and try again."
+                    isSavePrompt = false
+                    alertTitle = AppStrings.unableToSaveRecipient
+                    alertMessage = (error as? APIError)?.message ?? AppStrings.pleaseCheckYourConnectionAndTryAgain
                     showAlert = true
                 }
             }
@@ -446,7 +451,8 @@ struct WalletTransferView: View {
     }
 
     private func showError(_ message: String) {
-        alertTitle = "Error"
+        isSavePrompt = false
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
@@ -495,6 +501,7 @@ import SwiftUI
 import PDFKit
 
 struct TransactionSuccessView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let transactionId: String
     let transactionDate: String
     let amount: String
@@ -521,10 +528,10 @@ struct TransactionSuccessView: View {
                             .background(Color(hex: "E8F5EF"))
                             .clipShape(Circle())
                         VStack(alignment: .leading, spacing: 5) {
-                            Text("Transfer successful")
+                            Text(AppStrings.transferSuccessful)
                                 .font(.system(size: 21, weight: .bold))
                                 .foregroundColor(Color(hex: "172B4D"))
-                            Text("Your transfer is complete.")
+                            Text(AppStrings.yourTransferIsComplete)
                                 .font(.system(size: 14))
                                 .foregroundColor(Color(hex: "667085"))
                             Text((Double(amount.cleanCurrencyValue()) ?? 0).formatAsCurrency() + " " + currency)
@@ -542,18 +549,18 @@ struct TransactionSuccessView: View {
                     
                     VStack(alignment: .leading, spacing: 16) {
                         Group {
-                            SectionHeader(title: "Transaction Information")
-                            DetailRow(label: "ID Transaction:", value: transactionId)
-                            DetailRow(label: "Date:", value: transactionDate)
+                            SectionHeader(title: AppStrings.transactionInformation)
+                            DetailRow(label: AppStrings.idTransaction, value: transactionId)
+                            DetailRow(label: AppStrings.dateLabel, value: transactionDate)
                         }
                         
                         Divider().padding(.vertical, 8)
                         
                         Group {
-                            SectionHeader(title: "Amount Details")
+                            SectionHeader(title: AppStrings.amountDetails)
                             
                             DetailRow(
-                                label: "Amount sent:",
+                                label: AppStrings.amountSent,
                                 value: (Double(amount.cleanCurrencyValue()) ?? 0.0).formatAsCurrency() + " " + currency,
                                 valueColor: .primary
                             )
@@ -564,7 +571,7 @@ struct TransactionSuccessView: View {
                                         Image(systemName: "banknote")
                                             .font(.system(size: 14))
                                             .foregroundColor(.orange)
-                                        Text("Withdrawal fee:")
+                                        Text(AppStrings.withdrawalFee)
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(Color(hex: "667085"))
                                     }
@@ -585,7 +592,7 @@ struct TransactionSuccessView: View {
                                         Image(systemName: "paperplane.fill")
                                             .font(.system(size: 14))
                                             .foregroundColor(.blueH)
-                                        Text("Transfer fee:")
+                                        Text(AppStrings.transferFee)
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(Color(hex: "667085"))
                                     }
@@ -604,12 +611,12 @@ struct TransactionSuccessView: View {
                                         Image(systemName: "paperplane.fill")
                                             .font(.system(size: 14))
                                             .foregroundColor(.green)
-                                        Text("Transfer fee:")
+                                        Text(AppStrings.transferFee)
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundColor(Color(hex: "667085"))
                                     }
                                     Spacer()
-                                    Text("Free")
+                                    Text(AppStrings.free)
                                         .font(.system(size: 14, weight: .semibold))
                                         .foregroundColor(.green)
                                 }
@@ -620,7 +627,7 @@ struct TransactionSuccessView: View {
                             }
                             
                             HStack {
-                                Text("Total debited:")
+                                Text(AppStrings.totalDebited)
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(Color(hex: "263445"))
                                 Spacer()
@@ -637,20 +644,20 @@ struct TransactionSuccessView: View {
                         Divider().padding(.vertical, 8)
                         
                         Group {
-                            SectionHeader(title: "Sender")
-                            DetailRow(label: "Name:", value: senderName)
-                            DetailRow(label: "Phone:", value: senderPhone)
+                            SectionHeader(title: AppStrings.sender)
+                            DetailRow(label: AppStrings.nameLabel, value: senderName)
+                            DetailRow(label: AppStrings.phoneLabel, value: senderPhone)
                         }
                         
                         Divider().padding(.vertical, 8)
                         
                         Group {
-                            SectionHeader(title: "Recipient")
-                            DetailRow(label: "Name:", value: recipientName)
-                            DetailRow(label: "Phone:", value: recipientPhone)
+                            SectionHeader(title: AppStrings.recipient)
+                            DetailRow(label: AppStrings.nameLabel, value: recipientName)
+                            DetailRow(label: AppStrings.phoneLabel, value: recipientPhone)
                             
                             if !paymentDetails.isEmpty {
-                                DetailRow(label: "Reason:", value: paymentDetails)
+                                DetailRow(label: AppStrings.reasonLabel, value: paymentDetails)
                             }
                         }
                     }
@@ -663,7 +670,7 @@ struct TransactionSuccessView: View {
                         Button(action: { shareReceipt() }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.up")
-                                Text("Share receipt")
+                                Text(AppStrings.shareReceipt)
                             }
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -674,7 +681,7 @@ struct TransactionSuccessView: View {
                         }
                         
                         Button(action: onClose) {
-                            Text("Close")
+                            Text(AppStrings.close)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(hex: "174EA6"))
                                 .frame(maxWidth: .infinity)
@@ -689,8 +696,8 @@ struct TransactionSuccessView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button("Close", action: onClose).foregroundColor(Color(hex: "174EA6")))
-            .navigationBarTitle("Transfer Receipt", displayMode: .inline)
+            .navigationBarItems(trailing: Button(AppStrings.close, action: onClose).foregroundColor(Color(hex: "174EA6")))
+            .navigationBarTitle(AppStrings.transferReceipt, displayMode: .inline)
         }
     }
     
@@ -739,9 +746,9 @@ struct TransactionSuccessView: View {
     
     private func generatePDF() -> Data {
         let pdfMetaData = [
-            kCGPDFContextCreator: "DIAMACASH",
+            kCGPDFContextCreator: AppStrings.brand,
             kCGPDFContextAuthor: senderName,
-            kCGPDFContextTitle: "Transfer Receipt"
+            kCGPDFContextTitle: AppStrings.transferReceipt
         ]
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = pdfMetaData as [String: Any]
@@ -760,7 +767,7 @@ struct TransactionSuccessView: View {
                 .font: UIFont.boldSystemFont(ofSize: 24),
                 .foregroundColor: UIColor.black
             ]
-            let title = "REÇU DE TRANSFERT"
+            let title = AppStrings.recuDeTransfert
             title.draw(at: CGPoint(x: leftMargin, y: yPosition), withAttributes: titleAttributes)
             yPosition += 40
             
@@ -781,31 +788,31 @@ struct TransactionSuccessView: View {
                 .foregroundColor: UIColor.black
             ]
             
-            drawText("Status: Transfer successful", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.statusTransferSuccessful, at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("ID Transaction: \(transactionId)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.idTransactionValue(String(describing: transactionId)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Date: \(transactionDate)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.dateValue(String(describing: transactionDate)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 35
             
-            drawText("AMOUNT DETAILS", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.amountDetails2, at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 25
             
             let baseAmount = Double(amount.cleanCurrencyValue()) ?? 0.0
-            drawText("Amount sent: \(formatAmount(baseAmount))", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.amountSentValue(String(describing: formatAmount(baseAmount))), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
             if withdrawalFee > 0 {
-                drawText("Withdrawal fee: \(formatAmount(withdrawalFee))", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+                drawText(AppStrings.withdrawalFeeValue(String(describing: formatAmount(withdrawalFee))), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
                 yPosition += 25
             }
             
-            drawText("Transfer fee: \(fee > 0 ? formatAmount(fee) : "Free")", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.transferFeeValue(String(describing: fee > 0 ? formatAmount(fee) : AppStrings.free)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Total debited: \(formatAmount(total))", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.totalDebitedValue(String(describing: formatAmount(total))), at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 35
             
             context.cgContext.setLineWidth(1)
@@ -814,26 +821,26 @@ struct TransactionSuccessView: View {
             context.cgContext.strokePath()
             yPosition += 25
             
-            drawText("SENDER", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.senderHeading, at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 25
             
-            drawText("Name: \(senderName)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.nameValue(String(describing: senderName)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Phone: \(senderPhone)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.phoneValue(String(describing: senderPhone)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 35
             
-            drawText("RECIPIENT", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.recipientHeading, at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 25
             
-            drawText("Name: \(recipientName)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.nameValue(String(describing: recipientName)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Phone: \(recipientPhone)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.phoneValue(String(describing: recipientPhone)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 35
             
             if !paymentDetails.isEmpty {
-                drawText("Reason: \(paymentDetails)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+                drawText(AppStrings.reasonValue(String(describing: paymentDetails)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
                 yPosition += 35
             }
             
@@ -848,8 +855,10 @@ struct TransactionSuccessView: View {
             ]
             
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd/MM/yyyy 'at' HH:mm"
-            let footerText = "This receipt was generated automatically on \(dateFormatter.string(from: Date()))"
+            dateFormatter.locale = Locale(identifier: localization.language.rawValue)
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .short
+            let footerText = AppStrings.thisReceiptWasGeneratedAutomaticallyOnValue(String(describing: dateFormatter.string(from: Date())))
             drawText(footerText, at: CGPoint(x: leftMargin, y: yPosition), attributes: footerAttributes, context: context)
         }
         
@@ -863,6 +872,7 @@ struct TransactionSuccessView: View {
 
 // MARK: - Supporting Views
 struct SectionHeader: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     
     var body: some View {
@@ -874,6 +884,7 @@ struct SectionHeader: View {
     }
 }
 struct DetailRow: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let label: String
     let value: String
     var valueColor: Color = .primary

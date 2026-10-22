@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct DSDPaymentView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     @State private var pendingOperations: [DSDPendingOperation] = []
     @State private var isLoading = false
     @State private var showAlert = false
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     @State private var alertMessage = ""
     @State private var showPinDialog = false
     @State private var showValidationConfirmDialog = false
@@ -29,7 +30,7 @@ struct DSDPaymentView: View {
             
             VStack(spacing: 0) {
                 // Custom Header
-                DiamaPayHeader(title: "Primo Arrivant", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.primoArrivant, headerColor: Color(hex: "174EA6"))
                 
                 if isLoading {
                     loadingView
@@ -51,9 +52,9 @@ struct DSDPaymentView: View {
             loadPendingPayments()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .overlay(pinDialogOverlay)
         .overlay(validationConfirmOverlay)
@@ -77,7 +78,7 @@ struct DSDPaymentView: View {
                 
                 Spacer()
                 
-                Text("Primo Arrivant")
+                Text(AppStrings.primoArrivant)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -101,7 +102,7 @@ struct DSDPaymentView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                 .scaleEffect(1.5)
             
-            Text("Chargement...")
+            Text(AppStrings.chargement)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.secondary)
             Spacer()
@@ -117,11 +118,11 @@ struct DSDPaymentView: View {
                 .font(.system(size: 96))
                 .foregroundColor(.gray.opacity(0.3))
             
-            Text("Aucune opération en attente")
+            Text(AppStrings.aucuneOperationEnAttente)
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.primary)
             
-            Text("Les paiements DSD en attente apparaîtront ici")
+            Text(AppStrings.lesPaiementsDsdEnAttenteApparaitrontIci)
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -255,14 +256,14 @@ struct DSDPaymentView: View {
                         pendingOperations = []
                     }
                 } else {
-                    showErrorAlert(response.message ?? "Erreur lors du chargement des paiements")
+                    showErrorAlert(response.message ?? AppStrings.erreurLorsDuChargementDesPaiements)
                 }
                 
             case .failure(let error):
                 if let apiError = error as? APIError {
-                    showErrorAlert(apiError.message)
+                    showErrorAlert(AppStrings.option(apiError.message))
                 } else {
-                    showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                    showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                 }
             }
         }
@@ -347,19 +348,19 @@ struct DSDPaymentView: View {
                 if response.isSuccessful ||
                    response.status?.uppercased() == "VALIDE" ||
                    response.status?.uppercased() == "VALIDATED" {
-                    alertTitle = "Succès"
-                    alertMessage = "Paiement validé avec succès"
+                    alertTitle = AppStrings.succes
+                    alertMessage = AppStrings.paiementValideAvecSucces
                     showAlert = true
                     loadPendingPayments()
                 } else {
-                    showErrorAlert(response.message ?? "Erreur lors de la validation")
+                    showErrorAlert(response.message ?? AppStrings.erreurLorsDeLaValidation)
                 }
                 
             case .failure(let error):
                 if let apiError = error as? APIError {
-                    showErrorAlert(apiError.message)
+                    showErrorAlert(AppStrings.option(apiError.message))
                 } else {
-                    showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                    showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                 }
             }
         }
@@ -380,19 +381,19 @@ struct DSDPaymentView: View {
                 if response.isSuccessful ||
                    response.status?.uppercased() == "REJETE" ||
                    response.status?.uppercased() == "REJECTED" {
-                    alertTitle = "Succès"
-                    alertMessage = "Paiement rejeté avec succès"
+                    alertTitle = AppStrings.succes
+                    alertMessage = AppStrings.paiementRejeteAvecSucces
                     showAlert = true
                     loadPendingPayments()
                 } else {
-                    showErrorAlert(response.message ?? "Erreur lors du rejet")
+                    showErrorAlert(response.message ?? AppStrings.erreurLorsDuRejet)
                 }
                 
             case .failure(let error):
                 if let apiError = error as? APIError {
-                    showErrorAlert(apiError.message)
+                    showErrorAlert(AppStrings.option(apiError.message))
                 } else {
-                    showErrorAlert("Erreur réseau: \(error.localizedDescription)")
+                    showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                 }
             }
         }
@@ -400,7 +401,7 @@ struct DSDPaymentView: View {
     
     // MARK: - Show Error Alert
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
@@ -408,6 +409,7 @@ struct DSDPaymentView: View {
 
 // MARK: - DSD Operation Card
 struct DSDOperationCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let operation: DSDPendingOperation
     let onValidate: () -> Void
     let onReject: () -> Void
@@ -417,7 +419,7 @@ struct DSDOperationCard: View {
             // Chassis Section
             HStack {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Chassis")
+                    Text(AppStrings.chassis)
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                         .tracking(0.5)
@@ -440,7 +442,7 @@ struct DSDOperationCard: View {
             // Amount and Category Section
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Montant à payer")
+                    Text(AppStrings.montantAPayer)
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
                         .tracking(0.5)
@@ -464,7 +466,7 @@ struct DSDOperationCard: View {
             // Reference and Date Section
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Référence")
+                    Text(AppStrings.reference2)
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                         .tracking(0.5)
@@ -477,7 +479,7 @@ struct DSDOperationCard: View {
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 6) {
-                    Text(operation.createdAt != nil ? "Date de création" : "Statut")
+                    Text(operation.createdAt != nil ? AppStrings.dateDeCreation : "Statut")
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                         .tracking(0.5)
@@ -491,7 +493,7 @@ struct DSDOperationCard: View {
             // Action Buttons
             HStack(spacing: 12) {
                 Button(action: onReject) {
-                    Text("Rejeter")
+                    Text(AppStrings.rejeter)
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.red)
                         .frame(maxWidth: .infinity)
@@ -504,7 +506,7 @@ struct DSDOperationCard: View {
                 }
                 
                 Button(action: onValidate) {
-                    Text("Approuver")
+                    Text(AppStrings.approuver)
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -560,13 +562,13 @@ struct DSDPendingOperation: Codable, Identifiable {
     var categoryDisplay: String {
         switch category.uppercased() {
         case "CATEGORIE A", "CATEGORIE_A":
-            return "CATÉGORIE A"
+            return AppStrings.categorieA
         case "CATEGORIE B", "CATEGORIE_B":
-            return "CATÉGORIE B"
+            return AppStrings.categorieB
         case "CATEGORIE C", "CATEGORIE_C":
-            return "CATÉGORIE C"
+            return AppStrings.categorieC
         case "CATEGORIE D", "CATEGORIE_D":
-            return "CATÉGORIE D"
+            return AppStrings.categorieD
         default:
             return category.uppercased()
         }

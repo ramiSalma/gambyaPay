@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MobileMoneyView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) private var presentationMode
     @State private var selectedSource: SourceOfFunds = .wallet
     @State private var selectedWallet: SponsoringWallet?
@@ -29,7 +30,7 @@ struct MobileMoneyView: View {
     @State private var pendingSaveName = ""
     @State private var pendingSaveProviderCode = ""
     @State private var showAlert = false
-    @State private var alertTitle = "Error"
+    @State private var alertTitle = AppStrings.error
     @State private var alertMessage = ""
 
     private let blue = Color(hex: "174EA6")
@@ -40,7 +41,7 @@ struct MobileMoneyView: View {
         ZStack {
             Color.white.ignoresSafeArea()
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Mobile Money", headerColor: blue)
+                DiamaPayHeader(title: AppStrings.mobileMoney, headerColor: blue)
                 ScrollView {
                     VStack(spacing: 18) {
                         SourceOfFundsView(
@@ -55,7 +56,7 @@ struct MobileMoneyView: View {
                         amountCard
                         referenceCard
                         Button { validateAndConfirm() } label: {
-                            Text(isVerifyingReceiver ? "Verifying..." : (isSubmitting ? "Submitting..." : "Submit"))
+                            Text(isVerifyingReceiver ? AppStrings.verifying : (isSubmitting ? AppStrings.submitting : AppStrings.submit))
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(width: 170, height: 54)
@@ -77,19 +78,19 @@ struct MobileMoneyView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            if alertTitle == "Save recipient?" {
-                Button("Save") { saveRecipient() }
-                Button("Not now", role: .cancel) { finishAndReturnHome() }
-            } else if alertTitle == "Recipient saved" {
-                Button("OK", role: .cancel) {
+            if alertTitle == AppStrings.saveRecipient {
+                Button(AppStrings.save) { saveRecipient() }
+                Button(AppStrings.notNow, role: .cancel) { finishAndReturnHome() }
+            } else if alertTitle == AppStrings.recipientSaved {
+                Button(AppStrings.ok, role: .cancel) {
                     if shouldReturnHomeAfterSave { finishAndReturnHome() }
                 }
             } else {
-                Button("OK", role: .cancel) {
+                Button(AppStrings.ok, role: .cancel) {
                     if shouldReturnHomeAfterSave { finishAndReturnHome() }
                 }
             }
-        } message: { Text(alertMessage) }
+        } message: { Text(AppStrings.option(alertMessage)) }
         .sheet(isPresented: $showContactPicker) {
             ContactPickerView(selectedPhone: $receiverPhone)
         }
@@ -134,8 +135,8 @@ struct MobileMoneyView: View {
                         return
                     }
                     shouldReturnHomeAfterSave = true
-                    alertTitle = "Save recipient?"
-                    alertMessage = "Would you like to save \(recipientLabel) for future Mobile Money transfers?"
+                    alertTitle = AppStrings.saveRecipient
+                    alertMessage = AppStrings.wouldYouLikeToSaveValueForFutureMobileMoney(String(describing: recipientLabel))
                     showAlert = true
                 }
             )
@@ -150,7 +151,7 @@ struct MobileMoneyView: View {
                     currency: "GMD",
                     recipientName: recipientName,
                     recipientPhone: receiverPhone,
-                    title: "Confirm Mobile Money",
+                    title: AppStrings.confirmMobileMoney,
                     providerName: selectedProvider?.displayName ?? "",
                     mobileMoneyStyle: true,
                     paymentDetails: paymentReference,
@@ -172,7 +173,7 @@ struct MobileMoneyView: View {
 
     private var providerCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            sectionTitle("Provider Details")
+            sectionTitle(AppStrings.providerDetails)
             Menu {
                 ForEach(Array(providers.enumerated()), id: \.offset) { _, provider in
                     Button(provider.displayName) { selectedProvider = provider }
@@ -180,7 +181,7 @@ struct MobileMoneyView: View {
             } label: {
                 HStack {
                     if isLoadingProviders { ProgressView().tint(blue) }
-                    Text(selectedProvider?.displayName ?? (isLoadingProviders ? "Loading providers..." : "Select provider"))
+                    Text(selectedProvider?.displayName ?? (isLoadingProviders ? AppStrings.loadingProviders : AppStrings.selectProvider))
                         .font(.system(size: 16))
                         .foregroundColor(selectedProvider.map { _ in Color.primary } ?? Color.secondary)
                     Spacer()
@@ -196,7 +197,7 @@ struct MobileMoneyView: View {
                 HStack {
                     Text(providerError).font(.caption).foregroundColor(.red)
                     Spacer()
-                    Button("Retry", action: loadProviders).font(.caption).foregroundColor(blue)
+                    Button(AppStrings.retry, action: loadProviders).font(.caption).foregroundColor(blue)
                 }
             }
         }
@@ -205,9 +206,9 @@ struct MobileMoneyView: View {
 
     private var beneficiaryCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            sectionTitle("Beneficiary Details")
+            sectionTitle(AppStrings.beneficiaryDetails)
             HStack(alignment: .top, spacing: 8) {
-                TextField("Phone number", text: $receiverPhone)
+                TextField(AppStrings.phoneNumber2, text: $receiverPhone)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
                     .padding(.horizontal, 12)
@@ -216,16 +217,16 @@ struct MobileMoneyView: View {
                     .onChange(of: receiverPhone) {
                         if receiverPhone.count > 10 { receiverPhone = String(receiverPhone.prefix(10)) }
                     }
-                recipientAction("Contacts", icon: "person.crop.rectangle.fill") { showContactPicker = true }
-                recipientAction("Saved", icon: "book.closed.fill") { showSavedRecipients = true }
+                recipientAction(AppStrings.contacts, icon: "person.crop.rectangle.fill") { showContactPicker = true }
+                recipientAction(AppStrings.saved, icon: "book.closed.fill") { showSavedRecipients = true }
             }
-            TextField("Beneficiary name", text: $recipientName)
+            TextField(AppStrings.beneficiaryName2, text: $recipientName)
                 .font(.system(size: 16))
                 .padding(.horizontal, 12)
                 .frame(height: 52)
                 .overlay(fieldBorder)
             Button(action: saveRecipient) {
-                Label(isSavingRecipient ? "Saving..." : "Save recipient", systemImage: "bookmark")
+                Label(isSavingRecipient ? AppStrings.saving : AppStrings.saveRecipient2, systemImage: "bookmark")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(blue)
             }
@@ -236,8 +237,8 @@ struct MobileMoneyView: View {
 
     private var amountCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            sectionTitle("Amount")
-            FormattedTextField(placeholder: "Enter amount (GMD)", text: $amount, maxLength: 50, walletTransferStyle: true)
+            sectionTitle(AppStrings.amount)
+            FormattedTextField(placeholder: AppStrings.enterAmountGmd, text: $amount, maxLength: 50, walletTransferStyle: true)
                 .frame(maxWidth: .infinity, minHeight: 52)
                 .overlay(fieldBorder)
         }
@@ -246,8 +247,8 @@ struct MobileMoneyView: View {
 
     private var referenceCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            sectionTitle("Payment Reference")
-            TextField("Enter payment reference", text: $paymentReference)
+            sectionTitle(AppStrings.paymentReference)
+            TextField(AppStrings.enterPaymentReference, text: $paymentReference)
                 .font(.system(size: 16))
                 .padding(.horizontal, 12)
                 .frame(height: 52)
@@ -294,13 +295,13 @@ struct MobileMoneyView: View {
                 case .success(let loadedProviders):
                     providers = loadedProviders
                     if selectedProvider.map({ _ in false }) ?? true { selectedProvider = loadedProviders.first }
-                    if loadedProviders.isEmpty { providerError = "No providers are available." }
+                    if loadedProviders.isEmpty { providerError = AppStrings.noProvidersAreAvailable }
                 case .failure(let error):
                     let cachedProviders = UserDataManager.shared.loadMobileMoneyProviders()
                     providers = cachedProviders
                     if selectedProvider == nil { selectedProvider = cachedProviders.first }
                     if cachedProviders.isEmpty {
-                        providerError = (error as? APIError)?.message ?? "Unable to load providers."
+                        providerError = (error as? APIError)?.message ?? AppStrings.unableToLoadProviders
                     }
                 }
             }
@@ -309,22 +310,22 @@ struct MobileMoneyView: View {
 
     private func validateAndConfirm() {
         guard let provider = selectedProvider else {
-            showError("Please select a provider.")
+            showError(AppStrings.pleaseSelectAProvider)
             return
         }
         let destinationPhone = receiverPhone.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !destinationPhone.isEmpty else {
-            showError("Beneficiary phone number is required.")
+            showError(AppStrings.beneficiaryPhoneNumberIsRequired)
             return
         }
         guard let amountValue = Double(amount.cleanCurrencyValue()), amountValue > 0 else {
-            showError("Enter a valid amount.")
+            showError(AppStrings.enterAValidAmount)
             return
         }
         let senderPhone = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         let walletNumber = user.getWalletNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !senderPhone.isEmpty, !walletNumber.isEmpty else {
-            showError("Your wallet details are unavailable. Please sign in again.")
+            showError(AppStrings.yourWalletDetailsAreUnavailablePleaseSignInAgain)
             return
         }
 
@@ -346,7 +347,7 @@ struct MobileMoneyView: View {
                 switch result {
                 case .success(let response) where response.respCode == "000":
                     guard let authCode = response.authCode, !authCode.isEmpty else {
-                        showError("The receiver was found, but verification could not be completed. Please try again.")
+                        showError(AppStrings.theReceiverWasFoundButVerificationCouldNotBeCompleted)
                         return
                     }
                     mobileMoneyAuthCode = authCode
@@ -358,10 +359,10 @@ struct MobileMoneyView: View {
                     showPinConfirmation = true
                 case .success(let response):
                     mobileMoneyAuthCode = ""
-                    showError(response.message ?? "Receiver phone number was not found for the selected provider.")
+                    showError(response.message ?? AppStrings.receiverPhoneNumberWasNotFoundForTheSelectedProvider)
                 case .failure(let error):
                     mobileMoneyAuthCode = ""
-                    showError((error as? APIError)?.message ?? "Unable to verify the receiver phone number.")
+                    showError((error as? APIError)?.message ?? AppStrings.unableToVerifyTheReceiverPhoneNumber)
                 }
             }
         }
@@ -372,7 +373,7 @@ struct MobileMoneyView: View {
         let senderPhone = user.getPhoneNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         let walletNumber = user.getWalletNumber().trimmingCharacters(in: .whitespacesAndNewlines)
         guard !senderPhone.isEmpty, !walletNumber.isEmpty else {
-            showError("Your wallet details are unavailable. Please sign in again.")
+            showError(AppStrings.yourWalletDetailsAreUnavailablePleaseSignInAgain)
             return
         }
 
@@ -403,9 +404,9 @@ struct MobileMoneyView: View {
                     transactionDate = response.transactionDateFormatted
                     checkWhetherRecipientIsSavedAndPresentSuccess()
                 case .success(let response):
-                    showError(response.message ?? "Mobile Money transfer failed.")
+                    showError(response.message ?? AppStrings.mobileMoneyTransferFailed)
                 case .failure(let error):
-                    showError((error as? APIError)?.message ?? "Mobile Money transfer could not be confirmed. Check transaction history before trying again.")
+                    showError((error as? APIError)?.message ?? AppStrings.mobileMoneyTransferCouldNotBeConfirmedCheckTransactionHistory)
                 }
             }
         }
@@ -465,7 +466,7 @@ struct MobileMoneyView: View {
     }
 
     private func showError(_ message: String) {
-        alertTitle = "Error"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
@@ -478,7 +479,7 @@ struct MobileMoneyView: View {
         let beneficiaryName = shouldReturnHomeAfterSave ? pendingSaveName : recipientName
         let providerCode = shouldReturnHomeAfterSave ? pendingSaveProviderCode : (selectedProvider?.code ?? selectedProvider?.id ?? "00100")
         guard !senderPhone.isEmpty, !destination.isEmpty else {
-            showError("Enter a beneficiary phone number before saving.")
+            showError(AppStrings.enterABeneficiaryPhoneNumberBeforeSaving)
             return
         }
         isSavingRecipient = true
@@ -498,13 +499,13 @@ struct MobileMoneyView: View {
                 switch result {
                 case .success(let response) where response.respCode == "000":
                     isRecipientAlreadySaved = true
-                    alertTitle = "Recipient saved"
-                    alertMessage = "The recipient has been saved."
+                    alertTitle = AppStrings.recipientSaved
+                    alertMessage = AppStrings.theRecipientHasBeenSaved
                     showAlert = true
                 case .success(let response):
-                    showError(response.message ?? "Unable to save the beneficiary.")
+                    showError(response.message ?? AppStrings.unableToSaveTheBeneficiary)
                 case .failure(let error):
-                    showError((error as? APIError)?.message ?? "Unable to save the beneficiary.")
+                    showError((error as? APIError)?.message ?? AppStrings.unableToSaveTheBeneficiary)
                 }
             }
         }

@@ -17,6 +17,7 @@ import SwiftUI
 import PDFKit
 
 struct VoucherSuccessView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let transactionId: String
     let transactionDate: String
     let amount: String
@@ -45,7 +46,7 @@ struct VoucherSuccessView: View {
                         .background(Color(hex: "4CAF50"), in: Circle())
                         .padding(.top, 22)
 
-                    Text("Money voucher sent successfully")
+                    Text(AppStrings.moneyVoucherSentSuccessfully)
                         .font(.system(size: 21, weight: .bold))
                         .foregroundColor(Color(hex: "4CAF50"))
                         .multilineTextAlignment(.center)
@@ -55,27 +56,27 @@ struct VoucherSuccessView: View {
 
                     ScrollView {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("ID: \(transactionId)")
+                            Text(AppStrings.idValue(String(describing: transactionId)))
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(Color(hex: "263238"))
-                            receiptLine("Date", transactionDate)
-                            Text("Amount: \(formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0))")
+                            receiptLine(AppStrings.date, transactionDate)
+                            Text(AppStrings.amountValue(String(describing: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0))))
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(Color(hex: "174EA6"))
-                            if withdrawalFee > 0 { receiptLine("Availability fee", formatAmount(withdrawalFee)) }
-                            receiptLine("Voucher fee", fee > 0 ? formatAmount(fee) : "Free")
-                            receiptLine("Total debited", formatAmount(total))
+                            if withdrawalFee > 0 { receiptLine(AppStrings.availabilityFee, formatAmount(withdrawalFee)) }
+                            receiptLine(AppStrings.voucherFee, fee > 0 ? formatAmount(fee) : AppStrings.free)
+                            receiptLine(AppStrings.totalDebited2, formatAmount(total))
 
                             Divider().padding(.vertical, 2)
-                            sectionTitle("SENDER")
-                            receiptLine("Sender", senderName)
-                            receiptLine("Phone", senderPhone)
+                            sectionTitle(AppStrings.senderHeading)
+                            receiptLine(AppStrings.sender, senderName)
+                            receiptLine(AppStrings.phone, senderPhone)
 
                             Divider().padding(.vertical, 2)
-                            sectionTitle("RECIPIENT")
-                            receiptLine("Recipient", recipientName.isEmpty ? "Not verified" : recipientName)
-                            receiptLine("Phone", recipientPhone)
-                            receiptLine("Details", paymentDetails.isEmpty ? "Money voucher" : paymentDetails)
+                            sectionTitle(AppStrings.recipientHeading)
+                            receiptLine(AppStrings.recipient, recipientName.isEmpty ? AppStrings.notVerified : recipientName)
+                            receiptLine(AppStrings.phone, recipientPhone)
+                            receiptLine(AppStrings.details, paymentDetails.isEmpty ? AppStrings.moneyVoucher2 : paymentDetails)
                         }
                         .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -87,14 +88,14 @@ struct VoucherSuccessView: View {
 
                     HStack(spacing: 12) {
                         Button(action: shareReceipt) {
-                            Label("SHARE", systemImage: "square.and.arrow.up")
+                            Label(AppStrings.share, systemImage: "square.and.arrow.up")
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity, minHeight: 50)
                                 .background(Color(hex: "174EA6"), in: RoundedRectangle(cornerRadius: 11))
                         }
                         Button(action: onClose) {
-                            Text("CLOSE")
+                            Text(AppStrings.closeHeading)
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(Color(hex: "0788B9"))
                                 .frame(maxWidth: .infinity, minHeight: 50)
@@ -136,7 +137,7 @@ struct VoucherSuccessView: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + currency
     }
     
@@ -187,7 +188,7 @@ struct VoucherSuccessView: View {
         let pdfMetaData = [
             kCGPDFContextCreator: "DIAMACASH",
             kCGPDFContextAuthor: senderName,
-            kCGPDFContextTitle: "Reçu de Mise à Disposition"
+            kCGPDFContextTitle: AppStrings.recuDeMiseADisposition
         ]
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = pdfMetaData as [String: Any]
@@ -207,7 +208,7 @@ struct VoucherSuccessView: View {
                 .font: UIFont.boldSystemFont(ofSize: 24),
                 .foregroundColor: UIColor.black
             ]
-            let title = "REÇU DE MISE À DISPOSITION"
+            let title = AppStrings.recuDeMiseADisposition2
             title.draw(at: CGPoint(x: leftMargin, y: yPosition), withAttributes: titleAttributes)
             yPosition += 40
             
@@ -230,25 +231,25 @@ struct VoucherSuccessView: View {
             ]
             
             // Transaction details
-            drawText("Statut: Mise à disposition générée", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.statutMiseADispositionGeneree, at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Code Voucher: \(voucherCode)", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.codeVoucherValue(String(describing: voucherCode)), at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 25
             
-            drawText("ID Transaction: \(transactionId)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.idTransactionValue(String(describing: transactionId)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Date: \(transactionDate)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.dateValue(String(describing: transactionDate)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Montant: \(formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.montantValue(String(describing: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Frais: \(fee > 0 ? formatAmount(fee) : "Gratuit")", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.fraisValue(String(describing: fee > 0 ? formatAmount(fee) : AppStrings.gratuit)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Total débité: \(formatAmount(total))", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.totalDebiteValue(String(describing: formatAmount(total))), at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 35
             
             // Separator
@@ -259,40 +260,40 @@ struct VoucherSuccessView: View {
             yPosition += 25
             
             // Sender section
-            drawText("ÉMETTEUR", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.emetteur, at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 25
             
-            drawText("Nom: \(senderName)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.nomValue(String(describing: senderName)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Téléphone: \(senderPhone)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.telephoneValue(String(describing: senderPhone)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 35
             
             // Recipient section
-            drawText("DESTINATAIRE", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.destinataire, at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 25
             
-            let recipientNameText = recipientName.isEmpty ? "Non vérifié" : recipientName
-            drawText("Nom: \(recipientNameText)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            let recipientNameText = recipientName.isEmpty ? AppStrings.nonVerifie : recipientName
+            drawText(AppStrings.nomValue(String(describing: recipientNameText)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 25
             
-            drawText("Téléphone: \(recipientPhone)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.telephoneValue(String(describing: recipientPhone)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 35
             
             // Payment details
             if !paymentDetails.isEmpty {
-                drawText("Détails: \(paymentDetails)", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+                drawText(AppStrings.detailsValue2(String(describing: paymentDetails)), at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
                 yPosition += 35
             }
             
             // Instructions
-            drawText("INSTRUCTIONS:", at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.instructions, at: CGPoint(x: leftMargin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += 25
             
-            drawText("Le destinataire peut retirer ces fonds avec le code", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.leDestinatairePeutRetirerCesFondsAvecLeCode, at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 20
             
-            drawText("voucher dans n'importe quel point de service.", at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
+            drawText(AppStrings.voucherDansNImporteQuelPointDeService, at: CGPoint(x: leftMargin, y: yPosition), attributes: contentAttributes, context: context)
             yPosition += 40
             
             // Footer separator
@@ -308,7 +309,7 @@ struct VoucherSuccessView: View {
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "dd/MM/yyyy 'à' HH:mm"
-            let footerText = "Ce reçu a été généré automatiquement le \(dateFormatter.string(from: Date()))"
+            let footerText = AppStrings.ceRecuAEteGenereAutomatiquementLeValue(String(describing: dateFormatter.string(from: Date())))
             drawText(footerText, at: CGPoint(x: leftMargin, y: yPosition), attributes: footerAttributes, context: context)
         }
         
@@ -320,33 +321,7 @@ struct VoucherSuccessView: View {
     }
     
     private func generateReceiptText() -> String {
-        return """
-        REÇU DE MISE À DISPOSITION
-        
-        Statut: Mise à disposition générée
-        Code Voucher: \(voucherCode)
-        ID Transaction: \(transactionId)
-        Date: \(transactionDate)
-        
-        Montant: \(formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
-        Frais: \(fee > 0 ? formatAmount(fee) : "Gratuit")
-        Total débité: \(formatAmount(total))
-        
-        ÉMETTEUR
-        Nom: \(senderName)
-        Téléphone: \(senderPhone)
-        
-        DESTINATAIRE
-        Nom: \(recipientName.isEmpty ? "Non vérifié" : recipientName)
-        Téléphone: \(recipientPhone)
-        
-        Détails: \(paymentDetails.isEmpty ? "Mise à disposition de fonds" : paymentDetails)
-        
-        INSTRUCTIONS:
-        Le destinataire peut retirer ces fonds avec le code voucher dans n'importe quel point de service.
-        
-        Ce reçu a été généré automatiquement.
-        """
+        return AppStrings.recuDeMiseADispositionStatutMiseADispositionGeneree(String(describing: voucherCode), String(describing: transactionId), String(describing: transactionDate), String(describing: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0)), String(describing: fee > 0 ? formatAmount(fee) : AppStrings.gratuit), String(describing: formatAmount(total)), String(describing: senderName), String(describing: senderPhone), String(describing: recipientName.isEmpty ? AppStrings.nonVerifie : recipientName), String(describing: recipientPhone), String(describing: paymentDetails.isEmpty ? AppStrings.miseADispositionDeFonds : paymentDetails))
     }
 }
 

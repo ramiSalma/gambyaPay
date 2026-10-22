@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @StateObject private var authManager = AuthenticationManager()
     @StateObject private var inactivityManager = InactivityManager()
     @State private var navigationPath = NavigationPath()

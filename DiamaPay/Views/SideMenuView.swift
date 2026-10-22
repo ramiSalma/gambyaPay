@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SideMenuView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     var onSelect: (String) -> Void
 
     var body: some View {
@@ -8,70 +9,70 @@ struct SideMenuView: View {
             VStack(alignment: .leading, spacing: 0) {
                 header
 
-                sectionHeader("PROFILE")
-                item("person.crop.circle", "My Profile", "profile")
-                item("person.2", "My Beneficiaries", "beneficiaries")
+                sectionHeader(AppStrings.profileSection)
+                item("person.crop.circle", AppStrings.myProfile, "profile")
+                item("person.2", AppStrings.beneficiaries, "beneficiaries")
                 sectionDivider
 
-                sectionHeader("LOANS")
-                item("wallet.bifold", "Request a Loan", "loanRequest")
-                item("clock.arrow.circlepath", "My Loan Requests", "loanRequests")
-                item("questionmark.bubble", "FAQs / Terms and Conditions", "loanHelp")
+                sectionHeader(AppStrings.loansSection)
+                item("wallet.bifold", AppStrings.requestLoan, "loanRequest")
+                item("clock.arrow.circlepath", AppStrings.myLoans, "loanRequests")
+                item("questionmark.bubble", AppStrings.loanHelp, "loanHelp")
                 sectionDivider
 
-                sectionHeader("TRANSFERS")
-                item("arrow.left.arrow.right", "Transfer to Wallet", "walletTransfer")
-                item("wallet.bifold.fill", "Wallet to Account", "walletToAccountTransfer")
-                item("bankToWallet", "Account to Wallet", "accountToWalletTransfer")
-                item("voucher", "Money Voucher", "moneyVoucher")
-                item("iphone", "Mobile Money", "mobileMoney")
-                item("qrcode", "QR Transfer", "qr")
-                item("wallet.pass", "Crowd Funding", "sponsor")
-                item("repeat", "Standing Instructions", "si")
+                sectionHeader(AppStrings.transfersSection)
+                item("arrow.left.arrow.right", AppStrings.transferToWallet, "walletTransfer")
+                item("wallet.bifold.fill", AppStrings.walletToAccount, "walletToAccountTransfer")
+                item("bankToWallet", AppStrings.accountToWallet, "accountToWalletTransfer")
+                item("voucher", AppStrings.moneyVoucher, "moneyVoucher")
+                item("iphone", AppStrings.mobileMoney, "mobileMoney")
+                item("qrcode", AppStrings.qrTransfer, "qr")
+                item("wallet.pass", AppStrings.crowdFunding, "sponsor")
+                item("repeat", AppStrings.standingInstructions, "si")
                 sectionDivider
 
-                sectionHeader("FOOD SERVICES")
-                item("fork.knife", "Order food", "orderFood")
-                item("clock.arrow.circlepath", "Food history", "orderHistory")
-                item("exclamationmark.triangle", "Complaints", "foodComplaints")
+                sectionHeader(AppStrings.foodSection)
+                item("fork.knife", AppStrings.orderFood, "orderFood")
+                item("clock.arrow.circlepath", AppStrings.foodHistory, "orderHistory")
+                item("exclamationmark.triangle", AppStrings.complaints, "foodComplaints")
                 sectionDivider
 
-                sectionHeader("RECHARGES")
-                item("phone", "Phone Credit", "phoneCredit")
-                item("antenna.radiowaves.left.and.right", "Buy Data", "buyData")
-                item("creditcard", "Bill Payment", "billPayment")
+                sectionHeader(AppStrings.rechargesSection)
+                item("phone", AppStrings.phoneCredit, "phoneCredit")
+                item("antenna.radiowaves.left.and.right", AppStrings.buyData, "buyData")
+                item("creditcard", AppStrings.billPayment, "billPayment")
                 sectionDivider
 
-                sectionHeader("SPONSOR")
-                item("person.2", "Sponsored Wallets", "sponsored")
-                item("person.3", "Sponsoring Wallets", "sponsoring")
+                sectionHeader(AppStrings.sponsorSection)
+                item("person.2", AppStrings.sponsoredWallets, "sponsored")
+                item("person.3", AppStrings.sponsoringWallets, "sponsoring")
                 sectionDivider
 
-                sectionHeader("SAVINGS")
-                item("banknote", "Savings wallet", "savings")
-                item("waveform.path", "Savings Wallet Statement", "savingsStatement")
+                sectionHeader(AppStrings.savingsSection)
+                item("banknote", AppStrings.savingsWallet, "savings")
+                item("waveform.path", AppStrings.savingsStatement, "savingsStatement")
                 sectionDivider
 
-                sectionHeader("TRANSACTIONS")
-                item("list.bullet.rectangle", "Transaction History", "transactions")
+                sectionHeader(AppStrings.transactionsSection)
+                item("list.bullet.rectangle", AppStrings.transactionHistory, "transactions")
                 sectionDivider
 
-                sectionHeader("WALLET MANAGEMENT")
-                item("gauge.with.needle", "Limits", "limits")
-                item("deactivate", "Deactivate Wallet", "deactivate")
-                item("pending", "Pending Transactions", "pending")
+                sectionHeader(AppStrings.walletManagement)
+                item("gauge.with.needle", AppStrings.limits, "limits")
+                item("deactivate", AppStrings.deactivateWallet, "deactivate")
+                item("pending", AppStrings.pendingTransactions, "pending")
                 sectionDivider
 
-                sectionHeader("HELP")
-                item("gearshape", "Settings", "settings")
-                item("bubble.left", "Send Feedback", "comment")
-                item("exclamationmark.bubble", "File a Complaint", "complaint")
-                DrawerItem(icon: "phone", title: "Contact Us") {
+                sectionHeader(AppStrings.helpSection)
+                item("gearshape", AppStrings.settings, "settings")
+                item("bubble.left", AppStrings.sendFeedback, "comment")
+                item("exclamationmark.bubble", AppStrings.fileComplaint, "complaint")
+                DrawerItem(icon: "phone", title: AppStrings.contactUs) {
                     makePhoneCall(phoneNumber: "+224612008699")
                 }
-                item("terms", "Terms and Conditions", "terms")
-                item("faq", "FAQ", "FAQ")
-                item("rectangle.portrait.and.arrow.right", "Logout", "logout")
+                item("terms", AppStrings.terms, "terms")
+                item("faq", AppStrings.faq, "FAQ")
+                item("rectangle.portrait.and.arrow.right", AppStrings.logout, "logout")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.white)
@@ -85,7 +86,7 @@ struct SideMenuView: View {
             Text("EWALLET")
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.white)
-            Text("Your Secure Digital Wallet")
+            Text(AppStrings.walletTagline)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(.white.opacity(0.96))
         }

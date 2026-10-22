@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct DiamaPayHomeView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @EnvironmentObject var authManager: AuthenticationManager
     @StateObject private var viewModel = HomeViewModel()
     @State private var showDrawer = false
@@ -153,6 +154,8 @@ struct DiamaPayHomeView: View {
             NavigationLink("", destination: BiometricSettingsView(), isActive: $viewModel.navigateToBiometric)
             NavigationLink("", destination: CheckLimitView(onOpenSettings: { showDrawer = true }), isActive: $viewModel.navigateToLimits)
             NavigationLink("", destination: TermsAndConditionsView(), isActive: $viewModel.navigateToTerms)
+            NavigationLink("", destination: RechargeServiceView(isData: false), isActive: $viewModel.navigateToPhoneCredit)
+            NavigationLink("", destination: RechargeServiceView(isData: true), isActive: $viewModel.navigateToBuyData)
             NavigationLink("", destination: BillPayProvidersView(), isActive: $viewModel.navigateToBills)
             NavigationLink("", destination: OrderFoodView(), isActive: $viewModel.navigateToOrderFood)
             NavigationLink("", destination: OrderFoodView(initiallyShowingHistory: true), isActive: $viewModel.navigateToFoodHistory)
@@ -168,6 +171,7 @@ struct DiamaPayHomeView: View {
 }
 
 private struct OrderFoodHomeBanner: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let action: () -> Void
 
     var body: some View {
@@ -184,10 +188,10 @@ private struct OrderFoodHomeBanner: View {
                         .background(Color.white.opacity(0.94), in: Circle())
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Order Food")
+                        Text(AppStrings.orderFood)
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white)
-                        Text("Fast local delivery")
+                        Text(AppStrings.fastDelivery)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white)
                     }
@@ -212,7 +216,7 @@ private struct OrderFoodHomeBanner: View {
             .clipShape(RoundedRectangle(cornerRadius: 24))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Order Food. Fast local delivery")
+        .accessibilityLabel(AppStrings.orderFoodFastLocalDelivery)
     }
 }
 
@@ -252,6 +256,8 @@ class HomeViewModel: ObservableObject {
     @Published var navigateToTerms = false
     @Published var navigateToProfile = false
     @Published var navigateToBeneficiaries = false
+    @Published var navigateToPhoneCredit = false
+    @Published var navigateToBuyData = false
     @Published var navigateToBills = false
     @Published var navigateToSettings = false
     @Published var navigateToOrderFood = false
@@ -330,7 +336,8 @@ class HomeViewModel: ObservableObject {
         case "biometric": navigateToBiometric = true
         case "FAQ": navigateToFAQ = true
         case "billPayment": navigateToBills = true
-        case "phoneCredit", "buyData": navigateToBills = true
+        case "phoneCredit": navigateToPhoneCredit = true
+        case "buyData": navigateToBuyData = true
         case "settings": navigateToSettings = true
         case "orderFood": navigateToOrderFood = true
         case "orderHistory": navigateToFoodHistory = true
@@ -443,6 +450,7 @@ enum NavigationDestination {
 
 // MARK: - Header Section
 struct HeaderSection: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let userName: String
     let balance: String
     let currency: String
@@ -466,7 +474,7 @@ struct HeaderSection: View {
     private var userGreeting: some View {
         HStack {
             HStack(spacing: 5) {
-                Text("Hello,").foregroundColor(Color(hex: "8791A3"))
+                Text(AppStrings.hello).foregroundColor(Color(hex: "8791A3"))
                 Text(userName).foregroundColor(Color(hex: "202633"))
             }
             .font(.system(size: 20, weight: .medium))
@@ -477,6 +485,7 @@ struct HeaderSection: View {
 }
 
 private struct HomeHeaderBar: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let onMenuTap: () -> Void
 
     var body: some View {
@@ -502,6 +511,7 @@ private struct HomeHeaderBar: View {
 
 // MARK: - Balance Card
 struct BalanceCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let balance: String
     let currency: String
     @Binding var isBalanceVisible: Bool
@@ -509,7 +519,7 @@ struct BalanceCard: View {
     
     var body: some View {
         VStack(spacing: 14) {
-            Text("Available Balance")
+            Text(AppStrings.availableBalance)
                 .font(.system(size: 16, weight: .medium))
                 .tracking(1)
                 .foregroundColor(Color(hex: "7A8699"))
@@ -534,7 +544,7 @@ struct BalanceCard: View {
             Image(systemName: "clock.arrow.circlepath")
                 .foregroundColor(Color(hex: "5D6CD5"))
                 .font(.system(size: 23, weight: .medium))
-            Text("Transaction History")
+            Text(AppStrings.transactionHistory)
                 .font(.system(size: 17, weight: .medium))
                 .foregroundColor(Color(hex: "303949"))
             Spacer()
@@ -558,6 +568,7 @@ struct BalanceCard: View {
 
 // MARK: - Transfers Section
 struct TransfersSection: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let onTransferTap: (NavigationDestination) -> Void
     
     var body: some View {
@@ -569,7 +580,7 @@ struct TransfersSection: View {
     
     private var sectionHeader: some View {
         HStack {
-            Text("QUICK ACCESS")
+            Text(AppStrings.quickAccess)
                 .font(.system(size: 16, weight: .semibold))
                 .tracking(1)
                 .foregroundColor(Color(hex: "7A8699"))
@@ -582,14 +593,14 @@ struct TransfersSection: View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
                 TransferCard(
-                    title: "Transfer to Wallet",
+                    title: AppStrings.transferToWallet,
                     icon: "wallet.pass",
                     backgroundColor: .clear,
                     iconColor: Color(hex: "5D6CD5")
                 ) { onTransferTap(.walletTransfer) }
                 
                 TransferCard(
-                    title: "Wallet to Account",
+                    title: AppStrings.walletToAccount,
                     icon: "creditcard",
                     backgroundColor: .clear,
                     iconColor: Color(hex: "5D6CD5")
@@ -598,14 +609,14 @@ struct TransfersSection: View {
             
             HStack(spacing: 12) {
                 TransferCard(
-                    title: "Bills",
+                    title: AppStrings.bills,
                     icon: "doc.text",
                     backgroundColor: .clear,
                     iconColor: Color(hex: "5D6CD5")
                 ) { onTransferTap(.bills) }
                 
                 TransferCard(
-                    title: "QR Payment",
+                    title: AppStrings.qrPayment,
                     icon: "qrcode",
                     backgroundColor: .clear,
                     iconColor: Color(hex: "5D6CD5")
@@ -618,6 +629,7 @@ struct TransfersSection: View {
 
 // MARK: - Transfer Card
 struct TransferCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     let icon: String
     let backgroundColor: Color
@@ -652,6 +664,7 @@ struct TransferCard: View {
 
 // MARK: - Promotions Section
 struct PromotionsSection: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let ads: [Advertisement]
     let onAdTap: (Advertisement) -> Void
     
@@ -664,7 +677,7 @@ struct PromotionsSection: View {
     
     private var sectionHeader: some View {
         HStack {
-            Text("PROMOTIONS")
+            Text(AppStrings.promotions)
                 .font(.system(size: 16, weight: .semibold))
                 .tracking(1)
                 .foregroundColor(Color(hex: "7A8699"))
@@ -676,7 +689,7 @@ struct PromotionsSection: View {
     private var adScrollView: some View {
         Group {
         if ads.isEmpty {
-            Text("No promotions available")
+            Text(AppStrings.noPromotions)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color(hex: "A4AFBF"))
                 .frame(maxWidth: .infinity)
@@ -696,6 +709,7 @@ struct PromotionsSection: View {
 }
 
 struct AppBottomBar: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let onSponsors: () -> Void
     let onQR: () -> Void
     let onLimits: () -> Void
@@ -706,13 +720,13 @@ struct AppBottomBar: View {
     var body: some View {
         ZStack(alignment: .top) {
             HStack {
-                item("house.fill", "Home", selected: selectedTab == "Home", action: onHome)
+                item("house.fill", AppStrings.home, selected: selectedTab == "Home", action: onHome)
                 Spacer()
-                item("hand.thumbsup", "Sponsors", selected: selectedTab == "Sponsors", action: onSponsors)
+                item("hand.thumbsup", AppStrings.sponsors, selected: selectedTab == "Sponsors", action: onSponsors)
                 Spacer(minLength: 76)
-                item("speedometer", "Limits", selected: selectedTab == "Limits", action: onLimits)
+                item("speedometer", AppStrings.limits, selected: selectedTab == "Limits", action: onLimits)
                 Spacer()
-                item("gearshape.fill", "Settings", selected: selectedTab == "Settings", action: onSettings)
+                item("gearshape.fill", AppStrings.settings, selected: selectedTab == "Settings", action: onSettings)
             }
             .padding(.horizontal, 20)
             .padding(.top, 22)
@@ -784,6 +798,7 @@ struct AppBottomBarShape: Shape {
 
 // MARK: - Ad Card
 struct AdCard: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let ad: Advertisement
     let onTap: () -> Void
     
@@ -810,7 +825,7 @@ struct AdCard: View {
     private var fallbackCard: some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
-                Text(ad.title ?? "Promo")
+                Text(ad.title ?? AppStrings.promo)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.white)
                 Text(ad.description ?? "")
@@ -833,7 +848,7 @@ struct AdCard: View {
         HStack(spacing: 4) {
             Image(systemName: "eye.fill")
                 .font(.system(size: 10))
-            Text("Vu")
+            Text(AppStrings.vu)
                 .font(.system(size: 10, weight: .semibold))
         }
         .foregroundColor(.white)
@@ -847,17 +862,18 @@ struct AdCard: View {
 
 // MARK: - Floating Action Menu
 struct FloatingActionMenu: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Binding var isExpanded: Bool
     let onAction: (String) -> Void
     
-    private let menuItems: [(icon: String, label: String, color: Color, action: String)] = [
-        ("clock.fill", "Historique des transactions", .gray, "payment"),
-        ("person", "Sponsoriser un portefeuille", .cyan, "sponsor"),
-        ("person.3.fill", "Mes parrains", .blueH, "sponsors"),
-        ("ticket.fill", "Mise à disposition", .orange, "moneyVoucher"),
-        ("arrow.left.arrow.right", "Virements permanents", .purple, "si"),
-        ("gauge.with.needle.fill", "Mes limites", .green, "limits")
-    ]
+    private var menuItems: [(icon: String, label: String, color: Color, action: String)] { [
+        ("clock.fill", AppStrings.transactionHistory, .gray, "payment"),
+        ("person", AppStrings.sponsoriserUnPortefeuille, .cyan, "sponsor"),
+        ("person.3.fill", AppStrings.sponsoringWallets, .blueH, "sponsors"),
+        ("ticket.fill", AppStrings.moneyVoucher, .orange, "moneyVoucher"),
+        ("arrow.left.arrow.right", AppStrings.standingInstructions, .purple, "si"),
+        ("gauge.with.needle.fill", AppStrings.mesLimites, .green, "limits")
+    ] }
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -912,6 +928,7 @@ struct FloatingActionMenu: View {
 
 // MARK: - Floating Menu Item
 struct FloatingMenuItem: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let icon: String
     let label: String
     let backgroundColor: Color
@@ -946,6 +963,7 @@ struct FloatingMenuItem: View {
 
 // MARK: - Ad Popup View
 struct AdPopupView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let ad: Advertisement
     @Binding var isPresented: Bool
     var onClose: (() -> Void)?
@@ -983,11 +1001,11 @@ struct AdPopupView: View {
             
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(ad.description ?? "Promotion")
+                    Text(ad.description ?? AppStrings.promotion)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
                         .lineLimit(1)
-                    Text(ad.title ?? "Ne manquez pas cette opportunité")
+                    Text(ad.title ?? AppStrings.neManquezPasCetteOpportunite)
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(.white.opacity(0.95))
                         .lineLimit(1)
@@ -1028,7 +1046,7 @@ struct AdPopupView: View {
                     Image(systemName: "megaphone.fill")
                         .font(.system(size: 60))
                         .foregroundColor(Color(hex: "4CAF50"))
-                    Text("Aucune image disponible")
+                    Text(AppStrings.aucuneImageDisponible)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                 }

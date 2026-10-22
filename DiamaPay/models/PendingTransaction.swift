@@ -42,27 +42,27 @@ struct PendingTransaction: Identifiable, Codable {
     }
     
     var transactionTypeDescription: String {
-        guard let code = pCode else { return "Transaction" }
+        guard let code = pCode else { return AppStrings.transactionGeneric }
         
         switch code {
         case "41":
-            return "Transfert d'argent"
+            return AppStrings.transfertDArgent
         case "42":
-            return "Retrait bancaire"
+            return AppStrings.retraitBancaire
         case "43":
-            return "Mise à disposition"
+            return AppStrings.moneyVoucher
         case "44":
-            return "Paiement QR"
+            return AppStrings.qrPayment
         case "51":
-            return "Recharge téléphonique"
+            return AppStrings.rechargeTelephonique
         case "70":
-            return "Paiement marchand"
+            return AppStrings.paiementMarchand
         case "01":
-            return "Retrait d'espèces"
+            return AppStrings.retraitDEspeces
         case "71":
-            return "Paiement de facture"
+            return AppStrings.paiementDeFacture
         default:
-            return type ?? "Transaction"
+            return type ?? AppStrings.transactionGeneric
         }
     }
     
@@ -103,12 +103,12 @@ struct PendingTransaction: Identifiable, Codable {
     }
     
     var beneficiaryLabel: String {
-        guard let code = pCode else { return "Bénéficiaire" }
+        guard let code = pCode else { return AppStrings.beneficiary }
         
         switch code {
-        case "43": return "Bénéficiaire"
-        case "01": return "Agent"
-        default: return "Bénéficiaire"
+        case "43": return AppStrings.beneficiary
+        case "01": return AppStrings.agent
+        default: return AppStrings.beneficiary
         }
     }
     
@@ -127,7 +127,7 @@ struct PendingTransaction: Identifiable, Codable {
         }
         
         // For Cash-out (pCode 01), extract only name from agent
-        guard let agentStr = agent else { return "N/A" }
+        guard let agentStr = agent else { return AppStrings.nA }
         let components = agentStr.components(separatedBy: CharacterSet.decimalDigits)
         let nameOnly = components[0].trimmingCharacters(in: .whitespaces)
         return nameOnly.isEmpty ? agentStr : nameOnly

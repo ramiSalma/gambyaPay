@@ -68,14 +68,14 @@ struct WalletBeneficiary: Codable {
 
     var transactionTypeTitle: String {
         switch transactionType?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "" {
-        case "41": return "Wallet Transfer"
-        case "10": return "Sponsored Wallet"
-        case "42": return "Bank Transfer"
-        case "43": return "Money Voucher"
-        case "44": return "QR Transfer"
-        case "45": return "Account to Wallet"
-        case "": return isBankAccountRecipient ? "Bank Transfer" : "Wallet Transfer"
-        case let type: return "Other Type (\(type))"
+        case "41": return AppStrings.walletTransfer
+        case "10": return AppStrings.sponsoredWallet2
+        case "42": return AppStrings.bankTransfer
+        case "43": return AppStrings.moneyVoucher
+        case "44": return AppStrings.qrTransfer
+        case "45": return AppStrings.accountToWallet
+        case "": return isBankAccountRecipient ? AppStrings.bankTransfer : AppStrings.walletTransfer
+        case let type: return AppStrings.otherTypeValue(String(describing: type))
         }
     }
 
@@ -98,8 +98,8 @@ enum WalletTransferRecipientKind: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .phoneOrCustomerID: return "Phone or Customer ID"
-        case .wallet: return "Wallet Number"
+        case .phoneOrCustomerID: return AppStrings.phoneOrCustomerId
+        case .wallet: return AppStrings.walletNumber
         }
     }
 

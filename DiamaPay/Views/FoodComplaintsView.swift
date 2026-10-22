@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct FoodComplaintsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     @State private var complaints: [FoodComplaintRecord] = []
     @State private var orders: [FoodOrder] = []
     @State private var selectedOrder: FoodOrder?
-    @State private var selectedType = "Food quality"
+    @State private var selectedType = AppStrings.original("foodQuality")
     @State private var description = ""
     @State private var isLoading = true
     @State private var isSubmitting = false
@@ -14,17 +15,17 @@ struct FoodComplaintsView: View {
     @State private var successMessage: String?
 
     private let blue = Color(hex: "174EA6")
-    private let complaintTypes = ["Food quality", "Missing item", "Late delivery", "Incorrect order", "Restaurant service", "Other"]
+    private let complaintTypes = [AppStrings.original("foodQuality"), AppStrings.original("missingItem"), AppStrings.original("lateDelivery"), AppStrings.original("incorrectOrder"), AppStrings.original("restaurantService"), AppStrings.original("other")]
 
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Food Complaints", headerColor: blue)
+                DiamaPayHeader(title: AppStrings.foodComplaints, headerColor: blue)
                 if isLoading {
                     Spacer()
                     ProgressView().tint(blue)
-                    Text("Loading complaints…").font(.system(size: 14)).foregroundStyle(.secondary).padding(.top, 10)
+                    Text(AppStrings.loadingComplaints).font(.system(size: 14)).foregroundStyle(.secondary).padding(.top, 10)
                     Spacer()
                 } else if complaints.isEmpty {
                     ScrollView {
@@ -49,19 +50,19 @@ struct FoodComplaintsView: View {
         .navigationBarHidden(true)
         .task { loadData() }
         .sheet(isPresented: $showForm) { complaintForm }
-        .alert("Food complaints", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("OK", role: .cancel) { errorMessage = nil }
-        } message: { Text(errorMessage ?? "") }
-        .alert("Complaint submitted", isPresented: Binding(get: { successMessage != nil }, set: { if !$0 { successMessage = nil } })) {
-            Button("Done") { successMessage = nil }
-        } message: { Text(successMessage ?? "") }
+        .alert(AppStrings.foodComplaints2, isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            Button(AppStrings.ok, role: .cancel) { errorMessage = nil }
+        } message: { Text(AppStrings.option(errorMessage ?? "")) }
+        .alert(AppStrings.complaintSubmitted, isPresented: Binding(get: { successMessage != nil }, set: { if !$0 { successMessage = nil } })) {
+            Button(AppStrings.done) { successMessage = nil }
+        } message: { Text(AppStrings.option(successMessage ?? "")) }
     }
 
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "bubble.left.and.exclamationmark.bubble.right").font(.system(size: 34)).foregroundStyle(blue)
-            Text("No food complaints yet").font(.system(size: 18, weight: .semibold))
-            Text("If something went wrong with a food order, tell us and we’ll follow up.").font(.system(size: 14)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Text(AppStrings.noFoodComplaintsYet).font(.system(size: 18, weight: .semibold))
+            Text(AppStrings.ifSomethingWentWrongWithAFoodOrderTellUs).font(.system(size: 14)).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(28).background(Color(.systemGroupedBackground), in: RoundedRectangle(cornerRadius: 18))
     }
@@ -71,7 +72,7 @@ struct FoodComplaintsView: View {
             Button { showForm = true } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "plus.circle.fill").font(.system(size: 20))
-                    Text("File a food service complaint").font(.system(size: 15, weight: .semibold))
+                    Text(AppStrings.fileAFoodServiceComplaint).font(.system(size: 15, weight: .semibold))
                     Spacer()
                     Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
                 }
@@ -79,7 +80,7 @@ struct FoodComplaintsView: View {
             }
             .buttonStyle(.plain).disabled(orders.isEmpty)
             if orders.isEmpty {
-                Text("Place a food order first to file a complaint about it.").font(.system(size: 12)).foregroundStyle(.secondary)
+                Text(AppStrings.placeAFoodOrderFirstToFileAComplaintAbout).font(.system(size: 12)).foregroundStyle(.secondary)
             }
         }
     }
@@ -87,18 +88,18 @@ struct FoodComplaintsView: View {
     private func complaintCard(_ record: FoodComplaintRecord) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(record.complaint?.complaintType ?? "Food service").font(.system(size: 15, weight: .semibold))
+                Text(record.complaint?.complaintType ?? AppStrings.foodService).font(.system(size: 15, weight: .semibold))
                 Spacer()
-                Text((record.complaint?.status ?? "SUBMITTED").replacingOccurrences(of: "_", with: " "))
+                Text(AppStrings.option(record.complaint?.status ?? "SUBMITTED"))
                     .font(.system(size: 10, weight: .bold)).foregroundStyle(blue).padding(.horizontal, 9).padding(.vertical, 6).background(blue.opacity(0.1), in: Capsule())
             }
             if let orderRef = record.order?.orderRef ?? record.complaint?.orderId {
-                Label("Order \(orderRef)", systemImage: "bag").font(.system(size: 12)).foregroundStyle(.secondary)
+                Label(AppStrings.orderValue(String(describing: orderRef)), systemImage: "bag").font(.system(size: 12)).foregroundStyle(.secondary)
             }
             if let text = record.complaint?.description, !text.isEmpty { Text(text).font(.system(size: 14)).foregroundStyle(.primary) }
             if let response = record.complaint?.supportResponse ?? record.complaint?.merchantResponse, !response.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Response").font(.system(size: 11, weight: .semibold)).foregroundStyle(blue)
+                    Text(AppStrings.response).font(.system(size: 11, weight: .semibold)).foregroundStyle(blue)
                     Text(response).font(.system(size: 13)).foregroundStyle(.secondary)
                 }.frame(maxWidth: .infinity, alignment: .leading).padding(11).background(blue.opacity(0.06), in: RoundedRectangle(cornerRadius: 11))
             }
@@ -110,28 +111,28 @@ struct FoodComplaintsView: View {
     private var complaintForm: some View {
         NavigationStack {
             Form {
-                Section("Order") {
+                Section(AppStrings.order) {
                     Menu {
                         ForEach(orders) { order in
-                            Button("\(order.orderRef ?? order.orderId) · \(order.status ?? "Order")") { selectedOrder = order }
+                            Button(AppStrings.valueValue2(String(describing: order.orderRef ?? order.orderId), String(describing: order.status ?? AppStrings.order))) { selectedOrder = order }
                         }
                     } label: {
-                        HStack { Text(selectedOrder.map { $0.orderRef ?? $0.orderId } ?? "Select an order"); Spacer(); Image(systemName: "chevron.up.chevron.down").foregroundStyle(.secondary) }
+                        HStack { Text(selectedOrder.map { $0.orderRef ?? $0.orderId } ?? AppStrings.selectAnOrder); Spacer(); Image(systemName: "chevron.up.chevron.down").foregroundStyle(.secondary) }
                     }
                 }
-                Section("What went wrong?") {
-                    Picker("Complaint type", selection: $selectedType) {
-                        ForEach(complaintTypes, id: \.self) { Text($0).tag($0) }
+                Section(AppStrings.whatWentWrong) {
+                    Picker(AppStrings.complaintType, selection: $selectedType) {
+                        ForEach(complaintTypes, id: \.self) { Text(AppStrings.option($0)).tag($0) }
                     }
-                    TextField("Describe the issue", text: $description, axis: .vertical).lineLimit(4...8)
+                    TextField(AppStrings.describeTheIssue, text: $description, axis: .vertical).lineLimit(4...8)
                 }
             }
-            .navigationTitle("New complaint")
+            .navigationTitle(AppStrings.newComplaint)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { showForm = false } }
+                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.cancel) { showForm = false } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isSubmitting ? "Sending…" : "Submit") { submitComplaint() }
+                    Button(isSubmitting ? AppStrings.sending : AppStrings.submit) { submitComplaint() }
                         .disabled(isSubmitting || selectedOrder == nil || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
@@ -165,7 +166,7 @@ struct FoodComplaintsView: View {
                 switch result {
                 case .success(let response):
                     complaints = response.result ?? []
-                    if response.respCode != "000" { errorMessage = response.message ?? "Could not load food complaints." }
+                    if response.respCode != "000" { errorMessage = response.message ?? AppStrings.couldNotLoadFoodComplaints }
                 case .failure(let error): errorMessage = error.localizedDescription
                 }
             }
@@ -196,9 +197,9 @@ struct FoodComplaintsView: View {
                 case .success(let response) where response.respCode == "000":
                     showForm = false
                     description = ""
-                    successMessage = response.message ?? "Your complaint has been submitted."
+                    successMessage = response.message ?? AppStrings.yourComplaintHasBeenSubmitted
                     loadComplaints()
-                case .success(let response): errorMessage = response.message ?? "Could not submit your complaint."
+                case .success(let response): errorMessage = response.message ?? AppStrings.couldNotSubmitYourComplaint
                 case .failure(let error): errorMessage = error.localizedDescription
                 }
             }

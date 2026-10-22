@@ -19,7 +19,7 @@ class BiometricHelper {
         
         var displayName: String {
             switch self {
-            case .none: return "Biometric"
+            case .none: return AppStrings.biometric
             case .touchID: return "Touch ID"
             case .faceID: return "Face ID"
             case .opticID: return "Optic ID"
@@ -51,21 +51,21 @@ class BiometricHelper {
         var errorDescription: String? {
             switch self {
             case .notAvailable:
-                return "Biometric authentication is not available on this device"
+                return AppStrings.biometricAuthenticationIsNotAvailableOnThisDevice
             case .notEnrolled:
-                return "No biometric data enrolled. Please set up Face ID, Touch ID, or Optic ID in Settings"
+                return AppStrings.noBiometricDataEnrolledPleaseSetUpFaceIdTouch
             case .authenticationFailed:
-                return "Authentication failed. Please try again"
+                return AppStrings.authenticationFailedPleaseTryAgain
             case .userCancel:
-                return "Authentication cancelled"
+                return AppStrings.authenticationCancelled
             case .userFallback:
-                return "User chose to use PIN"
+                return AppStrings.userChoseToUsePin
             case .systemCancel:
-                return "Authentication cancelled by system"
+                return AppStrings.authenticationCancelledBySystem
             case .passcodeNotSet:
-                return "Device passcode not set. Please set up a passcode first"
+                return AppStrings.devicePasscodeNotSetPleaseSetUpAPasscodeFirst
             case .biometryLockout:
-                return "Biometric authentication is locked due to too many failed attempts"
+                return AppStrings.biometricAuthenticationIsLockedDueToTooManyFailedAttempts
             case .unknown(let message):
                 return message
             }
@@ -122,7 +122,7 @@ class BiometricHelper {
             return BiometricStatus(
                 isAvailable: true,
                 type: getBiometricType(),
-                message: "\(getBiometricTypeString()) is available"
+                message: AppStrings.valueIsAvailable(String(describing: getBiometricTypeString()))
             )
         } else if let error = error {
             let message = mapErrorToMessage(error)
@@ -135,19 +135,19 @@ class BiometricHelper {
             return BiometricStatus(
                 isAvailable: false,
                 type: .none,
-                message: "Biometric authentication is not available"
+                message: AppStrings.biometricAuthenticationIsNotAvailable
             )
         }
     }
     
     // MARK: - Authentication
     static func authenticateWithCustomPrompt(
-        reason: String = "Authenticate to access your wallet",
+        reason: String = AppStrings.authenticateToAccessYourWallet,
         completion: @escaping (Result<Void, BiometricError>) -> Void
     ) {
         let context = LAContext()
-        context.localizedCancelTitle = "Use PIN"
-        context.localizedFallbackTitle = "Enter PIN"
+        context.localizedCancelTitle = AppStrings.usePin
+        context.localizedFallbackTitle = AppStrings.enterPin
         
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
@@ -172,7 +172,7 @@ class BiometricHelper {
     
     // MARK: - Error Mapping
     private static func mapError(_ error: NSError?) -> BiometricError {
-        guard let error = error else { return .unknown("Unknown error") }
+        guard let error = error else { return .unknown(AppStrings.unknownError2) }
         
         switch error.code {
         case LAError.authenticationFailed.rawValue:
@@ -199,11 +199,11 @@ class BiometricHelper {
     private static func mapErrorToMessage(_ error: NSError) -> String {
         switch error.code {
         case LAError.biometryNotAvailable.rawValue:
-            return "Biometric authentication is not available on this device"
+            return AppStrings.biometricAuthenticationIsNotAvailableOnThisDevice
         case LAError.biometryNotEnrolled.rawValue:
-            return "No biometric data enrolled. Please set up Face ID, Touch ID, or Optic ID in Settings"
+            return AppStrings.noBiometricDataEnrolledPleaseSetUpFaceIdTouch
         case LAError.passcodeNotSet.rawValue:
-            return "Device passcode not set. Please set up a passcode first"
+            return AppStrings.devicePasscodeNotSetPleaseSetUpAPasscodeFirst
         default:
             return error.localizedDescription
         }

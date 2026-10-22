@@ -8,6 +8,7 @@ import ContactsUI
 import SwiftUI
 
 struct MoneyVoucherView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
@@ -28,7 +29,7 @@ struct MoneyVoucherView: View {
     @State private var isLoading = false
     @State private var showAlert = false
     @State private var alertMessage = ""
-    @State private var alertTitle = "Erreur"
+    @State private var alertTitle = AppStrings.error
     
     // Voucher management
     @State private var calculatedFee: Double = 0.0
@@ -66,7 +67,7 @@ struct MoneyVoucherView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Money Voucher", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.moneyVoucher, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     Spacer()
@@ -75,7 +76,7 @@ struct MoneyVoucherView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                             .scaleEffect(1.5)
                         
-                        Text("Traitement en cours...")
+                        Text(AppStrings.traitementEnCours)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.secondary)
                     }
@@ -120,16 +121,16 @@ struct MoneyVoucherView: View {
             showConfirmationDialog = false
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            if alertTitle == "Save recipient?" {
-                Button("Save") { saveRecipient() }
-                Button("Not now", role: .cancel) { finishAndReturnHome() }
+            if alertTitle == AppStrings.saveRecipient {
+                Button(AppStrings.save) { saveRecipient() }
+                Button(AppStrings.notNow, role: .cancel) { finishAndReturnHome() }
             } else {
-                Button("OK", role: .cancel) {
+                Button(AppStrings.ok, role: .cancel) {
                     if shouldReturnHomeAfterSave { finishAndReturnHome() }
                 }
             }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         .sheet(isPresented: $showContactPicker) {
             ContactPickerView(selectedPhone: $receiverPhone)
@@ -170,8 +171,8 @@ struct MoneyVoucherView: View {
                     pendingSavePhone = savedPhone
                     pendingSaveName = savedName
                     shouldReturnHomeAfterSave = true
-                    alertTitle = "Save recipient?"
-                    alertMessage = "Would you like to save \(savedName.isEmpty ? savedPhone : savedName) for future voucher transfers?"
+                    alertTitle = AppStrings.saveRecipient
+                    alertMessage = AppStrings.wouldYouLikeToSaveValueForFutureVoucherTransfers(String(describing: savedName.isEmpty ? savedPhone : savedName))
                     showAlert = true
                 }
             )
@@ -189,7 +190,7 @@ struct MoneyVoucherView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Mise à Disposition")
+                Text(AppStrings.miseADisposition)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -203,9 +204,9 @@ struct MoneyVoucherView: View {
     
     private var recipientDetailsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            cardSectionTitle("Recipient Details", underlineWidth: 116)
+            cardSectionTitle(AppStrings.recipientDetails, underlineWidth: 116)
             HStack(alignment: .top, spacing: 10) {
-                TextField("Phone number", text: $receiverPhone)
+                TextField(AppStrings.phoneNumber2, text: $receiverPhone)
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
@@ -217,15 +218,15 @@ struct MoneyVoucherView: View {
                             receiverPhone = String(receiverPhone.prefix(10))
                         }
                     }
-                recipientAction("Saved", icon: "book.closed.fill") { showSavedRecipients = true }
-                recipientAction("Contacts", icon: "person.crop.rectangle.fill") { showContactPicker = true }
+                recipientAction(AppStrings.saved, icon: "book.closed.fill") { showSavedRecipients = true }
+                recipientAction(AppStrings.contacts, icon: "person.crop.rectangle.fill") { showContactPicker = true }
             }
-            TextField("Recipient name", text: $recipientName)
+            TextField(AppStrings.recipientName2, text: $recipientName)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
                 .background(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "505A69"), lineWidth: 1.5))
-            TextField("ID Number", text: $recipientIdNumber)
+            TextField(AppStrings.idNumber, text: $recipientIdNumber)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
@@ -240,8 +241,8 @@ struct MoneyVoucherView: View {
     // MARK: - Amount Card
     private var amountCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            cardSectionTitle("Amount", underlineWidth: 72)
-            FormattedTextField(placeholder: "Amount *", text: $amount, walletTransferStyle: true)
+            cardSectionTitle(AppStrings.amount, underlineWidth: 72)
+            FormattedTextField(placeholder: AppStrings.amount2, text: $amount, walletTransferStyle: true)
         }
         .padding(13)
         .background(Color.white)
@@ -254,7 +255,7 @@ struct MoneyVoucherView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Ajouter les frais de retrait")
+                    Text(AppStrings.ajouterLesFraisDeRetrait)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.primary)
                     
@@ -263,7 +264,7 @@ struct MoneyVoucherView: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                                 .scaleEffect(0.7)
-                            Text("Calcul...")
+                            Text(AppStrings.calcul)
                                 .font(.system(size: 11))
                                 .foregroundColor(.secondary)
                         }
@@ -272,15 +273,15 @@ struct MoneyVoucherView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.red)
                     } else if withdrawalFee > 0 {
-                    Text("Fee: \(formatAmount(withdrawalFee))")
+                    Text(AppStrings.feeValue(String(describing: formatAmount(withdrawalFee))))
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
                     } else if !amount.isEmpty {
-                        Text("Aucun frais applicable")
+                        Text(AppStrings.aucunFraisApplicable)
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
                     } else {
-                        Text("Enter an amount to see the fee")
+                        Text(AppStrings.enterAnAmountToSeeTheFee)
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
                     }
@@ -301,7 +302,7 @@ struct MoneyVoucherView: View {
     private func formatAmount(_ amount: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + defaultCurrency
     }
 
@@ -325,8 +326,8 @@ struct MoneyVoucherView: View {
     
     private var referenceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            cardSectionTitle("Reason (optional)", underlineWidth: 132)
-            TextField("Enter a reason", text: $paymentDetails)
+            cardSectionTitle(AppStrings.reasonOptional, underlineWidth: 132)
+            TextField(AppStrings.enterAReason, text: $paymentDetails)
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 12)
                 .frame(height: 48)
@@ -360,7 +361,7 @@ struct MoneyVoucherView: View {
             Button(action: {
                 validateAndShowConfirmation()
             }) {
-                Text("Submit")
+                Text(AppStrings.submit)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 190, height: 56)
@@ -382,7 +383,7 @@ struct MoneyVoucherView: View {
     private func validateInputs() -> Bool {
         // Source validation
         if selectedSource == .sponsor && selectedWallet == nil {
-            showErrorAlert("Veuillez sélectionner un portefeuille sponsor")
+            showErrorAlert(AppStrings.veuillezSelectionnerUnPortefeuilleSponsor)
             return false
         }
         
@@ -392,21 +393,21 @@ struct MoneyVoucherView: View {
                !wallet.dailyLimit.isEmpty,
                let dailyLimit = Double(wallet.dailyLimit),
                requestedAmount > dailyLimit {
-            showErrorAlert("Amount exceeds the sponsor's daily limit")
+            showErrorAlert(AppStrings.amountExceedsTheSponsorSDailyLimit)
                 return false
             }
         }
         
         // Phone number validation
         if receiverPhone.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            showErrorAlert("Recipient phone number is required")
+            showErrorAlert(AppStrings.recipientPhoneNumberIsRequired)
             return false
         }
 
         // NEW: Recipient name validation (REQUIRED)
         // Amount validation
         guard let amountValue = Double(amount.cleanCurrencyValue()), amountValue > 0 else {
-            showErrorAlert("Enter a valid amount")
+            showErrorAlert(AppStrings.enterAValidAmount2)
             return false
         }
         
@@ -454,7 +455,7 @@ struct MoneyVoucherView: View {
     }
     
     private func showErrorAlert(_ message: String) {
-        alertTitle = "Erreur"
+        alertTitle = AppStrings.error
         alertMessage = message
         showAlert = true
     }
@@ -505,15 +506,15 @@ struct MoneyVoucherView: View {
                     
                 } else {
                     // Fee calculation failed
-                    self.showErrorAlert("Impossible de calculer les frais: \(response.message ?? "Erreur inconnue")")
+                    self.showErrorAlert(AppStrings.impossibleDeCalculerLesFraisValue(String(describing: response.message ?? AppStrings.unknownError)))
                 }
                 
             case .failure(let error):
                 // Network error
                 if let apiError = error as? APIError {
-                    self.showErrorAlert("Erreur: \(apiError.message)")
+                    self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
                 } else {
-                    self.showErrorAlert("Erreur réseau lors du calcul des frais")
+                    self.showErrorAlert(AppStrings.erreurReseauLorsDuCalculDesFrais)
                 }
                 }
             }
@@ -560,7 +561,7 @@ struct MoneyVoucherView: View {
             case .failure(_):
                 self.withdrawalFee = 0.0
                 self.isWithdrawalFeeEnabled = false
-                self.withdrawalFeeError = "Impossible de calculer"
+                self.withdrawalFeeError = AppStrings.impossibleDeCalculer
             }
         }
     }
@@ -608,13 +609,13 @@ struct MoneyVoucherView: View {
                     if response.isSuccessful {
                         self.handleVoucherSuccess(response, requestId: requestId)
                     } else {
-                        self.showErrorAlert("Voucher transfer failed: \(response.message ?? "Unknown error")")
+                        self.showErrorAlert(AppStrings.voucherTransferFailedValue(String(describing: response.message ?? AppStrings.unknownError2)))
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showErrorAlert(apiError.message)
+                        self.showErrorAlert(AppStrings.option(apiError.message))
                     } else {
-                        self.showErrorAlert("Network error: \(error.localizedDescription)")
+                        self.showErrorAlert(AppStrings.networkErrorValue(String(describing: error.localizedDescription)))
                     }
                 }
             }
@@ -652,7 +653,7 @@ struct MoneyVoucherView: View {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let name = shouldReturnHomeAfterSave ? pendingSaveName : recipientName
         guard !phoneNumber.isEmpty, !destination.isEmpty else {
-            showErrorAlert("Recipient details are unavailable, so the voucher recipient could not be saved.")
+            showErrorAlert(AppStrings.recipientDetailsAreUnavailableSoTheVoucherRecipientCouldNot)
             return
         }
 
@@ -673,13 +674,13 @@ struct MoneyVoucherView: View {
                 switch result {
                 case .success(let response) where response.respCode == "000":
                     isRecipientAlreadySaved = true
-                    alertTitle = "Recipient saved"
-                    alertMessage = "The voucher recipient has been saved."
+                    alertTitle = AppStrings.recipientSaved
+                    alertMessage = AppStrings.theVoucherRecipientHasBeenSaved
                     showAlert = true
                 case .success(let response):
-                    showErrorAlert(response.message ?? "Unable to save the voucher recipient.")
+                    showErrorAlert(response.message ?? AppStrings.unableToSaveTheVoucherRecipient)
                 case .failure(let error):
-                    showErrorAlert((error as? APIError)?.message ?? "Unable to save the voucher recipient.")
+                    showErrorAlert((error as? APIError)?.message ?? AppStrings.unableToSaveTheVoucherRecipient)
                 }
             }
         }
@@ -724,9 +725,9 @@ struct MoneyVoucherView: View {
                     fee: calculatedFee,
                     total: totalAmountWithFee,
                     currency: defaultCurrency,
-                    recipientName: recipientName.isEmpty ? "Destinataire" : recipientName,
+                    recipientName: recipientName.isEmpty ? AppStrings.destinataire2 : recipientName,
                     recipientPhone: receiverPhone,
-                    title: "Transfer Confirmation",
+                    title: AppStrings.transferConfirmation,
                     recipientIdNumber: recipientIdNumber,
                     moneyVoucherStyle: true,
                     paymentDetails: paymentDetails,

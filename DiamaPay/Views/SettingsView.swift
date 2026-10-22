@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     @State private var requirePin = UserDefaults.standard.object(forKey: "requirePinForEveryTransaction") as? Bool ?? true
     @State private var showSecurityQuestionInfo = false
@@ -13,7 +14,7 @@ struct SettingsView: View {
             Color.white.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                DiamaPayHeader(title: "Security Settings", headerColor: blue)
+                DiamaPayHeader(title: AppStrings.securitySettings, headerColor: blue)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 18) {
@@ -34,10 +35,10 @@ struct SettingsView: View {
             )
         }
         .navigationBarHidden(true)
-        .alert("Security question", isPresented: $showSecurityQuestionInfo) {
-            Button("OK", role: .cancel) { }
+        .alert(AppStrings.securityQuestion, isPresented: $showSecurityQuestionInfo) {
+            Button(AppStrings.ok, role: .cancel) { }
         } message: {
-            Text("To update your security question, please contact customer support.")
+            Text(AppStrings.securityQuestionHelp)
         }
     }
 
@@ -48,12 +49,12 @@ struct SettingsView: View {
                     .font(.system(size: 25, weight: .semibold))
                     .foregroundColor(blue)
                     .frame(width: 40)
-                Text("Require PIN for every transaction")
-                    .font(.system(size: 19, weight: .semibold))
+                Text(AppStrings.requirePin)
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(.black)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 4)
-                Toggle("Require PIN for every transaction", isOn: $requirePin)
+                Toggle(AppStrings.requirePin, isOn: $requirePin)
                     .labelsHidden()
                     .tint(blue)
                     .onChange(of: requirePin) { _, value in
@@ -61,28 +62,28 @@ struct SettingsView: View {
                     }
             }
 
-            Text("When disabled, you can complete up to 5 transactions without entering your PIN after the first verification")
-                .font(.system(size: 15, weight: .medium))
-                .foregroundColor(.gray)
+            Text(AppStrings.pinBypassHelp)
+                .font(.footnote)
+                .foregroundColor(Color(hex: "475467"))
 
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 12) {
                     Image(systemName: "info.circle.fill")
                         .font(.system(size: 24))
                         .foregroundColor(cyan)
-                    Text("Transactions without PIN")
-                        .font(.system(size: 16, weight: .semibold))
+                    Text(AppStrings.transactionsWithoutPin)
+                        .font(.footnote.weight(.semibold))
                         .foregroundColor(.black)
                     Spacer(minLength: 4)
                     Text("0 / 5")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.subheadline.weight(.bold))
                         .foregroundColor(cyan)
                 }
                 Text(requirePin
-                     ? "A PIN is required for every transaction."
-                     : "You can complete 5 more transactions without entering your PIN")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.gray)
+                     ? AppStrings.pinAlwaysRequired
+                     : AppStrings.fiveTransactionsLeft)
+                    .font(.footnote)
+                    .foregroundColor(Color(hex: "475467"))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(16)
@@ -100,15 +101,20 @@ struct SettingsView: View {
 
     private var securityOptionsCard: some View {
         VStack(spacing: 0) {
+            AppLanguagePicker(settingsRowStyle: true)
+                .buttonStyle(.plain)
+
+            divider
+
             NavigationLink(destination: ChangePinView()) {
-                settingsRow(icon: "asterisk", title: "Change PIN")
+                settingsRow(icon: "asterisk", title: AppStrings.changePin)
             }
             .buttonStyle(.plain)
 
             divider
 
             Button { showSecurityQuestionInfo = true } label: {
-                settingsRow(icon: "questionmark.circle.fill", title: "Change security question")
+                settingsRow(icon: "questionmark.circle.fill", title: AppStrings.changeSecurityQuestion)
             }
             .buttonStyle(.plain)
 
@@ -121,12 +127,13 @@ struct SettingsView: View {
                         .foregroundColor(blue)
                         .frame(width: 40)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Biometric Authentication")
-                            .font(.system(size: 17, weight: .semibold))
+                        Text(AppStrings.biometricAuthentication)
+                            .font(.subheadline.weight(.semibold))
                             .foregroundColor(.black)
-                        Text("Use fingerprint or face unlock")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.gray)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(AppStrings.biometricHelp)
+                            .font(.footnote)
+                            .foregroundColor(Color(hex: "475467"))
                     }
                     Spacer()
                     Capsule()
@@ -139,7 +146,7 @@ struct SettingsView: View {
                                 .shadow(color: blue.opacity(0.2), radius: 2, y: 1)
                         }
                 }
-                .padding(.vertical, 22)
+                .padding(.vertical, 18)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -153,13 +160,13 @@ struct SettingsView: View {
 
     private var importantInformationCard: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Label("Important Information", systemImage: "info.circle.fill")
-                .font(.system(size: 17, weight: .bold))
+            Label(AppStrings.importantInformation, systemImage: "info.circle.fill")
+                .font(.subheadline.weight(.bold))
                 .foregroundColor(cyan)
-            informationBullet("Your PIN is required after 5 consecutive transactions or when security settings change")
-            informationBullet("Always keep your PIN secure and never share it with anyone")
-            informationBullet("The transaction counter resets to 0 each time you enter your PIN")
-            informationBullet("You can disable PIN bypass at any time in these settings")
+            informationBullet(AppStrings.pinResetRule)
+            informationBullet(AppStrings.keepPinSecure)
+            informationBullet(AppStrings.counterReset)
+            informationBullet(AppStrings.disableBypass)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -176,14 +183,15 @@ struct SettingsView: View {
                 .foregroundColor(blue)
                 .frame(width: 40)
             Text(title)
-                .font(.system(size: 17, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundColor(.black)
+                .fixedSize(horizontal: false, vertical: true)
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.gray)
+                .foregroundColor(Color(hex: "475467"))
         }
-        .padding(.vertical, 22)
+        .padding(.vertical, 18)
         .contentShape(Rectangle())
     }
 
@@ -195,7 +203,7 @@ struct SettingsView: View {
         HStack(alignment: .top, spacing: 12) {
             Circle().fill(cyan).frame(width: 8, height: 8).padding(.top, 6)
             Text(text)
-                .font(.system(size: 14, weight: .medium))
+                .font(.footnote)
                 .foregroundColor(Color(hex: "475467"))
                 .fixedSize(horizontal: false, vertical: true)
         }

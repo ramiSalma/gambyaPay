@@ -17,6 +17,7 @@ import SwiftUI
 
 // MARK: - PIN Validation Dialog
 struct DSDPinValidationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let operation: DSDPendingOperation
     @Binding var isPresented: Bool
     let onConfirm: (String) -> Void
@@ -36,11 +37,11 @@ struct DSDPinValidationDialog: View {
             VStack(alignment: .leading, spacing: 24) {
                 // Title Section
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Valider")
+                    Text(AppStrings.valider)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.primary)
                     
-                    Text("Entrez votre code PIN")
+                    Text(AppStrings.entrezVotreCodePin)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                 }
@@ -49,7 +50,7 @@ struct DSDPinValidationDialog: View {
                 VStack(spacing: 16) {
                     // Chassis Row
                     HStack {
-                        Text("Chassis")
+                        Text(AppStrings.chassis)
                             .font(.system(size: 13))
                             .foregroundColor(.secondary)
                         
@@ -65,7 +66,7 @@ struct DSDPinValidationDialog: View {
                     
                     // Amount Row
                     HStack {
-                        Text("Montant à payer")
+                        Text(AppStrings.montantAPayer)
                             .font(.system(size: 13))
                             .foregroundColor(.secondary)
                         
@@ -82,7 +83,7 @@ struct DSDPinValidationDialog: View {
                 
                 // PIN Input
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Code PIN")
+                    Text(AppStrings.pin)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
                     
@@ -108,7 +109,7 @@ struct DSDPinValidationDialog: View {
                 // Action Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.green)
                             .frame(maxWidth: .infinity)
@@ -125,7 +126,7 @@ struct DSDPinValidationDialog: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text("Confirmer")
+                        Text(AppStrings.confirmer)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -150,6 +151,7 @@ struct DSDPinValidationDialog: View {
 
 // MARK: - Validation Confirmation Dialog
 struct DSDValidationConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let operation: DSDPendingOperation
     @Binding var isPresented: Bool
     let onConfirm: () -> Void
@@ -170,11 +172,11 @@ struct DSDValidationConfirmationDialog: View {
                         .font(.system(size: 48))
                         .foregroundColor(.green)
                     
-                    Text("Confirmer la validation")
+                    Text(AppStrings.confirmerLaValidation)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.primary)
                     
-                    Text("Voulez-vous vraiment valider ce paiement DSD?")
+                    Text(AppStrings.voulezVousVraimentValiderCePaiementDsd)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -182,13 +184,13 @@ struct DSDValidationConfirmationDialog: View {
                 
                 // Payment Details Card
                 VStack(spacing: 16) {
-                    DetailRow(label: "Chassis", value: operation.chassisNumber)
+                    DetailRow(label: AppStrings.chassis, value: operation.chassisNumber)
                     Divider()
-                    DetailRow(label: "Catégorie", value: operation.categoryDisplay)
+                    DetailRow(label: AppStrings.categorie, value: operation.categoryDisplay)
                     Divider()
-                    DetailRow(label: "Montant", value: operation.formattedAmount, valueColor: .green)
+                    DetailRow(label: AppStrings.montant3, value: operation.formattedAmount, valueColor: .green)
                     Divider()
-                    DetailRow(label: "Référence", value: operation.operationId)
+                    DetailRow(label: AppStrings.reference2, value: operation.operationId)
                 }
                 .padding(20)
                 .background(Color.blueH.opacity(0.05))
@@ -197,7 +199,7 @@ struct DSDValidationConfirmationDialog: View {
                 // Action Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.green)
                             .frame(maxWidth: .infinity)
@@ -210,7 +212,7 @@ struct DSDValidationConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text("Continuer")
+                        Text(AppStrings.continuer)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -231,6 +233,7 @@ struct DSDValidationConfirmationDialog: View {
 
 // MARK: - Rejection Confirmation Dialog
 struct DSDRejectionConfirmationDialog: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let operation: DSDPendingOperation
     @Binding var isPresented: Bool
     let onConfirm: () -> Void
@@ -251,11 +254,11 @@ struct DSDRejectionConfirmationDialog: View {
                         .font(.system(size: 48))
                         .foregroundColor(.red)
                     
-                    Text("Confirmer le rejet")
+                    Text(AppStrings.confirmerLeRejet)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.primary)
                     
-                    Text("Voulez-vous vraiment rejeter ce paiement DSD? Cette action est irréversible.")
+                    Text(AppStrings.voulezVousVraimentRejeterCePaiementDsdCetteActionEst)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -263,13 +266,13 @@ struct DSDRejectionConfirmationDialog: View {
                 
                 // Payment Details Card
                 VStack(spacing: 16) {
-                    DetailRow(label: "Chassis", value: operation.chassisNumber)
+                    DetailRow(label: AppStrings.chassis, value: operation.chassisNumber)
                     Divider()
-                    DetailRow(label: "Catégorie", value: operation.categoryDisplay)
+                    DetailRow(label: AppStrings.categorie, value: operation.categoryDisplay)
                     Divider()
-                    DetailRow(label: "Montant", value: operation.formattedAmount, valueColor: .red)
+                    DetailRow(label: AppStrings.montant3, value: operation.formattedAmount, valueColor: .red)
                     Divider()
-                    DetailRow(label: "Référence", value: operation.operationId)
+                    DetailRow(label: AppStrings.reference2, value: operation.operationId)
                 }
                 .padding(20)
                 .background(Color.red.opacity(0.05))
@@ -278,7 +281,7 @@ struct DSDRejectionConfirmationDialog: View {
                 // Action Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text("Annuler")
+                        Text(AppStrings.annuler)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.gray)
                             .frame(maxWidth: .infinity)
@@ -291,7 +294,7 @@ struct DSDRejectionConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text("Rejeter")
+                        Text(AppStrings.rejeter)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

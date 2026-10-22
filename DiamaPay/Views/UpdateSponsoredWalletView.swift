@@ -16,6 +16,7 @@
 import SwiftUI
 
 struct UpdateSponsoredWalletView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     let wallet: SponsoredWallet
     let onSuccess: () -> Void
@@ -43,7 +44,7 @@ struct UpdateSponsoredWalletView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: "Update Sponsored Wallet", headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.updateSponsoredWallet, headerColor: Color(hex: "174EA6"))
 
                 if isLoading {
                     loadingView
@@ -60,20 +61,20 @@ struct UpdateSponsoredWalletView: View {
             loadInitialData()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("OK", role: .cancel) {
-                if alertTitle == "Succès" {
+            Button(AppStrings.ok, role: .cancel) {
+                if alertTitle == AppStrings.succes {
                     onSuccess()
                 }
             }
         } message: {
-            Text(alertMessage)
+            Text(AppStrings.option(alertMessage))
         }
         
         .sheet(isPresented: $showStartDatePicker) {
             DatePickerSheetz(
                 selectedDate: $startDate,
                 minimumDate: Date(),
-                title: "Date de début",
+                title: AppStrings.dateDeDebut,
                 onSave: {
                     showStartDatePicker = false
                     validateDateRange()
@@ -84,7 +85,7 @@ struct UpdateSponsoredWalletView: View {
             DatePickerSheetz(
                 selectedDate: $endDate,
                 minimumDate: Calendar.current.date(byAdding: .day, value: 1, to: startDate) ?? Date(),
-                title: "Date de fin",
+                title: AppStrings.dateDeFin,
                 onSave: {
                     showEndDatePicker = false
                 }
@@ -100,7 +101,7 @@ struct UpdateSponsoredWalletView: View {
                 .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                 .scaleEffect(1.5)
             
-            Text("Traitement en cours...")
+            Text(AppStrings.traitementEnCours)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.secondary)
         }
@@ -143,7 +144,7 @@ struct UpdateSponsoredWalletView: View {
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
-                Text("Mettre à jour les limites")
+                Text(AppStrings.mettreAJourLesLimites)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -158,7 +159,7 @@ struct UpdateSponsoredWalletView: View {
     // MARK: - Beneficiary Info Card
     private var beneficiaryInfoCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Bénéficiaire: \(wallet.userNameSponsored)")
+            Text(AppStrings.beneficiaireValue(String(describing: wallet.userNameSponsored)))
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.blueH)
             
@@ -179,7 +180,7 @@ struct UpdateSponsoredWalletView: View {
     private var limitsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Limites")
+                Text(AppStrings.limits)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -191,7 +192,7 @@ struct UpdateSponsoredWalletView: View {
             // Daily Limit - Use FormattedTextField
             HStack {
                 FormattedTextField(
-                    placeholder: "Limite journalière",
+                    placeholder: AppStrings.limiteJournaliere,
                     text: $dailyLimit,
                     maxLength: 15
                 )
@@ -212,7 +213,7 @@ struct UpdateSponsoredWalletView: View {
             // Monthly Limit - Use FormattedTextField
             HStack {
                 FormattedTextField(
-                    placeholder: "Limite mensuelle",
+                    placeholder: AppStrings.limiteMensuelle,
                     text: $monthlyLimit,
                     maxLength: 15
                 )
@@ -240,7 +241,7 @@ struct UpdateSponsoredWalletView: View {
     private var periodCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Période")
+                Text(AppStrings.periode)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(Color.blueH)
                 
@@ -250,7 +251,7 @@ struct UpdateSponsoredWalletView: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("Date de début")
+                Text(AppStrings.dateDeDebut)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
@@ -275,7 +276,7 @@ struct UpdateSponsoredWalletView: View {
             }
             
             VStack(alignment: .leading, spacing: 8) {
-                Text("Date de fin")
+                Text(AppStrings.dateDeFin)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
@@ -308,11 +309,11 @@ struct UpdateSponsoredWalletView: View {
     // MARK: - PIN Card
     private var pinCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Code PIN")
+            Text(AppStrings.pin)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.blueH)
             
-            SecureField("Entrer le code PIN", text: $pin)
+            SecureField(AppStrings.entrerLeCodePin, text: $pin)
                 .keyboardType(.numberPad)
                 .font(.system(size: 12, weight: .medium))
                 .padding(.horizontal, 12)
@@ -331,7 +332,7 @@ struct UpdateSponsoredWalletView: View {
         Button(action: {
             validateAndShowConfirmation()
         }) {
-            Text("Mettre à jour")
+            Text(AppStrings.update)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 150, height: 48)
@@ -351,19 +352,19 @@ struct UpdateSponsoredWalletView: View {
                         .ignoresSafeArea()
                     
                     VStack(spacing: 20) {
-                        Text("Confirmer la mise à jour")
+                        Text(AppStrings.confirmerLaMiseAJour)
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.primary)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Confirmer la mise à jour des limites pour \(wallet.userNameSponsored)?")
+                            Text(AppStrings.confirmerLaMiseAJourDesLimitesPourValue(String(describing: wallet.userNameSponsored)))
                                 .font(.system(size: 14))
                                 .foregroundColor(.primary)
                             
                             Divider()
                             
                             HStack {
-                                Text("Limite journalière:")
+                                Text(AppStrings.limiteJournaliere2)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                 Spacer()
@@ -372,7 +373,7 @@ struct UpdateSponsoredWalletView: View {
                             }
 
                             HStack {
-                                Text("Limite mensuelle:")
+                                Text(AppStrings.limiteMensuelle2)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                 Spacer()
@@ -381,7 +382,7 @@ struct UpdateSponsoredWalletView: View {
                             }
                             
                             HStack {
-                                Text("Période:")
+                                Text(AppStrings.periode2)
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                 Spacer()
@@ -397,7 +398,7 @@ struct UpdateSponsoredWalletView: View {
                             Button(action: {
                                 showConfirmation = false
                             }) {
-                                Text("Annuler")
+                                Text(AppStrings.annuler)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                     .frame(maxWidth: .infinity)
@@ -410,7 +411,7 @@ struct UpdateSponsoredWalletView: View {
                                 showConfirmation = false
                                 performUpdate()
                             }) {
-                                Text("Mettre à jour")
+                                Text(AppStrings.update)
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
@@ -459,7 +460,7 @@ struct UpdateSponsoredWalletView: View {
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yyyy"
-        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.locale = Locale(identifier: localization.language.rawValue)
         return formatter.string(from: date)
     }
     
@@ -474,7 +475,7 @@ struct UpdateSponsoredWalletView: View {
         if endDate <= startDate {
             let newEndDate = Calendar.current.date(byAdding: .month, value: 3, to: startDate) ?? Date()
             endDate = newEndDate
-            showError("Date ajustée", "La date de fin a été ajustée pour être postérieure à la date de début")
+            showError(AppStrings.dateAjustee, AppStrings.laDateDeFinAEteAjusteePourEtrePosterieure)
         }
     }
     
@@ -485,33 +486,33 @@ struct UpdateSponsoredWalletView: View {
     
     private func validateInputs() -> Bool {
         if dailyLimit.isEmpty {
-            showError("Erreur", "La limite journalière est requise")
+            showError(AppStrings.error, AppStrings.laLimiteJournaliereEstRequise)
             return false
         }
         
         if monthlyLimit.isEmpty {
-            showError("Erreur", "La limite mensuelle est requise")
+            showError(AppStrings.error, AppStrings.laLimiteMensuelleEstRequise)
             return false
         }
         
         if pin.isEmpty {
-            showError("Erreur", "Le code PIN est requis")
+            showError(AppStrings.error, AppStrings.leCodePinEstRequis)
             return false
         }
         
         guard let daily = Double(dailyLimit.cleanCurrencyValue()),
               let monthly = Double(monthlyLimit.cleanCurrencyValue()) else {
-            showError("Erreur", "Montants invalides")
+            showError(AppStrings.error, AppStrings.montantsInvalides)
             return false
         }
         
         if monthly < daily {
-            showError("Erreur", "La limite mensuelle doit être supérieure ou égale à la limite journalière")
+            showError(AppStrings.error, AppStrings.laLimiteMensuelleDoitEtreSuperieureOuEgaleALa)
             return false
         }
         
         if endDate <= startDate {
-            showError("Erreur", "La date de fin doit être après la date de début")
+            showError(AppStrings.error, AppStrings.laDateDeFinDoitEtreApresLaDateDe)
             return false
         }
         
@@ -569,15 +570,15 @@ struct UpdateSponsoredWalletView: View {
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
-                        self.showSuccess("Mise à jour réussie")
+                        self.showSuccess(AppStrings.miseAJourReussie)
                     } else {
-                        self.showError("Erreur", response.message ?? "Échec de la mise à jour")
+                        self.showError(AppStrings.error, response.message ?? AppStrings.echecDeLaMiseAJour)
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError("Erreur", apiError.message)
+                        self.showError(AppStrings.error, apiError.message)
                     } else {
-                        self.showError("Erreur", error.localizedDescription)
+                        self.showError(AppStrings.error, error.localizedDescription)
                     }
                 }
             }
@@ -591,7 +592,7 @@ struct UpdateSponsoredWalletView: View {
     }
     
     private func showSuccess(_ message: String) {
-        alertTitle = "Succès"
+        alertTitle = AppStrings.succes
         alertMessage = message
         showAlert = true
     }

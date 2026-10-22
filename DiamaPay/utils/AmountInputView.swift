@@ -8,6 +8,7 @@ import SwiftUI
 
 // MARK: - Amount Input View
 struct AmountInputView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.presentationMode) var presentationMode
     let merchantData: MerchantQRData
     let onConfirm: (Double, Bool, Double, String) -> Void // amount, feeEnabled, withdrawalFee, ruleIndex
@@ -18,7 +19,7 @@ struct AmountInputView: View {
     @State private var withdrawalFeeRuleIndex: String = ""
     @State private var isFeeEnabled = false
     @State private var isCalculatingFee = false
-    @State private var feeMessage = "Entrez un montant pour voir les frais"
+    @State private var feeMessage = AppStrings.entrezUnMontantPourVoirLesFrais
     @State private var isDestinationAgent = false
     @State private var isDestinationMerchant = false
     @State private var isDestinationCustomer = false
@@ -35,11 +36,11 @@ struct AmountInputView: View {
                 
                 VStack(spacing: 30) {
                     VStack(spacing: 8) {
-                        Text("Paiement QR Code")
+                        Text(AppStrings.paiementQrCode)
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Color.blueH)
                         
-                        Text("Paiement à")
+                        Text(AppStrings.paiementA)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(red: 0.5, green: 0.5, blue: 0.5))
                         
@@ -56,7 +57,7 @@ struct AmountInputView: View {
                     .padding(.top, 20)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Montant à payer")
+                        Text(AppStrings.montantAPayer)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
                             .padding(.horizontal, 20)
@@ -79,7 +80,7 @@ struct AmountInputView: View {
                         VStack(spacing: 0) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Frais de retrait")
+                                    Text(AppStrings.fraisDeRetrait)
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
                                     
@@ -87,7 +88,7 @@ struct AmountInputView: View {
                                         HStack(spacing: 8) {
                                             ProgressView()
                                                 .scaleEffect(0.7)
-                                            Text("Calcul en cours...")
+                                            Text(AppStrings.calculEnCours)
                                                 .font(.system(size: 11))
                                                 .foregroundColor(Color.gray)
                                         }
@@ -112,7 +113,7 @@ struct AmountInputView: View {
                         VStack(spacing: 0) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Frais de paiement QR")
+                                    Text(AppStrings.fraisDePaiementQr)
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
                                     
@@ -120,7 +121,7 @@ struct AmountInputView: View {
                                         HStack(spacing: 8) {
                                             ProgressView()
                                                 .scaleEffect(0.7)
-                                            Text("Calcul en cours...")
+                                            Text(AppStrings.calculEnCours)
                                                 .font(.system(size: 11))
                                                 .foregroundColor(Color.gray)
                                         }
@@ -145,7 +146,7 @@ struct AmountInputView: View {
                     }
                     
                     HStack(spacing: 16) {
-                        Button("Annuler") {
+                        Button(AppStrings.annuler) {
                             presentationMode.wrappedValue.dismiss()
                         }
                         .frame(maxWidth: .infinity)
@@ -154,7 +155,7 @@ struct AmountInputView: View {
                         .foregroundColor(.black)
                         .cornerRadius(8)
                         
-                        Button("Confirmer") {
+                        Button(AppStrings.confirmer) {
                             if rawAmount > 0 {
                                 onConfirm(rawAmount, isFeeEnabled, currentWithdrawalFee, withdrawalFeeRuleIndex)
                             }
@@ -171,7 +172,7 @@ struct AmountInputView: View {
                     Spacer()
                 }
             }
-            .navigationTitle("Entrer le montant")
+            .navigationTitle(AppStrings.entrerLeMontant)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 isAmountFocused = true
@@ -240,7 +241,7 @@ struct AmountInputView: View {
         feeCalculationTimer?.invalidate()
         
         guard rawAmount > 0 else {
-            feeMessage = "Entrez un montant pour voir les frais"
+            feeMessage = AppStrings.entrezUnMontantPourVoirLesFrais
             currentWithdrawalFee = 0.0
             isFeeEnabled = false
             return
@@ -287,19 +288,19 @@ struct AmountInputView: View {
                                 formatter.maximumFractionDigits = 0
                                 
                                 if let formattedFee = formatter.string(from: NSNumber(value: feeAmount)) {
-                                    feeMessage = "Frais: \(formattedFee) GMD"
+                                    feeMessage = AppStrings.fraisValueGmd(String(describing: formattedFee))
                                 }
                             } else if response.respCode == "001" {
-                                feeMessage = "Aucun frais applicable"
+                                feeMessage = AppStrings.aucunFraisApplicable
                                 isFeeEnabled = false
                             }
                             
                       
                         } else {
-                            handleFeeError("Montant des frais manquant")
+                            handleFeeError(AppStrings.montantDesFraisManquant)
                         }
                     } else {
-                        handleFeeError(response.message ?? "Erreur de calcul")
+                        handleFeeError(response.message ?? AppStrings.erreurDeCalcul)
                     }
                     
                 case .failure(let error):
@@ -310,7 +311,7 @@ struct AmountInputView: View {
     }
     
     private func handleFeeError(_ message: String) {
-        feeMessage = "Impossible de calculer les frais"
+        feeMessage = AppStrings.impossibleDeCalculerLesFrais
         currentWithdrawalFee = 0.0
         isFeeEnabled = false
     }
@@ -318,6 +319,7 @@ struct AmountInputView: View {
 
 // MARK: - QR Option Card
 struct QROptionCardView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let iconName: String
     let iconColor: Color
     let title: String

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct DrawerItem: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     var icon: String
     var title: String
     var onTap: () -> Void

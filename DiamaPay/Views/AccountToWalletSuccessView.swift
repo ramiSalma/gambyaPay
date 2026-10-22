@@ -17,6 +17,7 @@ import SwiftUI
 import PDFKit
 
 struct AccountToWalletSuccessView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let transactionId: String
     let transactionDate: String
     let amount: String
@@ -43,7 +44,7 @@ struct AccountToWalletSuccessView: View {
                         .foregroundColor(.green)
                         .padding(.top, 20)
                     
-                    Text("Transfert vers portefeuille réussi")
+                    Text(AppStrings.transfertVersPortefeuilleReussi)
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -52,48 +53,48 @@ struct AccountToWalletSuccessView: View {
                     // Transaction Details Card
                     VStack(alignment: .leading, spacing: 16) {
                         Group {
-                            DetailRow(label: "ID Transaction:", value: transactionId)
-                            DetailRow(label: "Date:", value: transactionDate)
-                            DetailRow(label: "Montant:", value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
+                            DetailRow(label: AppStrings.idTransaction, value: transactionId)
+                            DetailRow(label: AppStrings.dateLabel, value: transactionDate)
+                            DetailRow(label: AppStrings.montant2, value: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))
                             if withdrawalFee > 0 {
-                                DetailRow(label: "Frais d'envoi:", value: formatAmount(withdrawalFee))
+                                DetailRow(label: AppStrings.fraisDEnvoi2, value: formatAmount(withdrawalFee))
                             }
                             
-                            DetailRow(label: "Frais:", value: fee > 0 ? formatAmount(fee) : "Gratuit")
-                            DetailRow(label: "Total débité:", value: formatAmount(total))
+                            DetailRow(label: AppStrings.frais, value: fee > 0 ? formatAmount(fee) : AppStrings.gratuit)
+                            DetailRow(label: AppStrings.totalDebite, value: formatAmount(total))
                         }
                         
                         Divider()
                             .padding(.vertical, 8)
                         
                         // Source Account Section
-                        Text("COMPTE SOURCE")
+                        Text(AppStrings.compteSource)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.secondary)
                         
                         Group {
-                            DetailRow(label: "Titulaire:", value: sourceAccountHolder)
-                            DetailRow(label: "Numéro de compte:", value: sourceAccountNumber)
-                            DetailRow(label: "Banque:", value: sourceBankName)
+                            DetailRow(label: AppStrings.titulaire, value: sourceAccountHolder)
+                            DetailRow(label: AppStrings.numeroDeCompte2, value: sourceAccountNumber)
+                            DetailRow(label: AppStrings.banque2, value: sourceBankName)
                         }
                         
                         Divider()
                             .padding(.vertical, 8)
                         
                         // Recipient Wallet Section
-                        Text("PORTEFEUILLE DESTINATAIRE")
+                        Text(AppStrings.portefeuilleDestinataire)
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.secondary)
                         
                         Group {
-                            DetailRow(label: "Nom:", value: recipientName)
-                            DetailRow(label: "Portefeuille:", value: recipientWallet)
-                            DetailRow(label: "Téléphone:", value: recipientPhone)
+                            DetailRow(label: AppStrings.nom, value: recipientName)
+                            DetailRow(label: AppStrings.portefeuille, value: recipientWallet)
+                            DetailRow(label: AppStrings.telephone, value: recipientPhone)
                             
                             if !paymentDetails.isEmpty {
-                                DetailRow(label: "Détails:", value: paymentDetails)
+                                DetailRow(label: AppStrings.details2, value: paymentDetails)
                             } else {
-                                DetailRow(label: "Détails:", value: "Transfert vers portefeuille")
+                                DetailRow(label: AppStrings.details2, value: AppStrings.transfertVersPortefeuille)
                             }
                         }
                     }
@@ -109,7 +110,7 @@ struct AccountToWalletSuccessView: View {
                         }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.up")
-                                Text("Partager le reçu")
+                                Text(AppStrings.partagerLeRecu)
                             }
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -120,7 +121,7 @@ struct AccountToWalletSuccessView: View {
                         }
                         
                         Button(action: onClose) {
-                            Text("Fermer")
+                            Text(AppStrings.fermer)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.blueH)
                                 .frame(maxWidth: .infinity)
@@ -135,8 +136,8 @@ struct AccountToWalletSuccessView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button("Fermer", action: onClose))
-            .navigationBarTitle("Reçu de transfert", displayMode: .inline)
+            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarTitle(AppStrings.recuDeTransfert2, displayMode: .inline)
         }
     }
     
@@ -158,7 +159,7 @@ struct AccountToWalletSuccessView: View {
         let pdfMetaData = [
             kCGPDFContextCreator: "DIAMACASH",
             kCGPDFContextAuthor: "DIAMACASH",
-            kCGPDFContextTitle: "Reçu de Transfert vers Portefeuille"
+            kCGPDFContextTitle: AppStrings.recuDeTransfertVersPortefeuille
         ]
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = pdfMetaData as [String: Any]
@@ -192,7 +193,7 @@ struct AccountToWalletSuccessView: View {
             let lineSpacing: CGFloat = 25
             
             // Title
-            let title = "REÇU DE TRANSFERT VERS PORTEFEUILLE"
+            let title = AppStrings.recuDeTransfertVersPortefeuille2
             let titleSize = title.size(withAttributes: titleAttributes)
             let titleRect = CGRect(x: (pageWidth - titleSize.width) / 2, y: yPosition, width: titleSize.width, height: titleSize.height)
             title.draw(in: titleRect, withAttributes: titleAttributes)
@@ -209,22 +210,22 @@ struct AccountToWalletSuccessView: View {
             yPosition += 30
             
             // Transaction Status
-            drawText("Statut: Transfert vers portefeuille réussi", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.statutTransfertVersPortefeuilleReussi, at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("ID Transaction: \(transactionId)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.idTransactionValue(String(describing: transactionId)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Date: \(transactionDate)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.dateValue(String(describing: transactionDate)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Montant: \(formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.montantValue(String(describing: formatAmount(Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0.0))), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Frais: \(fee > 0 ? formatAmount(fee) : "Gratuit")", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.fraisValue(String(describing: fee > 0 ? formatAmount(fee) : AppStrings.gratuit)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing + 10
             
-            drawText("Total débité: \(formatAmount(total))", at: CGPoint(x: margin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.totalDebiteValue(String(describing: formatAmount(total))), at: CGPoint(x: margin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += lineSpacing
 
             // Separator
@@ -234,33 +235,33 @@ struct AccountToWalletSuccessView: View {
             yPosition += 20
             
             // Source Account Section
-            drawText("COMPTE SOURCE", at: CGPoint(x: margin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.compteSource, at: CGPoint(x: margin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Titulaire: \(sourceAccountHolder)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.titulaireValue(String(describing: sourceAccountHolder)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Numéro de compte: \(sourceAccountNumber)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.numeroDeCompteValue(String(describing: sourceAccountNumber)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Banque: \(sourceBankName)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.banqueValue(String(describing: sourceBankName)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing + 20
             
             // Recipient Wallet Section
-            drawText("PORTEFEUILLE DESTINATAIRE", at: CGPoint(x: margin, y: yPosition), attributes: boldAttributes, context: context)
+            drawText(AppStrings.portefeuilleDestinataire, at: CGPoint(x: margin, y: yPosition), attributes: boldAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Nom: \(recipientName)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.nomValue(String(describing: recipientName)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Portefeuille: \(recipientWallet)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.portefeuilleValue(String(describing: recipientWallet)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
-            drawText("Téléphone: \(recipientPhone)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+            drawText(AppStrings.telephoneValue(String(describing: recipientPhone)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
             yPosition += lineSpacing
             
             if !paymentDetails.isEmpty {
-                drawText("Détails du paiement: \(paymentDetails)", at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
+                drawText(AppStrings.detailsDuPaiementValue(String(describing: paymentDetails)), at: CGPoint(x: margin, y: yPosition), attributes: bodyAttributes, context: context)
                 yPosition += lineSpacing
             }
             
@@ -279,7 +280,7 @@ struct AccountToWalletSuccessView: View {
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "dd/MM/yyyy 'à' HH:mm"
-            let footer = "Ce reçu a été généré automatiquement le \(dateFormatter.string(from: Date()))"
+            let footer = AppStrings.ceRecuAEteGenereAutomatiquementLeValue(String(describing: dateFormatter.string(from: Date())))
             drawText(footer, at: CGPoint(x: margin, y: yPosition), attributes: footerAttributes, context: context)
         }
         
@@ -345,16 +346,16 @@ struct AccountToWalletSuccessView_Previews: PreviewProvider {
             transactionDate: "30/09/2025 14:30:00",
             amount: "50000",
             sourceAccountNumber: "GN012345678901234",
-            sourceAccountHolder: "Jean Dupont",
-            sourceBankName: "Banque Centrale",
-            recipientName: "Marie Martin",
+            sourceAccountHolder: AppStrings.jeanDupont,
+            sourceBankName: AppStrings.banqueCentrale,
+            recipientName: AppStrings.marieMartin,
             recipientWallet: "WLT123456",
             recipientPhone: "622123456",
             withdrawalFee: 100,
             fee: 500,
             total: 50500,
             currency: "GMD",
-            paymentDetails: "Test transfer",
+            paymentDetails: AppStrings.testTransfer,
             onClose: {}
         )
     }

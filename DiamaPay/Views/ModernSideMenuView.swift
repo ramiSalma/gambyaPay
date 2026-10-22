@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct ModernSideMenuView: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     var onSelect: (String) -> Void
     @State private var selectedItem: String? = nil
     
@@ -36,7 +37,7 @@ struct ModernSideMenuView: View {
                             .font(.system(size: 28, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                         
-                        Text("Votre portefeuille digital sécurisé")
+                        Text(AppStrings.votrePortefeuilleDigitalSecurise)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white.opacity(0.9))
                     }
@@ -51,10 +52,10 @@ struct ModernSideMenuView: View {
                 // Menu sections
                 VStack(spacing: 0) {
                     // TRANSFERT Section
-                    MenuSection(title: "TRANSFERT") {
+                    MenuSection(title: AppStrings.transfert) {
                         ModernDrawerItem(
                             icon: "arrow.left.arrow.right",
-                            title: "Transférer de l'argent",
+                            title: AppStrings.transfererDeLArgent,
                             iconColor: .blue,
                             isSelected: selectedItem == "walletTransfer"
                         ) {
@@ -64,7 +65,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "wallet.bifold.fill",
-                            title: "Wallet vers ma Banque",
+                            title: AppStrings.walletVersMaBanque,
                             iconColor: .purple,
                             isSelected: selectedItem == "walletToAccountTransfer"
                         ) {
@@ -74,7 +75,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "building.columns.fill",
-                            title: "Banque vers mon Wallet",
+                            title: AppStrings.banqueVersMonWallet,
                             iconColor: .orange,
                             isSelected: selectedItem == "accountToWalletTransfer"
                         ) {
@@ -84,7 +85,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "ticket.fill",
-                            title: "Mise à disposition",
+                            title: AppStrings.moneyVoucher,
                             iconColor: .green,
                             isSelected: selectedItem == "moneyVoucher"
                         ) {
@@ -94,7 +95,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "qrcode",
-                            title: "Paiement QR",
+                            title: AppStrings.qrPayment,
                             iconColor: .indigo,
                             isSelected: selectedItem == "qr"
                         ) {
@@ -104,7 +105,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "repeat",
-                            title: "Virements Permanents",
+                            title: AppStrings.virementsPermanents,
                             iconColor: .teal,
                             isSelected: selectedItem == "si"
                         ) {
@@ -114,10 +115,10 @@ struct ModernSideMenuView: View {
                     }
                     
                     // PARRAINAGE Section
-                    MenuSection(title: "PARRAINAGE") {
+                    MenuSection(title: AppStrings.sponsorSection) {
                         ModernDrawerItem(
                             icon: "person.2.fill",
-                            title: "Portefeuilles parrainés",
+                            title: AppStrings.sponsoredWallets,
                             iconColor: .pink,
                             isSelected: selectedItem == "sponsored"
                         ) {
@@ -127,7 +128,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "person.3.fill",
-                            title: "Afficher mes parrains",
+                            title: AppStrings.afficherMesParrains,
                             iconColor: .cyan,
                             isSelected: selectedItem == "sponsoring"
                         ) {
@@ -137,10 +138,10 @@ struct ModernSideMenuView: View {
                     }
                     
                     // GESTION DU PORTEFEUILLE Section
-                    MenuSection(title: "GESTION DU PORTEFEUILLE") {
+                    MenuSection(title: AppStrings.walletManagement) {
                         ModernDrawerItem(
                             icon: "gauge.with.needle.fill",
-                            title: "Mes limites",
+                            title: AppStrings.mesLimites,
                             iconColor: .yellow,
                             isSelected: selectedItem == "limits"
                         ) {
@@ -150,7 +151,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "doc.text.fill",
-                            title: "Demande de mini-relevé",
+                            title: AppStrings.demandeDeMiniReleve,
                             iconColor: .blue,
                             isSelected: selectedItem == "statement"
                         ) {
@@ -160,7 +161,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "xmark.circle.fill",
-                            title: "Désactiver mon compte",
+                            title: AppStrings.desactiverMonCompte,
                             iconColor: .red,
                             isSelected: selectedItem == "deactivate"
                         ) {
@@ -170,7 +171,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "hourglass",
-                            title: "Transaction à valider",
+                            title: AppStrings.transactionAValider,
                             iconColor: .orange,
                             isSelected: selectedItem == "pending"
                         ) {
@@ -180,7 +181,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "link.circle.fill",
-                            title: "Comptes Bancaires",
+                            title: AppStrings.comptesBancaires,
                             iconColor: .purple,
                             isSelected: selectedItem == "linked"
                         ) {
@@ -190,10 +191,10 @@ struct ModernSideMenuView: View {
                     }
                     
                     // PARAMETRE Section
-                    MenuSection(title: "PARAMETRE") {
+                    MenuSection(title: AppStrings.parametre) {
                         ModernDrawerItem(
                             icon: "lock.rotation.open",
-                            title: "Changer le code PIN",
+                            title: AppStrings.changerLeCodePin,
                             iconColor: .indigo,
                             isSelected: selectedItem == "pinChange"
                         ) {
@@ -204,7 +205,7 @@ struct ModernSideMenuView: View {
                         HStack {
                             ModernDrawerItem(
                                 icon: "faceid",
-                                title: "Connexion biométrique",
+                                title: AppStrings.connexionBiometrique,
                                 iconColor: .green,
                                 isSelected: selectedItem == "biometric"
                             ) {
@@ -222,10 +223,10 @@ struct ModernSideMenuView: View {
                     }
                     
                     // ASSISTANCE Section
-                    MenuSection(title: "ASSISTANCE") {
+                    MenuSection(title: AppStrings.helpSection) {
                         ModernDrawerItem(
                             icon: "text.bubble.fill",
-                            title: "Écrire un commentaire",
+                            title: AppStrings.ecrireUnCommentaire,
                             iconColor: .blue,
                             isSelected: selectedItem == "comment"
                         ) {
@@ -235,7 +236,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "exclamationmark.triangle.fill",
-                            title: "Déclarer un incident",
+                            title: AppStrings.declarerUnIncident,
                             iconColor: .orange,
                             isSelected: selectedItem == "complaint"
                         ) {
@@ -255,7 +256,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "doc.plaintext.fill",
-                            title: "Conditions générales",
+                            title: AppStrings.terms,
                             iconColor: .gray,
                             isSelected: selectedItem == "terms"
                         ) {
@@ -265,7 +266,7 @@ struct ModernSideMenuView: View {
                         
                         ModernDrawerItem(
                             icon: "questionmark.circle.fill",
-                            title: "FAQ",
+                            title: AppStrings.faq,
                             iconColor: .cyan,
                             isSelected: selectedItem == "FAQ"
                         ) {
@@ -293,7 +294,7 @@ struct ModernSideMenuView: View {
                                     .foregroundColor(.red)
                             }
                             
-                            Text("Déconnexion")
+                            Text(AppStrings.logout)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.red)
                             
@@ -341,6 +342,7 @@ struct ModernSideMenuView: View {
 
 // MARK: - Modern Section Header
 struct MenuSection<Content: View>: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let title: String
     let content: Content
     
@@ -368,6 +370,7 @@ struct MenuSection<Content: View>: View {
 
 // MARK: - Modern Drawer Item
 struct ModernDrawerItem: View {
+    @ObservedObject private var localization = AppLanguageStore.shared
     let icon: String
     let title: String
     let iconColor: Color
