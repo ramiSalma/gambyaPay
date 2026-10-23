@@ -13,6 +13,8 @@ struct AccountToWalletTransferView: View {
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - State Variables
+    @State private var walletBalance = UserDataManager.shared.getAvailableBalance()
+    @State private var hasLoadedAccounts = false
     @State private var linkedAccounts: [Account] = []
     @State private var selectedAccount: Account? = nil
     @State private var showLinkedAccounts = false
@@ -57,13 +59,15 @@ struct AccountToWalletTransferView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: AppStrings.accountToWallet, headerColor: Color(hex: "174EA6"))
+                StandingInstructionHeader(title: AppStrings.accountToWallet) {
+                    presentationMode.wrappedValue.dismiss()
+                }
 
                 if isLoading {
                     Spacer()
                     VStack(spacing: 16) {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
                             .scaleEffect(1.5)
                         
                         Text(AppStrings.traitementEnCours)
@@ -78,7 +82,8 @@ struct AccountToWalletTransferView: View {
                             
                           
                             
-                            // Account Selection Card
+                            sourceOfFundsCard
+                                .padding(.bottom, 14)
                             accountSelectionCard
                             
                             // Amount Card
@@ -92,14 +97,19 @@ struct AccountToWalletTransferView: View {
                             submitButton
                         }
                         .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 30)
                     }
                 }
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {}, onHome: {
+                presentationMode.wrappedValue.dismiss()
+            })
         }
+        .tint(Color(hex: "174EA6"))
+        .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             Button(AppStrings.ok, role: .cancel) { }
@@ -137,7 +147,11 @@ struct AccountToWalletTransferView: View {
         }
         .overlay(confirmationDialogOverlay)
         .onAppear {
-            fetchLinkedAccounts()
+            if !hasLoadedAccounts {
+                hasLoadedAccounts = true
+                fetchLinkedAccounts()
+            }
+            refreshWalletBalance()
         }
     }
     
@@ -151,7 +165,7 @@ struct AccountToWalletTransferView: View {
                     total: totalAmountWithFee,
                     currency: defaultCurrency,
                     accountNumber: selectedAccount?.accountNumber ?? "",
-                    accountHolder: selectedAccount?.accountHolder ?? "",
+                    accountHolder: accountNameVerified.isEmpty ? (selectedAccount?.accountHolder ?? "") : accountNameVerified,
                     paymentDetails: reference,
                     isPresented: $showConfirmationDialog,
                     onConfirm: { pinCode in
@@ -167,126 +181,108 @@ struct AccountToWalletTransferView: View {
     }
     
     
-    // MARK: - Title Card
-    private var titleCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-            
-            VStack(spacing: 8) {
-                Text(AppStrings.transfertDeCompteVersPortefeuille)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 80, height: 3)
+    private var sourceOfFundsCard: some View {
+        VStack(alignment: .leading, spacing: 28) {
+            HStack(spacing: 12) {
+                Rectangle().fill(Color(hex: "0086B5")).frame(width: 3, height: 21)
+                Text(AppStrings.sourceOfFunds).font(.system(size: 19, weight: .medium)).foregroundColor(.black)
             }
-            .padding(.vertical, 16)
-        }
-    }
-    
-    // MARK: - Account Selection Card
-    private var accountSelectionCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Header
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.compteSource2)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            HStack(spacing: 10) {
-                Button { showLinkedAccounts = true } label: {
-                    HStack {
-                        Text(selectedAccount?.accountNumber ?? AppStrings.selectionnerUnCompte)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(selectedAccount == nil ? .secondary : .primary)
-                            .lineLimit(1)
-                        Spacer(minLength: 4)
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(Color(hex: "0788B9"))
-                    }
-                    .padding(.horizontal, 12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .frame(height: 48)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
-                }
-
-                Button { showLinkedAccounts = true } label: {
-                    VStack(spacing: 4) {
-                        Image(systemName: "book.closed.fill")
-                            .font(.system(size: 21))
-                            .frame(width: 46, height: 48)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "0788B9"), lineWidth: 1.2))
-                        Text(AppStrings.enregistres).font(.system(size: 11, weight: .medium))
-                    }
-                    .foregroundColor(Color(hex: "0788B9"))
-                }
-                .disabled(isVerifying)
-            }
-            
-            // Account Holder Name
-            TextField(AppStrings.titulaireDuCompte, text: .constant(accountNameVerified))
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+            Text(AppStrings.wallet)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(Color(hex: "359B46"))
                 .cornerRadius(8)
-                .disabled(true)
-            
-            if isVerifying {
-                HStack {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text(AppStrings.verificationEnCours)
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
+            HStack {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(standingText("Available balance", "Solde disponible"))
+                        .font(.system(size: 12, weight: .medium))
+                        .tracking(0.6)
+                        .foregroundColor(.gray)
+                    Text(balanceText)
+                        .font(.system(size: 27, weight: .bold))
+                        .foregroundColor(.black)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
                 }
+                Spacer()
+                Image(systemName: "wallet.pass.fill")
+                    .font(.system(size: 26))
+                    .foregroundColor(Color(hex: "BDBDBD"))
             }
+            .padding(20)
+            .frame(maxWidth: .infinity, minHeight: 104, alignment: .leading)
+            .background(Color(hex: "FAFAFA"))
         }
-        .padding(16)
+        .padding(23)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .cornerRadius(10)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "EEEEEE")))
+        .shadow(color: .black.opacity(0.04), radius: 1, y: 1)
     }
-    
-    // MARK: - Amount Card
-    private var amountCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.montant3)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+
+    private var balanceText: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: localization.language.rawValue)
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        return (formatter.string(from: NSNumber(value: walletBalance)) ?? "0.00") + " GMD"
+    }
+
+    private func refreshWalletBalance() {
+        APIClient.shared.getBalance { result in
+            DispatchQueue.main.async {
+                if case .success(let response) = result {
+                    walletBalance = response.availableAmount
+                    userDataManager.saveWalletBalance(availableAmount: response.availableAmount,
+                                                      totalAmount: response.totalAmount,
+                                                      currency: response.currency)
+                }
             }
-            
-            TextField(AppStrings.entrerLeMontantGmd, text: $amount)
+        }
+    }
+
+    private var accountSelectionCard: some View {
+        standingCard(standingText("Account Details", "Détails du compte")) {
+            Button { showLinkedAccounts = true } label: {
+                HStack {
+                    Text(selectedAccount?.accountNumber ?? AppStrings.selectionnerUnCompte)
+                        .font(.system(size: 17))
+                        .foregroundColor(.black)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                    Spacer(minLength: 0)
+                    if isVerifying { ProgressView() }
+                }
+                .standingField()
+            }
+            .buttonStyle(.plain)
+            Text(accountNameVerified.isEmpty ? standingText("Recipient Name", "Nom du bénéficiaire") : accountNameVerified)
+                .font(.system(size: 14))
+                .standingField()
+        }
+    }
+
+    private var amountCard: some View {
+        standingCard(AppStrings.montant3) {
+            TextField(standingText("Amount *", "Montant *"), text: $amount)
                 .keyboardType(.decimalPad)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
-                .onChange(of: amount) {
+                .standingField()
+                .task(id: amount) {
+                    do { try await Task.sleep(nanoseconds: 400_000_000) } catch { return }
                     calculateTransferFee()
                 }
+                .onChange(of: amount) {
+                    feeQuoteID = UUID()
+                    calculatedFee = 0
+                    totalAmountWithFee = 0
+                    isCalculatingTransferFee = false
+                }
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
+
     private func calculateTransferFee(completion: ((Bool) -> Void)? = nil) {
         let quoteID = UUID()
         feeQuoteID = quoteID
@@ -313,7 +309,8 @@ struct AccountToWalletTransferView: View {
         APIClient.shared.calculateWalletFee(request: request) { result in
             DispatchQueue.main.async {
                 guard self.feeQuoteID == quoteID,
-                      self.selectedAccount?.accountNumber == account.accountNumber else { return }
+                      self.selectedAccount?.accountNumber == account.accountNumber,
+                      self.selectedAccount?.bankCode == account.bankCode else { return }
                 self.isCalculatingTransferFee = false
                 switch result {
                 case .success(let response):
@@ -348,50 +345,28 @@ struct AccountToWalletTransferView: View {
         return (formatter.string(from: NSNumber(value: amount)) ?? "0") + " " + defaultCurrency
     }
     
-    // MARK: - Reference Card
     private var referenceCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.referenceOptionnel)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            TextField(AppStrings.entrerUneReference, text: $reference)
-                .font(.system(size: 12, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+        standingCard(standingText("Reason (optional)", "Motif (facultatif)")) {
+            TextField(standingText("Enter a reason", "Saisir un motif"), text: $reference)
+                .standingField()
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
-    // MARK: - Submit Button
+
     private var submitButton: some View {
-        VStack(spacing: 16) {
-            Button(action: {
-                validateAndShowConfirmation()
-            }) {
-                Text(AppStrings.soumettre)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 150, height: 48)
-                    .background(Color.blueH)
-                    .cornerRadius(8)
-            }
-            .disabled(isLoading || isCalculatingTransferFee || selectedAccount == nil)
+        Button(action: validateAndShowConfirmation) {
+            Text(selectedAccount == nil ? AppStrings.selectionnerUnCompte : AppStrings.soumettre)
+                .font(.system(size: 17, weight: .semibold))
+                .tracking(1.5)
+                .foregroundColor(.white)
+                .frame(width: 160, height: 50)
+                .background(selectedAccount == nil || isVerifying || isCalculatingTransferFee ? Color(hex: "E0E0E0") : Color(hex: "174EA6"))
+                .cornerRadius(9)
         }
-        .padding(16)
+        .disabled(isLoading || isVerifying || isCalculatingTransferFee || selectedAccount == nil)
+        .padding(.top, 18)
+        .padding(.bottom, 20)
     }
-    
+
     // MARK: - Helper Methods
     private func fetchLinkedAccounts() {
         isLoading = true
@@ -418,9 +393,11 @@ struct AccountToWalletTransferView: View {
                     if response.respCode == "000" {
                         parseLinkedAccounts(response)
                     } else {
+                        hasLoadedAccounts = false
                         showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.erreurLorsDeLaRecuperationDesComptes)))
                     }
                 case .failure(let error):
+                    hasLoadedAccounts = false
                     showErrorAlert((error as? APIError)?.message ?? AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
                 }
             }
@@ -445,7 +422,7 @@ struct AccountToWalletTransferView: View {
             account.bankName = dict["bankWording"] as? String ?? ""
             account.accountType = dict["accountType"] as? String ?? ""
             account.currency = dict["currency"] as? String ?? ""
-            account.balance = dict["balance"] as? String ?? ""
+            account.balance = dict["balance"].map { String(describing: $0) } ?? ""
             if !account.accountNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 linkedAccounts.append(account)
             }
@@ -474,7 +451,7 @@ struct AccountToWalletTransferView: View {
         request.phoneNumber = userDataManager.getPhoneNumber()
         request.source = "W"
         request.desBank = account.bankCode.isEmpty ? "00100" : account.bankCode
-        request.srcBank = "00100"
+        request.srcBank = userDataManager.getBankCode().isEmpty ? "00100" : userDataManager.getBankCode()
         request.desAccount = account.accountNumber
         
         let dateFormatter = DateFormatter()
@@ -490,15 +467,17 @@ struct AccountToWalletTransferView: View {
         
         APIClient.shared.getAccountNameEnquiry(request: request) { result in
             DispatchQueue.main.async {
+                guard self.selectedAccount?.accountNumber == account.accountNumber,
+                      self.selectedAccount?.bankCode == account.bankCode else { return }
                 self.isVerifying = false
-                
+
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
                         if let result = response.result,
                            let nameToCredit = result["accountHolder"] as? String {
-                            self.accountNameVerified = nameToCredit
-                            self.selectedAccount?.accountName = nameToCredit
+                            self.accountNameVerified = nameToCredit.isEmpty ? account.accountHolder : nameToCredit
+                            self.selectedAccount?.accountName = self.accountNameVerified
                         } else {
                             self.accountNameVerified = account.accountHolder
                         }
@@ -527,7 +506,7 @@ struct AccountToWalletTransferView: View {
             showErrorAlert(AppStrings.enterAValidAmountGreaterThanZero)
             return
         }
-        guard !isCalculatingTransferFee else { return }
+        guard !isCalculatingTransferFee, !isVerifying else { return }
         calculateTransferFee { success in
             if success { self.showConfirmationDialog = true }
         }
@@ -550,7 +529,7 @@ struct AccountToWalletTransferView: View {
         request.walletNumber = userDataManager.getWalletNumber()
         request.phoneNumber = userDataManager.getPhoneNumber()
         request.source = "W"
-        request.srcAccount = selectedAccount?.accountNumber
+        request.srcAccount = account.accountNumber
         request.srcBank = account.bankCode.isEmpty ? "00100" : account.bankCode
         request.accountHolder = accountNameVerified.isEmpty ? account.accountHolder : accountNameVerified
         request.desBank = userDataManager.getBankCode().isEmpty ? "00100" : userDataManager.getBankCode()
@@ -605,7 +584,7 @@ struct AccountToWalletTransferView: View {
     }
     
     private func getCleanAmount(_ value: String) -> String {
-        return value.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: ",", with: ".")
+        return value.components(separatedBy: .whitespacesAndNewlines).joined().replacingOccurrences(of: ",", with: ".")
     }
     
     private func showErrorAlert(_ message: String) {
@@ -710,7 +689,7 @@ struct AccountToWalletConfirmationDialog: View {
                                         HStack(spacing: 6) {
                                             Image(systemName: "paperplane.fill")
                                                 .font(.system(size: 12))
-                                                .foregroundColor(.blueH)
+                                                .foregroundColor(Color(hex: "174EA6"))
                                             Text(AppStrings.fraisDeTransfert)
                                                 .font(.system(size: 13))
                                                 .foregroundColor(.primary)
@@ -718,11 +697,11 @@ struct AccountToWalletConfirmationDialog: View {
                                         Spacer()
                                         Text(formatAmount(fee))
                                             .font(.system(size: 13, weight: .semibold))
-                                            .foregroundColor(.blueH)
+                                            .foregroundColor(Color(hex: "174EA6"))
                                     }
                                     .padding(.vertical, 8)
                                     .padding(.horizontal, 12)
-                                    .background(Color.blueH.opacity(0.1))
+                                    .background(Color(hex: "174EA6").opacity(0.1))
                                     .cornerRadius(8)
                                 } else {
                                     HStack {
@@ -835,14 +814,14 @@ struct AccountToWalletConfirmationDialog: View {
                     }) {
                         Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.blueH)
+                            .foregroundColor(Color(hex: "174EA6"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
                             .background(Color.white)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.blueH, lineWidth: 1)
+                                    .stroke(Color(hex: "174EA6"), lineWidth: 1)
                             )
                     }
                     
@@ -859,7 +838,7 @@ struct AccountToWalletConfirmationDialog: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.blueH)
+                        .background(Color(hex: "174EA6"))
                         .cornerRadius(8)
                     }
                     .disabled(isVerifyingPin)
@@ -885,7 +864,7 @@ struct AccountToWalletConfirmationDialog: View {
     private func validateAndConfirm() {
         showPinError = false
         
-        guard pin.count == 4 else {
+        guard pin.count == 4, pin.allSatisfy({ $0.isASCII && $0.isNumber }) else {
             pinErrorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             showPinError = true
             return

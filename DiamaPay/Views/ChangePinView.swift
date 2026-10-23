@@ -41,6 +41,8 @@ struct ChangePinView: View {
     @State private var showConfirmationDialog: Bool = false
     @State private var showSuccessDialog: Bool = false
     
+    private let blue = Color(hex: "174EA6")
+
     private let userDataManager = UserDataManager.shared
     
     var body: some View {
@@ -50,13 +52,13 @@ struct ChangePinView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: AppStrings.changePin, headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.changePin, headerColor: blue)
 
                 if isLoading {
                     Spacer()
                     VStack(spacing: 16) {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                            .progressViewStyle(CircularProgressViewStyle(tint: blue))
                             .scaleEffect(1.5)
                         
                         Text(AppStrings.processing)
@@ -94,6 +96,7 @@ struct ChangePinView: View {
                 onHome: { presentationMode.wrappedValue.dismiss() }
             )
         }
+        .tint(blue)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             Button(AppStrings.ok, role: .cancel) {
@@ -112,7 +115,7 @@ struct ChangePinView: View {
     private var titleCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
+                .fill(blue)
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
@@ -135,10 +138,10 @@ struct ChangePinView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.walletInformation)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(blue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(blue)
                     .frame(width: 60, height: 2)
             }
             
@@ -146,7 +149,7 @@ struct ChangePinView: View {
             HStack {
                 Text(AppStrings.wallet)
                     .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(blue)
                 
                 Spacer()
                 
@@ -159,7 +162,7 @@ struct ChangePinView: View {
             HStack {
                 Text(AppStrings.balance)
                     .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(blue)
                 
                 Spacer()
                 
@@ -172,7 +175,7 @@ struct ChangePinView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
-        .shadow(color: Color(hex: "174EA6").opacity(0.07), radius: 8, x: 0, y: 3)
+        .shadow(color: blue.opacity(0.07), radius: 8, x: 0, y: 3)
     }
     
     // MARK: - Current PIN Verification Card
@@ -182,19 +185,20 @@ struct ChangePinView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.verifyCurrentPin)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(blue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(blue)
                     .frame(width: 60, height: 2)
             }
             
             Text(AppStrings.enterYourCurrentPin)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.blueH)
+                .foregroundColor(blue)
             
             // PIN Input
-            SecureField("****", text: $currentPin)
+            SecureField("****", text: $currentPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
+                .foregroundColor(blue)
                 .keyboardType(.numberPad)
                 .font(.system(size: 16, weight: .medium))
                 .padding(.horizontal, 12)
@@ -227,7 +231,7 @@ struct ChangePinView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(isPinVerified ? Color(hex: "7D8A9B") : Color(hex: "174EA6"))
+                    .background(isPinVerified ? Color(hex: "7D8A9B") : blue)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isPinVerified || isLoading)
@@ -236,7 +240,7 @@ struct ChangePinView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
-        .shadow(color: Color(hex: "174EA6").opacity(0.07), radius: 8, x: 0, y: 3)
+        .shadow(color: blue.opacity(0.07), radius: 8, x: 0, y: 3)
     }
     
     // MARK: - New PIN Card
@@ -246,19 +250,20 @@ struct ChangePinView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.newPin)
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(blue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(blue)
                     .frame(width: 60, height: 2)
             }
             
             // New PIN
             Text(AppStrings.enterYourNewPin)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.blueH)
+                .foregroundColor(blue)
             
-            SecureField("****", text: $newPin)
+            SecureField("****", text: $newPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
+                .foregroundColor(blue)
                 .keyboardType(.numberPad)
                 .font(.system(size: 16, weight: .medium))
                 .padding(.horizontal, 12)
@@ -284,10 +289,11 @@ struct ChangePinView: View {
             // Confirm PIN
             Text(AppStrings.confirmYourNewPin)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.blueH)
+                .foregroundColor(blue)
                 .padding(.top, 8)
             
-            SecureField("****", text: $confirmPin)
+            SecureField("****", text: $confirmPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
+                .foregroundColor(blue)
                 .keyboardType(.numberPad)
                 .font(.system(size: 16, weight: .medium))
                 .padding(.horizontal, 12)
@@ -319,7 +325,7 @@ struct ChangePinView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
-                    .background(Color(hex: "174EA6"))
+                    .background(blue)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isLoading)
@@ -328,7 +334,7 @@ struct ChangePinView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
-        .shadow(color: Color(hex: "174EA6").opacity(0.07), radius: 8, x: 0, y: 3)
+        .shadow(color: blue.opacity(0.07), radius: 8, x: 0, y: 3)
         .transition(.move(edge: .top).combined(with: .opacity))
     }
     
@@ -366,7 +372,7 @@ struct ChangePinView: View {
                             }) {
                                 Text(AppStrings.cancel)
                                     .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.blueH)
+                                    .foregroundColor(blue)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
                                     .background(Color(hex: "EAF3FF"))
@@ -382,7 +388,7 @@ struct ChangePinView: View {
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 48)
-                                    .background(Color(hex: "174EA6"))
+                                    .background(blue)
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                         }

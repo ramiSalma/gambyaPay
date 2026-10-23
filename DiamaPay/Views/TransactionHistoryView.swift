@@ -632,12 +632,12 @@ struct PaginationButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .medium))
-            .foregroundColor(isDisabled ? .gray : .blueH)
+            .foregroundColor(isDisabled ? Color(hex: "A5B4C8") : Color(hex: "174EA6"))
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(isDisabled ? Color.gray.opacity(0.1) : Color.blueH.opacity(0.1))
+                    .fill(isDisabled ? Color(hex: "F1F5FA") : Color(hex: "E8F0FC"))
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }
@@ -649,11 +649,11 @@ struct PageNumberButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 14, weight: .medium))
-            .foregroundColor(isSelected ? .white : .blueH)
+            .foregroundColor(isSelected ? .white : Color(hex: "174EA6"))
             .frame(width: 32, height: 32)
             .background(
                 Circle()
-                    .fill(isSelected ? Color.blueH : Color.blueH.opacity(0.1))
+                    .fill(isSelected ? Color(hex: "174EA6") : Color(hex: "E8F0FC"))
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }

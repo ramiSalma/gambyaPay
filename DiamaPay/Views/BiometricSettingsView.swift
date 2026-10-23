@@ -32,7 +32,7 @@ struct BiometricSettingsView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: AppStrings.biometricSettings, headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.biometricAuthentication, headerColor: Color(hex: "174EA6"))
 
                 
                 ScrollView {
@@ -44,9 +44,7 @@ struct BiometricSettingsView: View {
                         biometricToggleCard
                         
                         // Instructions Card
-                        if biometricEnabled {
-                            instructionsCard
-                        }
+                        instructionsCard
                         
                         Spacer(minLength: 20)
                     }
@@ -82,109 +80,69 @@ struct BiometricSettingsView: View {
         )
     }
 
-    // MARK: - Biometric Info Card
+    private let blue = Color(hex: "174EA6")
+    private let cyan = Color(hex: "087FB3")
+
     private var biometricInfoCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Image(systemName: BiometricHelper.getBiometricType().icon)
-                .font(.system(size: 60))
-                .foregroundColor(.blueH)
-            
-            Text(BiometricHelper.getBiometricType().displayName)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.primary)
-            
-            Text(biometricStatusText)
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
+                .font(.system(size: 42)).foregroundColor(blue)
+            Text(BiometricHelper.isBiometricAvailable() ? AppStrings.value("biometryAvailable") : AppStrings.biometricUnavailable)
+                .font(.system(size: 21, weight: .bold)).foregroundColor(blue)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal)
         }
-        .padding(.vertical, 30)
+        .padding(.vertical, 28)
         .frame(maxWidth: .infinity)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.3), lineWidth: 1))
     }
-    
-    // MARK: - Toggle Card
+
     private var biometricToggleCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(AppStrings.activerValue(String(describing: BiometricHelper.getBiometricTypeString())))
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primary)
-                    
-                    Text(AppStrings.connexionRapideEtSecurisee)
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                Toggle("", isOn: $biometricEnabled)
-                    .labelsHidden()
-                    .onChange(of: biometricEnabled) {
-                        handleToggleChange(biometricEnabled)
-                    }
+        VStack(alignment: .leading, spacing: 26) {
+            HStack(spacing: 14) {
+                Image(systemName: "shield.fill").font(.system(size: 24)).foregroundColor(blue)
+                Text(AppStrings.value("enableBiometricLogin"))
+                    .font(.system(size: 17, weight: .bold)).foregroundColor(.black)
+                Spacer(minLength: 0)
+                Toggle(AppStrings.value("enableBiometricLogin"), isOn: $biometricEnabled)
+                    .labelsHidden().tint(blue)
+                    .onChange(of: biometricEnabled) { handleToggleChange(biometricEnabled) }
                     .disabled(!BiometricHelper.isBiometricAvailable() || isProcessing)
             }
-            
+            Text(AppStrings.value("biometricLoginDescription"))
+                .font(.system(size: 14)).foregroundColor(.gray)
             if !BiometricHelper.isBiometricAvailable() {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
-                    
-                    Text(BiometricHelper.getBiometricStatus().message)
-                        .font(.system(size: 12))
-                        .foregroundColor(.orange)
-                }
-                .padding(.top, 8)
+                Text(BiometricHelper.getBiometricStatus().message)
+                    .font(.footnote).foregroundColor(.orange)
             }
         }
-        .padding(16)
+        .padding(20)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(blue, lineWidth: 1))
+        .shadow(color: .black.opacity(0.16), radius: 2, y: 2)
     }
-    
-    // MARK: - Instructions Card
+
     private var instructionsCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "checkmark.shield.fill")
-                    .foregroundColor(.green)
-                    .font(.system(size: 20))
-                
-                Text(AppStrings.commentCaMarche)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
+        VStack(alignment: .leading, spacing: 14) {
+            Label(AppStrings.importantInformation, systemImage: "info.circle.fill")
+                .font(.system(size: 16, weight: .bold)).foregroundColor(cyan)
+            ForEach(["biometricSensors", "biometricPrivacy", "biometricFallback", "biometricSharedDevice"], id: \.self) { key in
+                HStack(alignment: .top, spacing: 12) {
+                    Circle().fill(cyan).frame(width: 6, height: 6).padding(.top, 6)
+                    Text(AppStrings.value(key)).font(.system(size: 13))
+                        .foregroundColor(Color(hex: "475467"))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
-            
-            VStack(alignment: .leading, spacing: 12) {
-                InstructionRow(
-                    number: "1",
-                    text: AppStrings.aLaProchaineConnexionVousVerrezLeBoutonDAuthentification
-                )
-                
-                InstructionRow(
-                    number: "2",
-                    text: AppStrings.appuyezSurLeBoutonEtUtilisezVotreValue(String(describing: BiometricHelper.getBiometricTypeString()))
-                )
-                
-                InstructionRow(
-                    number: "3",
-                    text: AppStrings.accedezInstantanementAVotrePortefeuille
-                )
-            }
-            .padding(.top, 8)
         }
-        .padding(16)
+        .padding(18).frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(cyan, lineWidth: 1))
+        .shadow(color: .black.opacity(0.16), radius: 2, y: 2)
     }
-    
+
     // MARK: - Computed Properties
     private var biometricStatusText: String {
         if BiometricHelper.isBiometricAvailable() {
@@ -277,7 +235,7 @@ struct InstructionRow: View {
                 .font(.system(size: 14, weight: .bold))
                 .foregroundColor(.white)
                 .frame(width: 24, height: 24)
-                .background(Color.blueH)
+                .background(Color(hex: "174EA6"))
                 .clipShape(Circle())
             
             Text(text)
@@ -305,7 +263,7 @@ struct PINPromptView: View {
                 VStack(spacing: 12) {
                     Image(systemName: BiometricHelper.getBiometricType().icon)
                         .font(.system(size: 60))
-                        .foregroundColor(.blueH)
+                        .foregroundColor(Color(hex: "174EA6"))
                     
                     Text(AppStrings.activerValue(String(describing: BiometricHelper.getBiometricTypeString())))
                         .font(.system(size: 24, weight: .bold))
@@ -321,7 +279,7 @@ struct PINPromptView: View {
                 VStack(spacing: 16) {
                     HStack {
                         Image(systemName: "lock.fill")
-                            .foregroundColor(.blueH)
+                            .foregroundColor(Color(hex: "174EA6"))
                             .frame(width: 20)
                         
                         if showPassword {
@@ -367,7 +325,7 @@ struct PINPromptView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(pin.count == 4 ? Color.blueH : Color.gray)
+                    .background(pin.count == 4 ? Color(hex: "174EA6") : Color.gray)
                     .cornerRadius(8)
                     .disabled(pin.count != 4 || isVerifying)
                 }
@@ -378,7 +336,7 @@ struct PINPromptView: View {
             .background(Color.white)
             .navigationBarItems(
                 leading: Button(AppStrings.annuler) { presentationMode.wrappedValue.dismiss() }
-                    .foregroundColor(.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
             )
         }
     }

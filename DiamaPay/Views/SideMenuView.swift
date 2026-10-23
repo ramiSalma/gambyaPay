@@ -27,7 +27,7 @@ struct SideMenuView: View {
                 item("voucher", AppStrings.moneyVoucher, "moneyVoucher")
                 item("iphone", AppStrings.mobileMoney, "mobileMoney")
                 item("qrcode", AppStrings.qrTransfer, "qr")
-                item("wallet.pass", AppStrings.crowdFunding, "sponsor")
+                item("wallet.pass", AppStrings.crowdFunding, "crowdfunding")
                 item("repeat", AppStrings.standingInstructions, "si")
                 sectionDivider
 

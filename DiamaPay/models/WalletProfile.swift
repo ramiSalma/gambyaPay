@@ -31,4 +31,6 @@ struct WalletProfile: Codable {
     let nextOfKinName: String?
     let nextOfKinPhone: String?
     let bankCode: String?
+    let hasSecurityQuestion: Bool?
+    let securityQuestion: SecurityQuestion?
 }

@@ -104,8 +104,18 @@ struct ModernSideMenuView: View {
                         }
                         
                         ModernDrawerItem(
+                            icon: "person.3.fill",
+                            title: AppStrings.crowdFunding,
+                            iconColor: Color(hex: "174EA6"),
+                            isSelected: selectedItem == "crowdfunding"
+                        ) {
+                            selectedItem = "crowdfunding"
+                            onSelect("crowdfunding")
+                        }
+
+                        ModernDrawerItem(
                             icon: "repeat",
-                            title: AppStrings.virementsPermanents,
+                            title: AppStrings.standingInstructions,
                             iconColor: .teal,
                             isSelected: selectedItem == "si"
                         ) {

@@ -46,12 +46,12 @@ final class AppLanguageStore: ObservableObject {
         language = defaults.string(forKey: Self.preferenceKey)
             .flatMap(AppLanguage.init(rawValue:))
             ?? preferredLanguages.compactMap(AppLanguage.init(rawValue:)).first ?? .english
+        cache = defaults.data(forKey: Self.cacheKey)
+            .flatMap { try? JSONDecoder().decode([String: [String: CachedText]].self, from: $0) } ?? [:]
         // Migrate an unsupported saved choice to the supported device preference.
         if let saved = defaults.string(forKey: Self.preferenceKey), saved != language.rawValue {
             defaults.set(language.rawValue, forKey: Self.preferenceKey)
         }
-        cache = defaults.data(forKey: Self.cacheKey)
-            .flatMap { try? JSONDecoder().decode([String: [String: CachedText]].self, from: $0) } ?? [:]
     }
 
     private func builtin(_ entry: AppStrings.Entry, for language: AppLanguage) -> String? {

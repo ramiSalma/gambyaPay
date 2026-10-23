@@ -69,7 +69,7 @@ struct StandingInstructionUpdateView: View {
                     Spacer()
                     VStack(spacing: 16) {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                            .progressViewStyle(CircularProgressViewStyle(tint: StandingInstructionStyle.blue))
                             .scaleEffect(1.5)
                         
                         Text(AppStrings.traitementEnCours)
@@ -100,6 +100,8 @@ struct StandingInstructionUpdateView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
+        .tint(StandingInstructionStyle.blue)
+        .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .onAppear {
             loadInstructionData()
@@ -115,7 +117,7 @@ struct StandingInstructionUpdateView: View {
     private var titleCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
+                .fill(StandingInstructionStyle.blue)
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
@@ -137,10 +139,10 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.detailsDuBeneficiaire)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(StandingInstructionStyle.blue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(StandingInstructionStyle.blue)
                     .frame(width: 60, height: 2)
             }
             
@@ -168,10 +170,10 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.detailsDePaiement)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(StandingInstructionStyle.blue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(StandingInstructionStyle.blue)
                     .frame(width: 60, height: 2)
             }
             
@@ -243,10 +245,10 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.planification)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(StandingInstructionStyle.blue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(StandingInstructionStyle.blue)
                     .frame(width: 60, height: 2)
             }
             
@@ -266,7 +268,7 @@ struct StandingInstructionUpdateView: View {
                         Spacer()
                         
                         Image(systemName: "calendar")
-                            .foregroundColor(.blueH)
+                            .foregroundColor(StandingInstructionStyle.blue)
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 48)
@@ -293,7 +295,7 @@ struct StandingInstructionUpdateView: View {
                         Spacer()
                         
                         Image(systemName: "calendar")
-                            .foregroundColor(.blueH)
+                            .foregroundColor(StandingInstructionStyle.blue)
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 48)
@@ -317,10 +319,10 @@ struct StandingInstructionUpdateView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.securite)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(StandingInstructionStyle.blue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(StandingInstructionStyle.blue)
                     .frame(width: 60, height: 2)
             }
             
@@ -357,7 +359,7 @@ struct StandingInstructionUpdateView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 150, height: 48)
-                    .background(Color.blueH)
+                    .background(StandingInstructionStyle.blue)
                     .cornerRadius(8)
             }
             .disabled(isLoading)

@@ -35,6 +35,8 @@ struct SponsorWalletView: View {
     
     @State private var sponsoredBankCode = ""
     @State private var isRecipientVerified = false
+    @State private var recipientLookupID = UUID()
+    @State private var recipientLookupError = ""
     
     private let userDataManager = UserDataManager.shared
     
@@ -53,11 +55,6 @@ struct SponsorWalletView: View {
                     ScrollView {
                         VStack(spacing: 16) {
                             // Title Card
-                            
-                            // PIN Entry Card (conditionally visible)
-                            if showPinEntry {
-                                pinEntryCard
-                            }
                             
                             // Recipient Details Card
                             recipientDetailsCard
@@ -78,14 +75,33 @@ struct SponsorWalletView: View {
                 }
             }
         }
+        .tint(Color(hex: "174EA6"))
+        .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             Button(AppStrings.ok, role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
+        .alert(AppStrings.entrerLeCodePin, isPresented: $showPinEntry) {
+            SecureField(AppStrings.pin, text: $pin)
+                .keyboardType(.numberPad)
+                .onChange(of: pin) {
+                    pin = String(pin.filter { $0.isASCII && $0.isNumber }.prefix(4))
+                }
+            Button(AppStrings.annuler, role: .cancel) { pin = "" }
+            Button(AppStrings.confirmer) {
+                let enteredPin = pin
+                pin = ""
+                guard !isLoading, validateInputs(),
+                      enteredPin.count == 4,
+                      enteredPin.allSatisfy({ $0.isASCII && $0.isNumber }) else { return }
+                processSponsorWithPin(enteredPin)
+            }
+            .disabled(pin.count != 4)
+        }
         .sheet(isPresented: $showContactPicker) {
-            ContactPickerView(selectedPhone: $recipientPhone)
+            ContactPickerView(selectedPhone: $recipientPhone, normalizePhone: WalletTransferRecipient.normalize)
         }
         .sheet(isPresented: $showStartDatePicker) {
             DatePickerSheetz(
@@ -114,7 +130,7 @@ struct SponsorWalletView: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
                 .scaleEffect(1.5)
             
             Text(AppStrings.processing2)
@@ -128,7 +144,7 @@ struct SponsorWalletView: View {
     private var titleCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
+                .fill(Color(hex: "174EA6"))
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
@@ -144,49 +160,16 @@ struct SponsorWalletView: View {
         }
     }
     
-    // MARK: - PIN Entry Card
-    private var pinEntryCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.authentication2)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color.blueH)
-
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 96, height: 3)
-            }
-            
-            SecureField("****", text: $pin)
-                .keyboardType(.numberPad)
-                .font(.system(size: 14, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 44)
-                .background(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "4B5563"), lineWidth: 1.5))
-                .cornerRadius(12)
-                .onChange(of: pin) {
-                    if pin.count > 4 {
-                        pin = String(pin.prefix(4))
-                    }
-                }
-        }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(18)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-    }
-    
     // MARK: - Source Details Card
     private var sourceDetailsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.sourceDesFonds)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(Color(hex: "174EA6"))
                     .frame(width: 60, height: 2)
             }
             
@@ -226,43 +209,41 @@ struct SponsorWalletView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.recipientDetails)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(Color(hex: "174EA6"))
                     .frame(width: 96, height: 3)
             }
             
             HStack(alignment: .top, spacing: 10) {
                 HStack(spacing: 8) {
                     TextField(AppStrings.recipientNumber2, text: $recipientPhone)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.phonePad)
+                        .textContentType(.telephoneNumber)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.leading, 12)
                         .onChange(of: recipientPhone) {
-                            // Limit to 9 digits
-                            if recipientPhone.count > 9 {
-                                recipientPhone = String(recipientPhone.prefix(9))
-                            }
-                            
-                            // Auto-verify when 9 digits are entered
-                            if recipientPhone.count == 9 {
-                                verifyRecipient()
-                            } else if recipientPhone.count < 9 {
-                                // Reset recipient info if digits are deleted
-                                resetVerificationFields()
-                            }
+                            resetVerificationFields()
+                            recipientLookupError = ""
+                            showPinEntry = false
+                            pin = ""
+                        }
+                        .task(id: recipientPhone) {
+                            guard WalletTransferRecipient.isValid(recipientPhone) else { return }
+                            do { try await Task.sleep(nanoseconds: 500_000_000) } catch { return }
+                            verifyRecipient()
                         }
                     
                     if isVerifying {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                            .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "174EA6")))
                             .scaleEffect(0.8)
                             .padding(.trailing, 12)
-                    } else if isRecipientVerified && !recipientName.isEmpty && recipientPhone.count == 9 {
+                    } else if isRecipientVerified && !recipientName.isEmpty {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 20))
-                            .foregroundColor(.blueH)
+                            .foregroundColor(Color(hex: "174EA6"))
                             .padding(.trailing, 12)
                     }
                 }
@@ -276,30 +257,38 @@ struct SponsorWalletView: View {
                         Image(systemName: "person.text.rectangle")
                             .font(.system(size: 25, weight: .medium))
                             .frame(width: 46, height: 44)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.blueH, lineWidth: 1.5))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "174EA6"), lineWidth: 1.5))
                         Text(AppStrings.contacts)
                             .font(.system(size: 12, weight: .medium))
                     }
-                    .foregroundColor(.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
                 }
             }
             
             if isRecipientVerified && !recipientName.isEmpty {
                 HStack(spacing: 8) {
                     Image(systemName: "person.fill")
-                        .foregroundColor(.blueH)
+                        .foregroundColor(Color(hex: "174EA6"))
                         .font(.system(size: 14))
                     
                     Text(recipientName)
                         .font(.system(size: 14, weight: .semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
                         .foregroundColor(.primary)
                     
                     Spacer()
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
-                .background(Color.blueH.opacity(0.1))
+                .background(Color(hex: "174EA6").opacity(0.1))
                 .cornerRadius(8)
+            }
+            if !recipientLookupError.isEmpty {
+                Text(recipientLookupError)
+                    .font(.system(size: 12))
+                    .foregroundColor(.red)
+                    .accessibilityLabel(recipientLookupError)
             }
         }
         .padding(16)
@@ -307,17 +296,17 @@ struct SponsorWalletView: View {
         .cornerRadius(18)
         .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
+
     // MARK: - Limits Card
     private var limitsCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.limits)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(Color(hex: "174EA6"))
                     .frame(width: 96, height: 3)
             }
             
@@ -337,17 +326,17 @@ struct SponsorWalletView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.period)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(Color(hex: "174EA6"))
                     .frame(width: 96, height: 3)
             }
             
             VStack(alignment: .leading, spacing: 8) {
                 Text(AppStrings.startDate)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Button(action: {
                     showStartDatePicker = true
@@ -361,7 +350,7 @@ struct SponsorWalletView: View {
                         
                         Image(systemName: "calendar")
                             .font(.system(size: 22, weight: .semibold))
-                            .foregroundColor(.blueH)
+                            .foregroundColor(Color(hex: "174EA6"))
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 44)
@@ -374,7 +363,7 @@ struct SponsorWalletView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(AppStrings.endDate)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.blueH)
+                    .foregroundColor(Color(hex: "174EA6"))
                 
                 Button(action: {
                     showEndDatePicker = true
@@ -388,7 +377,7 @@ struct SponsorWalletView: View {
                         
                         Image(systemName: "calendar")
                             .font(.system(size: 22, weight: .semibold))
-                            .foregroundColor(.blueH)
+                            .foregroundColor(Color(hex: "174EA6"))
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 44)
@@ -417,7 +406,8 @@ struct SponsorWalletView: View {
                 .background(Color(hex: "174EA6"))
                 .cornerRadius(8)
         }
-        .disabled(isLoading)
+        .disabled(isLoading || isVerifying || !isRecipientVerified)
+        .opacity(isLoading || isVerifying || !isRecipientVerified ? 0.45 : 1)
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
     }
@@ -442,6 +432,8 @@ struct SponsorWalletView: View {
     }
     
     private func resetVerificationFields() {
+        recipientLookupID = UUID()
+        isVerifying = false
         recipientName = ""
         sponsoredBankCode = ""
         isRecipientVerified = false
@@ -457,15 +449,16 @@ struct SponsorWalletView: View {
     
     // MARK: - Verify Recipient
     private func verifyRecipient() {
-        guard recipientPhone.count == 9 else {
-            return
-        }
-        
+        let recipient = WalletTransferRecipient.normalize(recipientPhone)
+        guard !recipient.isEmpty else { return }
+        let lookupID = UUID()
+        recipientLookupID = lookupID
+        recipientLookupError = ""
         isVerifying = true
         
         var request = RequestNameEnquiry()
         request.source = "P"
-        request.phoneNumber = recipientPhone
+        request.phoneNumber = recipient
         request.bank = "00100"
         request.pin = userDataManager.getPinForAPI()
         
@@ -482,8 +475,10 @@ struct SponsorWalletView: View {
         
         APIClient.shared.getWalletInfo(request: request) { result in
             DispatchQueue.main.async {
+                guard self.recipientLookupID == lookupID,
+                      WalletTransferRecipient.normalize(self.recipientPhone) == recipient else { return }
                 self.isVerifying = false
-                
+
                 switch result {
                 case .success(let response):
                     if response.respCode == "000" {
@@ -493,9 +488,9 @@ struct SponsorWalletView: View {
                     }
                 case .failure(let error):
                     if let apiError = error as? APIError {
-                        self.showError(AppStrings.error, apiError.message)
+                        self.recipientLookupError = apiError.message
                     } else {
-                        self.showError(AppStrings.error, error.localizedDescription)
+                        self.recipientLookupError = error.localizedDescription
                     }
                     self.resetVerificationFields()
                 }
@@ -506,19 +501,17 @@ struct SponsorWalletView: View {
     private func handleVerificationSuccess(_ response: ResponseServiceJson) {
         if let result = response.result {
             let clientName = result["walletHolder"] as? String ?? ""
-            let phoneConfirmed = result["phoneNumber"] as? String ?? ""
-            
-            if !recipientPhone.hasSuffix(phoneConfirmed.suffix(9)) && recipientPhone != phoneConfirmed {
-                showError(AppStrings.error, AppStrings.theVerifiedNumberDoesNotMatchTheNumberEntered)
+            guard !clientName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                recipientLookupError = AppStrings.recipientInformationIsUnavailable
                 resetVerificationFields()
                 return
             }
-            
+
             sponsoredBankCode = "00100"
             recipientName = clientName
             isRecipientVerified = true
         } else {
-            showError(AppStrings.error, AppStrings.recipientInformationIsUnavailable)
+            recipientLookupError = AppStrings.recipientInformationIsUnavailable
             resetVerificationFields()
         }
     }
@@ -535,7 +528,7 @@ struct SponsorWalletView: View {
             }
         }()
         
-        showError(AppStrings.error, errorMessage)
+        recipientLookupError = errorMessage
         resetVerificationFields()
     }
     
@@ -543,16 +536,17 @@ struct SponsorWalletView: View {
     private func validateAndPrepare() {
         guard validateInputs() else { return }
         
+        pin = ""
         showPinEntry = true
     }
-    
+
     private func validateInputs() -> Bool {
-        if recipientPhone.isEmpty {
+        if WalletTransferRecipient.normalize(recipientPhone).isEmpty {
             showError(AppStrings.error, AppStrings.recipientPhoneNumberIsRequired2)
             return false
         }
         
-        if !isRecipientVerified || recipientName.isEmpty {
+        if isVerifying || !isRecipientVerified || recipientName.isEmpty {
             showError(AppStrings.error, AppStrings.pleaseVerifyTheRecipientFirst)
             return false
         }
@@ -578,21 +572,11 @@ struct SponsorWalletView: View {
             return false
         }
         
-        if showPinEntry && pin.isEmpty {
-            showError(AppStrings.error, AppStrings.enterYourPinToContinue)
-            return false
-        }
-        
-        if showPinEntry {
-            processSponsorWithPin()
-            return false
-        }
-        
         return true
     }
     
     // MARK: - Process Sponsor
-    private func processSponsorWithPin() {
+    private func processSponsorWithPin(_ enteredPin: String) {
         isLoading = true
         
         var request = SponsoredWalletDto()
@@ -601,7 +585,7 @@ struct SponsorWalletView: View {
         request.walletNumber = userDataManager.getWalletNumber()
         request.bankCode = "00100"
         
-        request.phoneNumberSponsored = recipientPhone
+        request.phoneNumberSponsored = WalletTransferRecipient.normalize(recipientPhone)
         request.walletNumberSponsored = ""
         request.bankCodeSponsored = sponsoredBankCode.isEmpty ? "00100" : sponsoredBankCode
         
@@ -610,7 +594,7 @@ struct SponsorWalletView: View {
         request.dateStart = formatDateForAPI(startDate) + " 00:00:00"
         request.dateEnd = formatDateForAPI(endDate) + " 23:59:59"
         
-        request.pin = pin
+        request.pin = enteredPin
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyMMdd"
@@ -662,6 +646,7 @@ struct SponsorWalletView: View {
         alertMessage = message
         
         let alert = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
+        alert.view.tintColor = UIColor(Color(hex: "174EA6"))
         alert.addAction(UIAlertAction(title: AppStrings.ok, style: .default) { _ in
             self.dismiss()
         })

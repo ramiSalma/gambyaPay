@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct SettingsView: View {
+    var onReturnHome: (() -> Void)? = nil
     @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     @State private var requirePin = UserDefaults.standard.object(forKey: "requirePinForEveryTransaction") as? Bool ?? true
-    @State private var showSecurityQuestionInfo = false
 
     private let blue = Color(hex: "174EA6")
     private let cyan = Color(hex: "087FB3")
@@ -35,11 +35,7 @@ struct SettingsView: View {
             )
         }
         .navigationBarHidden(true)
-        .alert(AppStrings.securityQuestion, isPresented: $showSecurityQuestionInfo) {
-            Button(AppStrings.ok, role: .cancel) { }
-        } message: {
-            Text(AppStrings.securityQuestionHelp)
-        }
+
     }
 
     private var pinRequirementCard: some View {
@@ -113,7 +109,9 @@ struct SettingsView: View {
 
             divider
 
-            Button { showSecurityQuestionInfo = true } label: {
+            NavigationLink(destination: ChangeSecurityQuestionView(onReturnHome: {
+                if let onReturnHome { onReturnHome() } else { dismiss() }
+            })) {
                 settingsRow(icon: "questionmark.circle.fill", title: AppStrings.changeSecurityQuestion)
             }
             .buttonStyle(.plain)

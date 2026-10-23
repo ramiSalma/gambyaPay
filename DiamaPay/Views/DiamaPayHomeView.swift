@@ -131,7 +131,7 @@ struct DiamaPayHomeView: View {
         Group {
             NavigationLink("", destination: MyProfileView(), isActive: $viewModel.navigateToProfile)
             NavigationLink("", destination: AllBeneficiariesView(), isActive: $viewModel.navigateToBeneficiaries)
-            NavigationLink("", destination: SettingsView(), isActive: $viewModel.navigateToSettings)
+            NavigationLink("", destination: SettingsView(onReturnHome: { viewModel.navigateToSettings = false }), isActive: $viewModel.navigateToSettings)
             NavigationLink("", destination: WalletTransferView(onOpenSettings: { showDrawer = true }), isActive: $viewModel.navigateToWalletTransfer)
             NavigationLink("", destination: WalletToAccountTransferView(), isActive: $viewModel.navigateToWalletToAccountTransfer)
             NavigationLink("", destination: TransactionHistoryView(), isActive: $viewModel.navigateToTransactions)
@@ -139,6 +139,7 @@ struct DiamaPayHomeView: View {
             NavigationLink("", destination: MoneyVoucherView(), isActive: $viewModel.navigateToMoneyVoucher)
             NavigationLink("", destination: MobileMoneyView(), isActive: $viewModel.navigateToMobileMoney)
             NavigationLink("", destination: LinkedAccountsListView(), isActive: $viewModel.navigateToLinkedAccounts)
+            NavigationLink("", destination: CrowdfundingView(), isActive: $viewModel.navigateToCrowdfunding)
             NavigationLink("", destination: StandingInstructionListView(), isActive: $viewModel.navigateToSI)
             NavigationLink("", destination: SponsoredWalletsListView(), isActive: $viewModel.navigateToSponsored)
             NavigationLink("", destination: SponsoringWalletListView(), isActive: $viewModel.navigateToSponsoring)
@@ -239,6 +240,7 @@ class HomeViewModel: ObservableObject {
     @Published var navigateToMoneyVoucher = false
     @Published var navigateToMobileMoney = false
     @Published var navigateToLinkedAccounts = false
+    @Published var navigateToCrowdfunding = false
     @Published var navigateToSI = false
     @Published var navigateToSponsored = false
     @Published var navigateToSponsoring = false
@@ -322,6 +324,7 @@ class HomeViewModel: ObservableObject {
         case "qr": navigateToQR = true
         case "sponsoring": navigateToSponsoring = true
         case "linked": navigateToLinkedAccounts = true
+        case "crowdfunding": navigateToCrowdfunding = true
         case "si": navigateToSI = true
         case "pinChange": navigateToPin = true
         case "pending": navigateToPending = true
@@ -357,6 +360,7 @@ class HomeViewModel: ObservableObject {
         case "sponsoring": navigateToSponsoring = true
         case "sponsor": navigateToSponsor = true
         case "sponsors": navigateToSponsoring = true
+        case "crowdfunding": navigateToCrowdfunding = true
         case "si": navigateToSI = true
         case "payment": navigateToTransactions = true
         case "limits": navigateToLimits = true

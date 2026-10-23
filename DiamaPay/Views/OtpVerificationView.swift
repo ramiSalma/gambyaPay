@@ -32,7 +32,8 @@ struct OtpVerificationView: View {
             Text(AppStrings.verifiezVotreAppareil)
                 .font(.title3)
                 .bold()
-            
+                .foregroundColor(Color(hex: "174EA6"))
+
             Text(AppStrings.entrezLeCodeOtpEnvoyeAValue(String(describing: maskedPhoneNumber)))
                 .font(.subheadline)
                 .foregroundColor(.gray)
@@ -43,7 +44,9 @@ struct OtpVerificationView: View {
                 .keyboardType(.numberPad)
                 .font(.system(size: 24, weight: .medium, design: .monospaced))
                 .padding()
-                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.3)))
+                .background(Color(hex: "F4F8FE"))
+                .cornerRadius(8)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(hex: "174EA6").opacity(0.5), lineWidth: 1.2))
                 .padding(.horizontal, 50)
             
             Button(action: verifyOtp) {
@@ -56,7 +59,7 @@ struct OtpVerificationView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 15)
-            .background(Color.blueH)
+            .background(Color(hex: "174EA6").opacity(isLoading || otp.count != 6 ? 0.45 : 1))
             .foregroundColor(.white)
             .cornerRadius(8)
             .padding(.horizontal, 30)
@@ -64,6 +67,10 @@ struct OtpVerificationView: View {
             
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white.ignoresSafeArea())
+        .tint(Color(hex: "174EA6"))
+        .preferredColorScheme(.light)
         .alert(AppStrings.error, isPresented: $showAlert) {
             Button(AppStrings.ok, role: .cancel) { }
         } message: {

@@ -173,6 +173,12 @@ class APIClient {
 
  
     // MARK: - Security Questions Endpoint
+    func updateSecurityQuestion(request: SecurityQuestionUpdateRequest,
+                                completion: @escaping (Result<ResponseService, Error>) -> Void) {
+        performRequest(endpoint: "api/wallet/update-info", method: .POST,
+                       body: request, requiresAuth: true, completion: completion)
+    }
+
     func listSecurityQuestions(completion: @escaping (Result<JResponseService, Error>) -> Void) {
         let endpoint = "api/wallet/list-secretQ"
         performRequest(endpoint: endpoint, method: .POST, body: nil as String?, requiresAuth: false, completion: completion)
@@ -864,6 +870,18 @@ class APIClient {
                 }
             }.resume()
         }
+    func listCrowdfundingGroups(phoneNumber: String, completion: @escaping (Result<[CrowdfundingGroup], Error>) -> Void) {
+        var allowed = CharacterSet.urlPathAllowed
+        allowed.remove(charactersIn: "/?#%")
+        guard let phone = phoneNumber.addingPercentEncoding(withAllowedCharacters: allowed) else {
+            completion(.failure(URLError(.badURL)))
+            return
+        }
+        performRequest(endpoint: "crowdfunding/getUserGroups/" + phone, method: .POST,
+                       body: Optional<WalletBeneficiaryListRequest>.none,
+                       requiresAuth: true, completion: completion)
+    }
+
     // MARK: - Generic Request Method
     private func performRequest<T: Codable, U: Codable>(
         endpoint: String,

@@ -27,7 +27,7 @@ struct StandingInstructionCreateView: View {
     
     // MARK: - State Variables
     @State private var selectedTrxTypeIndex = 0
-    @State private var selectedFrequencyIndex = 2 // Default to Monthly
+    @State private var selectedFrequencyIndex = 0 // Daily, matching Android
     @State private var destBank = ""
     @State private var destination = ""
     @State private var receiverName = ""
@@ -36,6 +36,8 @@ struct StandingInstructionCreateView: View {
     @State private var startDate = Date()
     @State private var endDate = Date().addingTimeInterval(365 * 24 * 60 * 60) // 1 year
     
+    @State private var showContacts = false
+    @State private var showSaved = false
     @State private var showStartDatePicker = false
     @State private var showEndDatePicker = false
     @State private var isVerifying = false
@@ -47,8 +49,8 @@ struct StandingInstructionCreateView: View {
     @State private var isRecipientVerified = false
     
     private let userDataManager = UserDataManager.shared
-    private let defaultCurrency = "GNF"
-    private let numericCurrency = "324"
+    private let defaultCurrency = "GMD"
+    private let numericCurrency = "270"
     
     var body: some View {
         ZStack {
@@ -57,15 +59,15 @@ struct StandingInstructionCreateView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: AppStrings.createStandingInstruction, headerColor: Color(hex: "174EA6"), onBackToHome: {
+                StandingInstructionHeader(title: standingText("New standing instruction", "Nouvelle instruction permanente")) {
                     presentationMode.wrappedValue.dismiss()
-                })
+                }
 
                 if isLoading {
                     Spacer()
                     VStack(spacing: 16) {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                            .progressViewStyle(CircularProgressViewStyle(tint: StandingInstructionStyle.blue))
                             .scaleEffect(1.5)
                         
                         Text(AppStrings.traitementEnCours)
@@ -97,332 +99,167 @@ struct StandingInstructionCreateView: View {
                             submitButton
                         }
                         .padding(.horizontal, 16)
-                        .padding(.top, 20)
+                        .padding(.top, 17)
+                        .padding(.bottom, 18)
                     }
                 }
             }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
-        }
+        .tint(StandingInstructionStyle.blue)
+        .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             Button(AppStrings.ok, role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
+        .sheet(isPresented: $showContacts) {
+            ContactPickerView(selectedPhone: $destination, normalizePhone: WalletTransferRecipient.normalize)
+        }
+        .sheet(isPresented: $showSaved) {
+            SavedWalletRecipientsView { beneficiary in
+                destination = WalletTransferRecipient.normalize(beneficiary.destination ?? "")
+            }
+        }
         .overlay(pinDialogOverlay)
     }
     
-    // MARK: - Title Card
-    private var titleCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-            
-            VStack(spacing: 8) {
-                Text(AppStrings.creerUnVirementPermanent)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 80, height: 3)
-            }
-            .padding(.vertical, 16)
-        }
-    }
-    
-    // MARK: - Transaction Type Card
     private var transactionTypeCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.typeDeTransaction)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            Menu {
-                ForEach(0..<transactionTypes.count, id: \.self) { index in
-                    Button(action: {
-                        selectedTrxTypeIndex = index
-                        updateUIForTransactionType()
-                    }) {
-                        Text(AppStrings.option(transactionTypes[index].0))
-                    }
-                }
-            } label: {
-                HStack {
-                    Text(AppStrings.option(transactionTypes[selectedTrxTypeIndex].0))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12))
-                        .foregroundColor(.gray)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
-            }
+        standingCard(AppStrings.typeDeTransaction) {
+            Text(AppStrings.option(transactionTypes[selectedTrxTypeIndex].0))
+                .font(.system(size: 17))
+                .foregroundColor(.black)
+                .standingField()
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
-    // MARK: - Recipient Details Card (Optimized with Auto-Verify)
+
     private var recipientDetailsCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.detailsDuDestinataire)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            // Bank Code (only for wallet to account)
-            if transactionTypes[selectedTrxTypeIndex].1 == "42" {
-                TextField(AppStrings.codeBanque, text: $destBank)
-                    .font(.system(size: 14, weight: .medium))
-                    .padding(.horizontal, 12)
-                    .frame(height: 48)
-                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                    .cornerRadius(8)
-            }
-            
-            // Destination with auto-verify
-            HStack(spacing: 8) {
-                TextField(getDestinationPlaceholder(), text: $destination)
-                    .keyboardType(.numberPad)
-                    .font(.system(size: 14, weight: .medium))
-                    .padding(.leading, 12)
-                    .onChange(of: destination) {
-                        // Limit to 9 digits
-                        if destination.count > 9 {
-                            destination = String(destination.prefix(9))
-                        }
-                        
-                        // Auto-verify when 9 digits are entered
-                        if destination.count == 9 {
-                            verifyRecipient()
-                        } else if destination.count < 9 {
-                            // Reset recipient info if digits are deleted
-                            resetVerificationFields()
-                        }
+        standingCard(AppStrings.detailsDuDestinataire) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Destination").foregroundColor(StandingInstructionStyle.label)
+                HStack(alignment: .top, spacing: 8) {
+                    HStack {
+                        TextField(standingText("Enter recipient phone number", "Numéro du destinataire"), text: $destination)
+                            .keyboardType(.phonePad)
+                            .onChange(of: destination) {
+                                let normalized = WalletTransferRecipient.normalize(destination)
+                                if destination != normalized { destination = normalized; return }
+                                resetVerificationFields()
+                            }
+                        if isVerifying { ProgressView() }
                     }
-                
-                if isVerifying {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
-                        .scaleEffect(0.8)
-                        .padding(.trailing, 12)
-                } else if isRecipientVerified && !receiverName.isEmpty && destination.count == 9 {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.blueH)
-                        .padding(.trailing, 12)
+                    .standingField()
+                    .task(id: destination) {
+                        guard !destination.isEmpty else { return }
+                        do { try await Task.sleep(nanoseconds: 600_000_000) } catch { return }
+                        verifyRecipient()
+                    }
+                    recipientButton(AppStrings.contacts, icon: "person.crop.rectangle.fill") { showContacts = true }
+                    recipientButton(AppStrings.saved, icon: "book.closed.fill") { showSaved = true }
                 }
             }
-            .frame(height: 48)
-            .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-            .cornerRadius(8)
-            
-            // Receiver Name (only show when verified)
-            if isRecipientVerified && !receiverName.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "person.fill")
-                        .foregroundColor(.blueH)
-                        .font(.system(size: 14))
-                    
-                    Text(receiverName)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
-                .background(Color.blueH.opacity(0.1))
-                .cornerRadius(8)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(standingText("Beneficiary Name", "Nom du bénéficiaire")).foregroundColor(StandingInstructionStyle.label)
+                Text(receiverName.isEmpty ? standingText("Beneficiary Name", "Nom du bénéficiaire") : receiverName)
+                    .foregroundColor(Color(hex: "555F6D"))
+                    .standingField()
             }
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
-    // MARK: - Amount Card
+
+    private func recipientButton(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 25, weight: .semibold))
+                    .frame(width: 50, height: 50)
+                    .overlay(RoundedRectangle(cornerRadius: 9).stroke(Color(hex: "0086B5"), lineWidth: 1))
+                Text(title).font(.system(size: 11))
+            }
+            .foregroundColor(title == AppStrings.saved ? StandingInstructionStyle.blue : StandingInstructionStyle.accent)
+        }
+        .accessibilityLabel(title)
+    }
+
     private var amountCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.montant3)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
+        standingCard(AppStrings.montant3) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(AppStrings.montant3).foregroundColor(StandingInstructionStyle.label)
+                TextField(standingText("Amount to Transfer", "Montant à transférer"), text: $amount)
+                    .keyboardType(.decimalPad)
+                    .standingField()
             }
-            
-            FormattedTextField(placeholder: AppStrings.entrerLeMontantGnf, text: $amount)
+            .padding(.bottom, 14)
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
-    // MARK: - Description Card
+
     private var descriptionCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.description2)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            TextField(AppStrings.entrerUneDescription, text: $details)
-                .font(.system(size: 14, weight: .medium))
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+        standingCard(AppStrings.description2) {
+            TextField(standingText("Payment Details", "Détails du paiement"), text: $details)
+                .standingField()
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
-    // MARK: - Schedule Card
+
     private var scheduleCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(AppStrings.planification)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
-                
-                Rectangle()
-                    .fill(Color.blueH)
-                    .frame(width: 60, height: 2)
-            }
-            
-            // Frequency
-            Menu {
-                ForEach(0..<frequencies.count, id: \.self) { index in
-                    Button(action: {
-                        selectedFrequencyIndex = index
-                    }) {
-                        Text(AppStrings.option(frequencies[index].0))
+        standingCard(AppStrings.frequence) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(AppStrings.frequence).foregroundColor(StandingInstructionStyle.label)
+                Menu {
+                    ForEach(0..<frequencies.count, id: \.self) { index in
+                        Button(AppStrings.option(frequencies[index].0)) { selectedFrequencyIndex = index }
                     }
-                }
-            } label: {
-                HStack {
+                } label: {
                     Text(AppStrings.option(frequencies[selectedFrequencyIndex].0))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 12))
-                        .foregroundColor(.gray)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.black)
+                        .standingField()
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
             }
-            
-            // Start Date
-            Button(action: { showStartDatePicker = true }) {
-                HStack {
-                    Text(AppStrings.dateDeDebut)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Text(formatDate(startDate))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                    
-                    Image(systemName: "calendar")
-                        .foregroundColor(.blueH)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(AppStrings.dateDeDebut).foregroundColor(StandingInstructionStyle.label)
+                dateButton(startDate) { showStartDatePicker = true }
+                    .sheet(isPresented: $showStartDatePicker) {
+                        DatePickerSheetA(selectedDate: $startDate, title: AppStrings.dateDeDebut)
+                    }
             }
-            .sheet(isPresented: $showStartDatePicker) {
-                DatePickerSheetA(selectedDate: $startDate, title: AppStrings.dateDeDebut)
-            }
-            
-            // End Date
-            Button(action: { showEndDatePicker = true }) {
-                HStack {
-                    Text(AppStrings.dateDeFin)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Text(formatDate(endDate))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                    
-                    Image(systemName: "calendar")
-                        .foregroundColor(.blueH)
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 48)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(8)
-            }
-            .sheet(isPresented: $showEndDatePicker) {
-                DatePickerSheetA(selectedDate: $endDate, title: AppStrings.dateDeFin)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(AppStrings.dateDeFin).foregroundColor(StandingInstructionStyle.label)
+                dateButton(endDate) { showEndDatePicker = true }
+                    .sheet(isPresented: $showEndDatePicker) {
+                        DatePickerSheetA(selectedDate: $endDate, title: AppStrings.dateDeFin)
+                    }
             }
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-    
-    // MARK: - Submit Button
+
+    private func dateButton(_ date: Date, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(formatDateForAPI(date)).foregroundColor(StandingInstructionStyle.label)
+                Spacer()
+                Image(systemName: "calendar").font(.system(size: 21, weight: .bold)).foregroundColor(StandingInstructionStyle.accent)
+            }
+            .standingField()
+        }
+    }
+
     private var submitButton: some View {
         Button(action: validateAndShowPin) {
-            Text(AppStrings.creer)
-                .font(.system(size: 16, weight: .semibold))
+            Text(standingText("Create Instruction", "Créer l’instruction"))
+                .font(.system(size: 18, weight: .semibold))
+                .tracking(1.5)
                 .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 24)
                 .frame(height: 50)
-                .background(Color.blueH)
-                .cornerRadius(8)
+                .background(Color(hex: "174EA6"))
+                .cornerRadius(9)
+                .shadow(color: .black.opacity(0.15), radius: 2, y: 2)
         }
-        .disabled(isLoading)
-        .padding(.vertical, 20)
+        .buttonStyle(.plain)
+        .disabled(isLoading || isVerifying)
+        .padding(.vertical, 18)
     }
-    
+
     // MARK: - PIN Dialog Overlay
     private var pinDialogOverlay: some View {
         Group {
@@ -458,6 +295,7 @@ struct StandingInstructionCreateView: View {
     }
     
     private func resetVerificationFields() {
+        isVerifying = false
         receiverName = ""
         isRecipientVerified = false
     }
@@ -475,7 +313,7 @@ struct StandingInstructionCreateView: View {
     }
     
     private func verifyRecipient() {
-        guard destination.count == 9 else {
+        guard WalletTransferRecipient.isValid(destination) else {
             return
         }
         
@@ -496,6 +334,7 @@ struct StandingInstructionCreateView: View {
     }
     
     private func verifyWalletToWallet() {
+        let requestedDestination = destination
         var request = RequestNameEnquiry()
         request.source = "P"
         request.phoneNumber = destination
@@ -507,6 +346,7 @@ struct StandingInstructionCreateView: View {
         
         APIClient.shared.getWalletInfo(request: request) { result in
             DispatchQueue.main.async {
+                guard self.destination == requestedDestination else { return }
                 self.isVerifying = false
                 
                 switch result {
@@ -555,7 +395,7 @@ struct StandingInstructionCreateView: View {
             return
         }
         
-        guard !amount.isEmpty else {
+        guard let value = Decimal(string: amount.replacingOccurrences(of: ",", with: ".")), value > 0 else {
             showErrorAlert(AppStrings.leMontantEstRequis)
             return
         }
@@ -590,7 +430,7 @@ struct StandingInstructionCreateView: View {
             destBank: trxType == "42" ? destBank : "",
             receiver: receiverName,
             destination: destination,
-            amount: amount.cleanCurrencyValue(),
+            amount: amount.replacingOccurrences(of: ",", with: "."),
             currency: numericCurrency,
             details: details,
             pin: pin,
@@ -599,7 +439,7 @@ struct StandingInstructionCreateView: View {
             endDate: formatDateForAPI(endDate),
             requestId: generateRequestId(),
             requestDate: generateRequestDate(),
-            entityId: "00100"
+            entityId: userDataManager.getUserCode()
         )
         
         APIClient.shared.createStandingInstruction(request: request) { result in
@@ -717,10 +557,10 @@ struct PinEntryDialog: View {
                     Button(action: onCancel) {
                         Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color.blueH)
+                            .foregroundColor(StandingInstructionStyle.blue)
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
-                            .background(Color.blueH.opacity(0.1))
+                            .background(StandingInstructionStyle.blue.opacity(0.1))
                             .cornerRadius(8)
                     }
                     
@@ -737,7 +577,7 @@ struct PinEntryDialog: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
-                            .background(Color.blueH)
+                            .background(StandingInstructionStyle.blue)
                             .cornerRadius(8)
                     }
                 }

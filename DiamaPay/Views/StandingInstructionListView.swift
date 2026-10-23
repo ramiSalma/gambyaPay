@@ -24,7 +24,6 @@ struct StandingInstructionListView: View {
     @State private var alertMessage = ""
     @State private var alertTitle = AppStrings.information
     @State private var showCreateSheet = false
-    @State private var showUpdateSheet = false
     @State private var selectedInstruction: StandingInstruction? = nil
     @State private var showDeleteDialog = false
     @State private var instructionToDelete: StandingInstruction? = nil
@@ -38,18 +37,16 @@ struct StandingInstructionListView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: AppStrings.standingInstructions, headerColor: Color(hex: "174EA6"))
-
-                // Title Card
-                    .padding(.horizontal, 16)
-                    .padding(.top, 20)
+                StandingInstructionHeader(title: AppStrings.standingInstructions) {
+                    presentationMode.wrappedValue.dismiss()
+                }
                 
                 // Content
                 if isLoading {
                     Spacer()
                     VStack(spacing: 16) {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                            .progressViewStyle(CircularProgressViewStyle(tint: StandingInstructionStyle.blue))
                             .scaleEffect(1.5)
                         
                         Text(AppStrings.chargement)
@@ -65,8 +62,12 @@ struct StandingInstructionListView: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
+            AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {}, onHome: {
+                presentationMode.wrappedValue.dismiss()
+            })
         }
+        .tint(StandingInstructionStyle.blue)
+        .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .onAppear {
             loadStandingInstructions()
@@ -76,13 +77,27 @@ struct StandingInstructionListView: View {
         } message: {
             Text(AppStrings.option(alertMessage))
         }
-        .sheet(isPresented: $showCreateSheet) {
-            NavigationView {
+        .background(
+            NavigationLink(isActive: $showCreateSheet) {
                 StandingInstructionCreateView(onSuccess: {
                     showCreateSheet = false
                     loadStandingInstructions()
                 })
+            } label: { EmptyView() }
+        )
+        .overlay(alignment: .bottomTrailing) {
+            Button { showCreateSheet = true } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 28, weight: .regular))
+                    .foregroundColor(.white)
+                    .frame(width: 60, height: 60)
+                    .background(Color(hex: "0086B5"))
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.2), radius: 6, y: 5)
             }
+            .accessibilityLabel(AppStrings.createStandingInstruction)
+            .padding(.trailing, 16)
+            .padding(.bottom, 88)
         }
         .sheet(item: $selectedInstruction) { instruction in
             NavigationView {
@@ -100,34 +115,11 @@ struct StandingInstructionListView: View {
     
 
     
-    // MARK: - Title Card
-    private var titleCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
-            
-            VStack(spacing: 6) {  // Reduced from 8
-                Text(AppStrings.virementsPermanents)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: 80, height: 3)
-            }
-            .padding(.vertical, 12)  // Reduced from 16
-        }
-        .fixedSize(horizontal: false, vertical: true)  // Add this line
-        .padding(.horizontal, 16)
-        .padding(.top, 8)  // Reduced from 20
-    }
-    
     // MARK: - Instructions List
     private var instructionsList: some View {
         ZStack(alignment: .bottomTrailing) {
             ScrollView {
-                VStack(spacing: 12) {
+                LazyVStack(spacing: 0) {
                     ForEach(instructions) { instruction in
                         StandingInstructionRow(
                             instruction: instruction,
@@ -139,35 +131,19 @@ struct StandingInstructionListView: View {
                                 showDeleteDialog = true
                             }
                         )
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 8)
+                        Divider().overlay(StandingInstructionStyle.separator)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
+                .padding(.horizontal, 14)
+                .padding(.top, 8)
                 .padding(.bottom, 80)
             }
             
-            // FAB - Create Button
-            Button(action: {
-                showCreateSheet = true
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text(AppStrings.creer)
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 14)
-                .background(Color.blueH)
-                .cornerRadius(28)
-                .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
-            }
-            .padding(.trailing, 16)
-            .padding(.bottom, 16)
         }
     }
-    
+
     // MARK: - Empty State
     private var emptyStateView: some View {
         VStack(spacing: 20) {
@@ -190,7 +166,7 @@ struct StandingInstructionListView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.blueH)
+                    .background(StandingInstructionStyle.blue)
                     .cornerRadius(8)
             }
             
@@ -272,7 +248,7 @@ struct StandingInstructionListView: View {
                 beneficiary: dict["beneficiary"] as? String ?? AppStrings.unknown,
                 description: dict["description"] as? String ?? "",
                 amount: String(describing: dict["amount"] ?? "0"),
-                currency: dict["currency"] as? String ?? "324",
+                currency: dict["currency"] as? String ?? "270",
                 destBank: dict["destBank"] as? String,
                 trxType: dict["trxType"] as? String,
                 destBankCode: dict["destBankCode"] as? String,
@@ -384,63 +360,80 @@ struct StandingInstructionRow: View {
     let onUpdate: () -> Void
     let onDelete: () -> Void
     
-    @State private var showMenu = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 12) {
+                Text(initials)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(StandingInstructionStyle.avatarText)
+                    .frame(width: 38, height: 38)
+                    .background(Color(hex: "E6F2FB"))
+                    .clipShape(Circle())
+                VStack(alignment: .leading, spacing: 5) {
                     Text(instruction.beneficiary ?? AppStrings.unknown)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primary)
-                    
-                    Text(formatAmount(instruction.amount ?? "0") + " " + getCurrencyDisplay(instruction.currency ?? "324"))
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color.blueH)
+                        .font(.system(size: 16, weight: .bold))
+                    Text(instruction.description ?? "")
+                        .font(.system(size: 14))
+                        .foregroundColor(StandingInstructionStyle.secondaryText)
                 }
-                
-                Spacer()
-                
-                Button(action: {
-                    showMenu = true
-                }) {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.gray)
-                        .rotationEffect(.degrees(90))
-                        .padding(8)
-                }
+                Spacer(minLength: 0)
             }
-            .padding(16)
-            
-            Divider()
-                .padding(.horizontal, 16)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                DetailRowSmall(label: AppStrings.frequence, value: getFrequencyDisplay(instruction.frequency ?? "D"))
-                DetailRowSmall(label: AppStrings.prochaineDate, value: instruction.nextDate ?? "N/A")
-                if let description = instruction.description, !description.isEmpty {
-                    DetailRowSmall(label: AppStrings.description3, value: description)
-                }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 17)
+            Divider().overlay(StandingInstructionStyle.separator)
+            HStack(alignment: .top, spacing: 0) {
+                summary(AppStrings.montant3,
+                        formatAmount(instruction.amount ?? "0") + " " + getCurrencyDisplay(instruction.currency ?? "270"),
+                        getCurrencyDisplay(instruction.currency ?? "270"))
+                Divider()
+                summary(AppStrings.frequence, getFrequencyDisplay(instruction.frequency ?? "D"), standingText("recurring", "récurrent"))
+                Divider()
+                summary(standingText("Next instruction", "Prochaine instruction"), displayNextDate, "")
             }
-            .padding(16)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.vertical, 14)
         }
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-        .confirmationDialog(AppStrings.options, isPresented: $showMenu, titleVisibility: .hidden) {
-            Button(AppStrings.modifier) {
-                onUpdate()
-            }
-            
-            Button(AppStrings.supprimer, role: .destructive) {
-                onDelete()
-            }
-            
-            Button(AppStrings.annuler, role: .cancel) { }
+        .cornerRadius(14)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(StandingInstructionStyle.separator, lineWidth: 1))
+        .shadow(color: .black.opacity(0.03), radius: 1, y: 1)
+        .contextMenu {
+            Button(AppStrings.modifier, action: onUpdate)
+            Button(AppStrings.supprimer, role: .destructive, action: onDelete)
         }
+        .accessibilityAction(named: Text(AppStrings.modifier), onUpdate)
+        .accessibilityAction(named: Text(AppStrings.supprimer), onDelete)
     }
-    
+
+    private var initials: String {
+        (instruction.beneficiary ?? "").split(separator: " ").prefix(2).compactMap { $0.first }.map(String.init).joined().uppercased()
+    }
+
+    private var displayNextDate: String {
+        let raw = instruction.nextDate ?? ""
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        for format in ["yyyy-MM-dd", "MM-dd-yyyy", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss"] {
+            formatter.dateFormat = format
+            if let date = formatter.date(from: raw) {
+                formatter.dateFormat = "dd/MM/yyyy"
+                return formatter.string(from: date)
+            }
+        }
+        return raw.isEmpty ? "—" : raw
+    }
+
+    private func summary(_ label: String, _ value: String, _ detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).font(.system(size: 12)).foregroundColor(StandingInstructionStyle.secondaryText)
+            Text(value).font(.system(size: 15, weight: .bold)).foregroundColor(.black).lineLimit(1).minimumScaleFactor(0.7)
+            if !detail.isEmpty { Text(detail).font(.system(size: 12)).foregroundColor(StandingInstructionStyle.secondaryText) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 14)
+    }
+
     private func formatAmount(_ amount: String) -> String {
         guard let doubleAmount = Double(amount.replacingOccurrences(of: ",", with: ".")) else {
             return amount
@@ -454,6 +447,7 @@ struct StandingInstructionRow: View {
     
     private func getCurrencyDisplay(_ code: String) -> String {
         switch code {
+        case "270", "GMD": return "GMD"
         case "324": return "GNF"
         case "840": return "USD"
         case "978": return "EUR"
@@ -555,10 +549,10 @@ struct DeleteConfirmationDialog: View {
                     Button(action: onCancel) {
                         Text(AppStrings.annuler)
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color.blueH)
+                            .foregroundColor(StandingInstructionStyle.blue)
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
-                            .background(Color.blueH.opacity(0.1))
+                            .background(StandingInstructionStyle.blue.opacity(0.1))
                             .cornerRadius(8)
                     }
                     
@@ -596,5 +590,81 @@ struct StandingInstructionListView_Previews: PreviewProvider {
         NavigationView {
             StandingInstructionListView()
         }
+    }
+}
+
+
+func standingText(_ english: String, _ french: String) -> String {
+    AppLanguageStore.shared.language == .french ? french : english
+}
+
+enum StandingInstructionStyle {
+    static let blue = Color(hex: "174EA6")
+    static let accent = Color(hex: "0086B5")
+    static let secondaryText = Color(hex: "555F6D")
+    static let label = Color(hex: "858585")
+    static let separator = Color(hex: "F0F0F0")
+    static let avatarText = Color(hex: "12547B")
+}
+
+struct StandingInstructionHeader: View {
+    let title: String
+    let onBack: () -> Void
+
+    var body: some View {
+        ZStack {
+            StandingInstructionStyle.blue.ignoresSafeArea(edges: .top)
+            Text(title)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .padding(.horizontal, 58)
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: "arrow.left")
+                        .font(.system(size: 23, weight: .regular))
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 48)
+                }
+                .accessibilityLabel(standingText("Back", "Retour"))
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+        }
+        .frame(height: 60)
+        .shadow(color: .black.opacity(0.12), radius: 2, y: 2)
+    }
+}
+
+@ViewBuilder
+func standingCard<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    VStack(alignment: .leading, spacing: 17) {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(StandingInstructionStyle.blue)
+            Rectangle().fill(StandingInstructionStyle.accent).frame(width: 64, height: 2)
+        }
+        content()
+    }
+    .font(.system(size: 14))
+    .foregroundColor(StandingInstructionStyle.secondaryText)
+    .padding(.horizontal, 17)
+    .padding(.vertical, 20)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color.white)
+    .cornerRadius(14)
+    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "F3F3F3"), lineWidth: 0.8))
+    .shadow(color: .black.opacity(0.16), radius: 3, x: 0, y: 4)
+}
+
+extension View {
+    func standingField() -> some View {
+        self.padding(.horizontal, 12)
+            .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 9))
+            .overlay(RoundedRectangle(cornerRadius: 9).stroke(StandingInstructionStyle.secondaryText, lineWidth: 1.2))
     }
 }
