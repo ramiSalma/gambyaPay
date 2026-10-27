@@ -15,7 +15,7 @@ struct AppLanguagePicker: View {
                         .foregroundColor(Color(hex: "174EA6"))
                         .frame(width: 40)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(AppStrings.language)
+                        Text(AppStrings.buttonTitle(AppStrings.language))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.black)
                         Text(localization.language.displayName)
@@ -32,7 +32,7 @@ struct AppLanguagePicker: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
             } else {
-                Label("\(AppStrings.language): \(localization.language.displayName)", systemImage: "globe")
+                Label(AppStrings.buttonTitle("\(AppStrings.language): \(localization.language.displayName)"), systemImage: "globe")
             }
         }
         .accessibilityLabel(AppStrings.language)
@@ -53,7 +53,7 @@ struct AppLanguagePicker: View {
                     }
                 }
                 .navigationTitle(AppStrings.language)
-                .toolbar { Button(AppStrings.close) { showLanguages = false } }
+                .toolbar { Button(AppStrings.buttonTitle(AppStrings.close)) { showLanguages = false } }
             }
         }
     }
@@ -87,7 +87,7 @@ private struct AutomaticTranslationModifier: ViewModifier {
                 get: { localization.translationError != nil },
                 set: { if !$0 { localization.translationError = nil } }
             )) {
-                Button(AppStrings.ok, role: .cancel) { localization.translationError = nil }
+                Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { localization.translationError = nil }
             } message: {
                 Text(localization.translationError ?? "")
             }
@@ -115,7 +115,7 @@ private struct TranslationPreparationView: View {
             VStack(spacing: 18) {
                 ProgressView(AppStrings.translatingApp)
                 Text(request.language.displayName).font(.headline)
-                Button(AppStrings.cancelLanguage) { localization.cancel() }
+                Button(AppStrings.buttonTitle(AppStrings.cancelLanguage)) { localization.cancel() }
             }
             .padding(28)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))

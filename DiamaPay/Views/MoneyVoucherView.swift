@@ -122,10 +122,10 @@ struct MoneyVoucherView: View {
         }
         .alert(alertTitle, isPresented: $showAlert) {
             if alertTitle == AppStrings.saveRecipient {
-                Button(AppStrings.save) { saveRecipient() }
-                Button(AppStrings.notNow, role: .cancel) { finishAndReturnHome() }
+                Button(AppStrings.buttonTitle(AppStrings.save)) { saveRecipient() }
+                Button(AppStrings.buttonTitle(AppStrings.notNow), role: .cancel) { finishAndReturnHome() }
             } else {
-                Button(AppStrings.ok, role: .cancel) {
+                Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {
                     if shouldReturnHomeAfterSave { finishAndReturnHome() }
                 }
             }
@@ -313,7 +313,7 @@ struct MoneyVoucherView: View {
                     .font(.system(size: 21, weight: .semibold))
                     .frame(width: 48, height: 48)
                     .background(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "0788B9"), lineWidth: 1.5))
-                Text(title).font(.system(size: 11, weight: .medium))
+                Text(AppStrings.buttonTitle(title)).font(.system(size: 11, weight: .medium))
             }
             .foregroundColor(Color(hex: "0788B9"))
         }
@@ -361,7 +361,7 @@ struct MoneyVoucherView: View {
             Button(action: {
                 validateAndShowConfirmation()
             }) {
-                Text(AppStrings.submit)
+                Text(AppStrings.buttonTitle(AppStrings.submit))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 190, height: 56)

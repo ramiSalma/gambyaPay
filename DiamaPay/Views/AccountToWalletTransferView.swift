@@ -112,7 +112,7 @@ struct AccountToWalletTransferView: View {
         .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -248,7 +248,7 @@ struct AccountToWalletTransferView: View {
         standingCard(standingText("Account Details", "Détails du compte")) {
             Button { showLinkedAccounts = true } label: {
                 HStack {
-                    Text(selectedAccount?.accountNumber ?? AppStrings.selectionnerUnCompte)
+                    Text(AppStrings.buttonTitle(selectedAccount?.accountNumber ?? AppStrings.selectionnerUnCompte))
                         .font(.system(size: 17))
                         .foregroundColor(.black)
                         .lineLimit(1)
@@ -354,7 +354,7 @@ struct AccountToWalletTransferView: View {
 
     private var submitButton: some View {
         Button(action: validateAndShowConfirmation) {
-            Text(selectedAccount == nil ? AppStrings.selectionnerUnCompte : AppStrings.soumettre)
+            Text(AppStrings.buttonTitle(selectedAccount == nil ? AppStrings.selectionnerUnCompte : AppStrings.soumettre))
                 .font(.system(size: 17, weight: .semibold))
                 .tracking(1.5)
                 .foregroundColor(.white)
@@ -812,7 +812,7 @@ struct AccountToWalletConfirmationDialog: View {
                     Button(action: {
                         onCancel()
                     }) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color(hex: "174EA6"))
                             .frame(maxWidth: .infinity)
@@ -831,7 +831,7 @@ struct AccountToWalletConfirmationDialog: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text(AppStrings.confirmer)
+                                Text(AppStrings.buttonTitle(AppStrings.confirmer))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                             }

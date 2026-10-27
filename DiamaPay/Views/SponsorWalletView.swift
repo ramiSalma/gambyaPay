@@ -79,7 +79,7 @@ struct SponsorWalletView: View {
         .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -89,8 +89,8 @@ struct SponsorWalletView: View {
                 .onChange(of: pin) {
                     pin = String(pin.filter { $0.isASCII && $0.isNumber }.prefix(4))
                 }
-            Button(AppStrings.annuler, role: .cancel) { pin = "" }
-            Button(AppStrings.confirmer) {
+            Button(AppStrings.buttonTitle(AppStrings.annuler), role: .cancel) { pin = "" }
+            Button(AppStrings.buttonTitle(AppStrings.confirmer)) {
                 let enteredPin = pin
                 pin = ""
                 guard !isLoading, validateInputs(),
@@ -258,7 +258,7 @@ struct SponsorWalletView: View {
                             .font(.system(size: 25, weight: .medium))
                             .frame(width: 46, height: 44)
                             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "174EA6"), lineWidth: 1.5))
-                        Text(AppStrings.contacts)
+                        Text(AppStrings.buttonTitle(AppStrings.contacts))
                             .font(.system(size: 12, weight: .medium))
                     }
                     .foregroundColor(Color(hex: "174EA6"))
@@ -398,7 +398,7 @@ struct SponsorWalletView: View {
         Button(action: {
             validateAndPrepare()
         }) {
-            Text(AppStrings.send)
+            Text(AppStrings.buttonTitle(AppStrings.send))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 150)
@@ -686,12 +686,12 @@ struct DatePickerSheetz: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(AppStrings.cancel) {
+                    Button(AppStrings.buttonTitle(AppStrings.cancel)) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(AppStrings.save) {
+                    Button(AppStrings.buttonTitle(AppStrings.save)) {
                         onSave()
                     }
                 }

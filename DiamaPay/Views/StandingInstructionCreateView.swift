@@ -14,10 +14,21 @@ struct StandingInstructionCreateView: View {
     let onSuccess: () -> Void
     
     // MARK: - Transaction Types
-    private let transactionTypes = [
-        (AppStrings.original("portefeuilleVersPortefeuille"), "41")
-    ]
-    
+    private var transactionTypes: [(String, String)] { [
+        (standingText("Wallet to wallet", "Portefeuille vers portefeuille"), "41"),
+        (standingText("Mobile money", "Mobile money"), "70"),
+        (standingText("Wallet to account", "Portefeuille vers compte"), "42"),
+        (standingText("Savings transaction", "Opération d’épargne"), "33")
+    ] }
+    private var transactionCode: String { transactionTypes[selectedTrxTypeIndex].1 }
+    private var verificationKey: String { transactionCode + "|" + destBank + "|" + destination }
+    private var sourceBank: String {
+        let bank = userDataManager.getBankCode()
+        return bank.isEmpty ? "00100" : bank
+    }
+    @State private var verificationError: String?
+    @State private var verificationID = UUID()
+
     private let frequencies = [
         (AppStrings.original("quotidien"), "D"),
         (AppStrings.original("hebdomadaire"), "W"),
@@ -28,7 +39,20 @@ struct StandingInstructionCreateView: View {
     // MARK: - State Variables
     @State private var selectedTrxTypeIndex = 0
     @State private var selectedFrequencyIndex = 0 // Daily, matching Android
-    @State private var destBank = ""
+    @State private var selectedBeneficiary: WalletBeneficiary?
+    private var matchingBeneficiary: WalletBeneficiary? {
+        guard let saved = selectedBeneficiary,
+              WalletTransferRecipient.normalize(saved.destination ?? "") == WalletTransferRecipient.normalize(destination) else { return nil }
+        return saved
+    }
+    private var destBank: String {
+        let savedCode = matchingBeneficiary?.destBankCode ?? matchingBeneficiary?.bankCode ?? ""
+        return savedCode.isEmpty && transactionCode == "42" ? sourceBank : savedCode
+    }
+    private var beneficiaryName: String {
+        if transactionCode == "33" { return userDataManager.getUserName() }
+        return receiverName.isEmpty ? (matchingBeneficiary?.name ?? "") : receiverName
+    }
     @State private var destination = ""
     @State private var receiverName = ""
     @State private var amount = ""
@@ -109,7 +133,7 @@ struct StandingInstructionCreateView: View {
         .preferredColorScheme(.light)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -117,52 +141,85 @@ struct StandingInstructionCreateView: View {
             ContactPickerView(selectedPhone: $destination, normalizePhone: WalletTransferRecipient.normalize)
         }
         .sheet(isPresented: $showSaved) {
-            SavedWalletRecipientsView { beneficiary in
-                destination = WalletTransferRecipient.normalize(beneficiary.destination ?? "")
+            if transactionCode == "41" {
+                SavedWalletRecipientsView(onSelect: selectSavedRecipient)
+            } else {
+                SavedAccountRecipientsView(
+                    includeMobileMoneyRecipients: transactionCode == "70",
+                    onSelect: selectSavedRecipient
+                )
             }
         }
         .overlay(pinDialogOverlay)
+        .onChange(of: selectedTrxTypeIndex) { updateUIForTransactionType() }
+        .onChange(of: verificationKey) { resetVerificationFields() }
+        .task(id: verificationKey) {
+            guard transactionCode != "33", !destination.isEmpty else { return }
+            if transactionCode == "70" && destBank.isEmpty { return }
+            do { try await Task.sleep(nanoseconds: 600_000_000) } catch { return }
+            guard !Task.isCancelled else { return }
+            verifyRecipient()
+        }
     }
     
     private var transactionTypeCard: some View {
         standingCard(AppStrings.typeDeTransaction) {
-            Text(AppStrings.option(transactionTypes[selectedTrxTypeIndex].0))
-                .font(.system(size: 17))
+            Menu {
+                Picker(AppStrings.typeDeTransaction, selection: $selectedTrxTypeIndex) {
+                    ForEach(transactionTypes.indices, id: \.self) { index in
+                        Text(transactionTypes[index].0).tag(index)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(transactionTypes[selectedTrxTypeIndex].0)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                }
                 .foregroundColor(.black)
                 .standingField()
+            }
         }
     }
 
     private var recipientDetailsCard: some View {
         standingCard(AppStrings.detailsDuDestinataire) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Destination").foregroundColor(StandingInstructionStyle.label)
-                HStack(alignment: .top, spacing: 8) {
-                    HStack {
-                        TextField(standingText("Enter recipient phone number", "Numéro du destinataire"), text: $destination)
-                            .keyboardType(.phonePad)
-                            .onChange(of: destination) {
-                                let normalized = WalletTransferRecipient.normalize(destination)
-                                if destination != normalized { destination = normalized; return }
-                                resetVerificationFields()
-                            }
-                        if isVerifying { ProgressView() }
+            if transactionCode != "33" {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(standingText("Destination", "Destination"))
+                        .foregroundColor(StandingInstructionStyle.label)
+                    HStack(alignment: .top, spacing: 8) {
+                        HStack {
+                            TextField(getDestinationPlaceholder(), text: $destination)
+                                .keyboardType(transactionCode == "42" ? .default : .phonePad)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                            if isVerifying { ProgressView() }
+                        }.standingField()
+                        if transactionCode == "41" {
+                            recipientButton(AppStrings.contacts, icon: "person.crop.rectangle.fill") { showContacts = true }
+                        }
+                        recipientButton(AppStrings.saved, icon: "book.closed.fill") { showSaved = true }
                     }
-                    .standingField()
-                    .task(id: destination) {
-                        guard !destination.isEmpty else { return }
-                        do { try await Task.sleep(nanoseconds: 600_000_000) } catch { return }
-                        verifyRecipient()
-                    }
-                    recipientButton(AppStrings.contacts, icon: "person.crop.rectangle.fill") { showContacts = true }
-                    recipientButton(AppStrings.saved, icon: "book.closed.fill") { showSaved = true }
                 }
             }
             VStack(alignment: .leading, spacing: 10) {
-                Text(standingText("Beneficiary Name", "Nom du bénéficiaire")).foregroundColor(StandingInstructionStyle.label)
-                Text(receiverName.isEmpty ? standingText("Beneficiary Name", "Nom du bénéficiaire") : receiverName)
-                    .foregroundColor(Color(hex: "555F6D"))
+                Text(AppStrings.beneficiaryName).foregroundColor(StandingInstructionStyle.label)
+                if transactionCode == "70" {
+                    TextField(AppStrings.beneficiaryName, text: Binding(
+                        get: { beneficiaryName },
+                        set: { receiverName = $0 }
+                    ))
                     .standingField()
+                } else {
+                    Text(beneficiaryName.isEmpty ? AppStrings.beneficiaryName : beneficiaryName)
+                        .foregroundColor(Color(hex: "555F6D"))
+                        .standingField()
+                }
+            }
+            if let verificationError {
+                Text(verificationError).font(.caption).foregroundColor(.red)
+                Button(AppStrings.buttonTitle(AppStrings.verifyAgain)) { verifyRecipient() }
             }
         }
     }
@@ -174,7 +231,7 @@ struct StandingInstructionCreateView: View {
                     .font(.system(size: 25, weight: .semibold))
                     .frame(width: 50, height: 50)
                     .overlay(RoundedRectangle(cornerRadius: 9).stroke(Color(hex: "0086B5"), lineWidth: 1))
-                Text(title).font(.system(size: 11))
+                Text(AppStrings.buttonTitle(title)).font(.system(size: 11))
             }
             .foregroundColor(title == AppStrings.saved ? StandingInstructionStyle.blue : StandingInstructionStyle.accent)
         }
@@ -206,7 +263,7 @@ struct StandingInstructionCreateView: View {
                 Text(AppStrings.frequence).foregroundColor(StandingInstructionStyle.label)
                 Menu {
                     ForEach(0..<frequencies.count, id: \.self) { index in
-                        Button(AppStrings.option(frequencies[index].0)) { selectedFrequencyIndex = index }
+                        Button(AppStrings.buttonTitle(AppStrings.option(frequencies[index].0))) { selectedFrequencyIndex = index }
                     }
                 } label: {
                     Text(AppStrings.option(frequencies[selectedFrequencyIndex].0))
@@ -245,7 +302,7 @@ struct StandingInstructionCreateView: View {
 
     private var submitButton: some View {
         Button(action: validateAndShowPin) {
-            Text(standingText("Create Instruction", "Créer l’instruction"))
+            Text(AppStrings.buttonTitle(standingText("Create instruction", "Créer l’instruction")))
                 .font(.system(size: 18, weight: .semibold))
                 .tracking(1.5)
                 .foregroundColor(.white)
@@ -280,117 +337,107 @@ struct StandingInstructionCreateView: View {
     
     // MARK: - Helper Methods
     private func updateUIForTransactionType() {
-        let trxType = transactionTypes[selectedTrxTypeIndex].1
-        
-        if trxType == "42" {
-            destBank = "00100"
-        } else {
-            destBank = ""
-        }
-        
-        // Reset fields
+        selectedBeneficiary = nil
         destination = ""
-        receiverName = ""
-        isRecipientVerified = false
+        resetVerificationFields()
     }
-    
+
     private func resetVerificationFields() {
+        verificationID = UUID()
         isVerifying = false
         receiverName = ""
         isRecipientVerified = false
+        verificationError = nil
     }
-    
+
+    private func selectSavedRecipient(_ beneficiary: WalletBeneficiary) {
+        selectedBeneficiary = beneficiary
+        destination = WalletTransferRecipient.normalize(beneficiary.destination ?? "")
+        showSaved = false
+    }
+
     private func getDestinationPlaceholder() -> String {
         let trxType = transactionTypes[selectedTrxTypeIndex].1
         
         switch trxType {
-        case "41": return AppStrings.nDeTelephone
-        case "42": return AppStrings.nDeCompte
-        case "70": return AppStrings.nDeTelephoneMobile
+        case "41": return standingText("Enter recipient phone number", "Saisissez le numéro du destinataire")
+        case "42": return standingText("Enter recipient account number", "Saisissez le numéro de compte du destinataire")
+        case "70": return standingText("Enter recipient Mobile Money number", "Saisissez le numéro mobile money du destinataire")
         case "33": return AppStrings.nDeCompteDEpargne
         default: return "Destination"
         }
     }
     
     private func verifyRecipient() {
-        guard WalletTransferRecipient.isValid(destination) else {
-            return
-        }
-        
+        guard !destination.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        if transactionCode == "42" && destBank.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return }
+        if transactionCode == "70" && destBank.isEmpty { return }
+        let key = verificationKey
+        let token = UUID()
+        verificationID = token
         isVerifying = true
-        let trxType = transactionTypes[selectedTrxTypeIndex].1
-        
-        switch trxType {
-        case "41":
-            verifyWalletToWallet()
-        case "42":
-            verifyWalletToAccount()
-        case "70":
-            verifyMobileMoney()
-        default:
-            isVerifying = false
-            showErrorAlert(AppStrings.verificationNonDisponiblePourCeType)
-        }
-    }
-    
-    private func verifyWalletToWallet() {
-        let requestedDestination = destination
-        var request = RequestNameEnquiry()
-        request.source = "P"
-        request.phoneNumber = destination
-        request.bank = "00100"
-        request.pin = userDataManager.getPinForAPI()
-        request.requestId = generateRequestId()
-        request.requestDate = generateRequestDate()
-        request.entityId = UserDataManager.shared.getUserCode()
-        
-        APIClient.shared.getWalletInfo(request: request) { result in
+        isRecipientVerified = false
+        verificationError = nil
+        let completion: (Result<ResponseServiceJson, Error>) -> Void = { result in
             DispatchQueue.main.async {
-                guard self.destination == requestedDestination else { return }
-                self.isVerifying = false
-                
+                guard key == verificationKey, token == verificationID else { return }
+                isVerifying = false
                 switch result {
+                case .success(let response) where response.respCode == "000":
+                    let name = response.accountName
+                        ?? response.result?["walletHolder"] as? String
+                        ?? response.result?["accountName"] as? String
+                        ?? response.result?["accountHolder"] as? String
+                        ?? response.result?["name"] as? String
+                        ?? response.resultString
+                        ?? ""
+                    receiverName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+                    isRecipientVerified = !receiverName.isEmpty
+                    if !isRecipientVerified { verificationError = AppStrings.unableToVerifyThisRecipient }
                 case .success(let response):
-                    if response.respCode == "000", let result = response.result {
-                        let walletHolder = result["walletHolder"] as? String ?? ""
-                        self.receiverName = walletHolder
-                        self.isRecipientVerified = true
-                    } else {
-                        self.showErrorAlert(AppStrings.erreurValue(String(describing: response.message ?? AppStrings.verificationEchouee)))
-                        self.resetVerificationFields()
-                    }
+                    verificationError = response.message ?? AppStrings.unableToVerifyThisRecipient
                 case .failure(let error):
-                    if let apiError = error as? APIError {
-                        self.showErrorAlert(AppStrings.erreurValue(AppStrings.option(apiError.message)))
-                    } else {
-                        self.showErrorAlert(AppStrings.erreurReseauValue(String(describing: error.localizedDescription)))
-                    }
-                    self.resetVerificationFields()
+                    verificationError = (error as? APIError)?.message ?? AppStrings.unableToVerifyThisRecipient
                 }
             }
         }
-    }
-    
-    private func verifyWalletToAccount() {
-        guard !destBank.isEmpty else {
-            isVerifying = false
-            showErrorAlert(AppStrings.leCodeBanqueEstRequis)
-            return
+        switch transactionCode {
+        case "41":
+            var request = RequestNameEnquiry()
+            request.source = "P"
+            request.phoneNumber = destination.trimmingCharacters(in: .whitespacesAndNewlines)
+            request.bank = sourceBank
+            request.requestId = generateRequestId()
+            request.requestDate = generateRequestDate()
+            request.entityId = userDataManager.getUserCode()
+            APIClient.shared.getWalletInfo(request: request, completion: completion)
+        case "42":
+            var request = RequestWalletToBankAccountNE()
+            request.walletNumber = userDataManager.getWalletNumber()
+            request.phoneNumber = userDataManager.getPhoneNumber()
+            request.source = "W"
+            request.srcBank = sourceBank
+            request.desBank = destBank.trimmingCharacters(in: .whitespacesAndNewlines)
+            request.desAccount = destination.trimmingCharacters(in: .whitespacesAndNewlines)
+            request.requestId = generateRequestId()
+            request.requestDate = generateRequestDate()
+            request.entityId = userDataManager.getUserCode()
+            APIClient.shared.transferWalletToAccountNE(request: request, completion: completion)
+        case "70":
+            let request = RequestWalletToMobileMoneyNE(
+                walletNumber: userDataManager.getWalletNumber(), phoneNumber: userDataManager.getPhoneNumber(),
+                source: "W", bank: sourceBank, provider: destBank,
+                receiverPhone: destination.trimmingCharacters(in: .whitespacesAndNewlines),
+                requestId: generateRequestId(), requestDate: generateRequestDate(), entityId: userDataManager.getUserCode())
+            APIClient.shared.enquireMobileMoneyReceiver(request: request, completion: completion)
+        default: isVerifying = false
         }
-        
-        // Implementation similar to WalletTransferView
-        isVerifying = false
-        showErrorAlert(AppStrings.verificationDeCompteNonImplementee)
     }
-    
-    private func verifyMobileMoney() {
-        // Implementation for mobile money verification
-        isVerifying = false
-        showErrorAlert(AppStrings.verificationMobileMoneyNonImplementee)
-    }
-    
+
     private func validateAndShowPin() {
-        guard !destination.isEmpty else {
+        let recipientDestination = transactionCode == "33" ? userDataManager.getWalletNumber() : destination
+        let recipientName = beneficiaryName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !recipientDestination.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             showErrorAlert(AppStrings.laDestinationEstRequise)
             return
         }
@@ -400,7 +447,7 @@ struct StandingInstructionCreateView: View {
             return
         }
         
-        guard isRecipientVerified && !receiverName.isEmpty else {
+        guard (["33", "70"].contains(transactionCode) || isRecipientVerified) && !recipientName.isEmpty else {
             showErrorAlert(AppStrings.veuillezDAbordVerifierLeDestinataire)
             return
         }
@@ -427,9 +474,9 @@ struct StandingInstructionCreateView: View {
         let request = StandingInstructionDto(
             phoneNumber: userDataManager.getPhoneNumber(),
             trxType: trxType,
-            destBank: trxType == "42" ? destBank : "",
-            receiver: receiverName,
-            destination: destination,
+            destBank: ["42", "70"].contains(trxType) ? destBank.trimmingCharacters(in: .whitespacesAndNewlines) : sourceBank,
+            receiver: beneficiaryName.trimmingCharacters(in: .whitespacesAndNewlines),
+            destination: (trxType == "33" ? userDataManager.getWalletNumber() : destination).trimmingCharacters(in: .whitespacesAndNewlines),
             amount: amount.replacingOccurrences(of: ",", with: "."),
             currency: numericCurrency,
             details: details,
@@ -555,7 +602,7 @@ struct PinEntryDialog: View {
                 
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(StandingInstructionStyle.blue)
                             .frame(maxWidth: .infinity)
@@ -572,7 +619,7 @@ struct PinEntryDialog: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text(AppStrings.confirmer)
+                        Text(AppStrings.buttonTitle(AppStrings.confirmer))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -617,7 +664,7 @@ struct DatePickerSheetA: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(AppStrings.termine) {
+                    Button(AppStrings.buttonTitle(AppStrings.termine)) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }

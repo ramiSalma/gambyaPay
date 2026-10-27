@@ -18,10 +18,10 @@ struct SplashView: View {
                 .ignoresSafeArea()
 
             VStack {
-                Image("logo_diama") 
+                Image("BITSLogo")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 150, height: 150)
+                    .frame(width: 260, height: 156)
 
                     .foregroundColor(.black)
             }

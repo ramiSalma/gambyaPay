@@ -230,7 +230,7 @@ struct TransferConfirmationDialog: View {
                     Button(action: {
                         onCancel()
                     }) {
-                        Text(AppStrings.cancel)
+                        Text(AppStrings.buttonTitle(AppStrings.cancel))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -249,7 +249,7 @@ struct TransferConfirmationDialog: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text(AppStrings.confirm)
+                                Text(AppStrings.buttonTitle(AppStrings.confirm))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                             }

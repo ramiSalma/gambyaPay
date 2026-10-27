@@ -59,7 +59,7 @@ struct LoanRequestView: View {
                     .tint(loanBlue)
                     .padding(.horizontal, 4)
                     Button(action: submit) {
-                        HStack { if isLoading { ProgressView().tint(.white) }; Text(AppStrings.submitRequest).fontWeight(.bold) }
+                        HStack { if isLoading { ProgressView().tint(.white) }; Text(AppStrings.buttonTitle(AppStrings.submitRequest)).fontWeight(.bold) }
                             .frame(maxWidth: .infinity).padding(.vertical, 17)
                     }
                     .buttonStyle(LoanPrimaryButtonStyle())
@@ -72,7 +72,7 @@ struct LoanRequestView: View {
         .navigationBarHidden(true)
         .task { loadOptions() }
         .alert(submitted ? AppStrings.requestSubmitted : AppStrings.loanRequest, isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
-            Button(AppStrings.ok, role: .cancel) { if submitted { dismiss() } }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { if submitted { dismiss() } }
         } message: { Text(AppStrings.option(alertMessage ?? "")) }
     }
 
@@ -135,14 +135,14 @@ struct LoanRequestsView: View {
                         }
                         .frame(height: 68)
                         HStack {
-                            Button(AppStrings.reset) {
+                            Button(AppStrings.buttonTitle(AppStrings.reset)) {
                                 selectedStatus = AppStrings.original("all")
                                 selectedProvider = AppStrings.original("all")
                                 appliedStatus = AppStrings.original("all")
                                 appliedProvider = AppStrings.original("all")
                             }
                             .buttonStyle(LoanFilterResetButtonStyle())
-                            Button(AppStrings.filter) {
+                            Button(AppStrings.buttonTitle(AppStrings.filter)) {
                                 appliedStatus = selectedStatus
                                 appliedProvider = selectedProvider
                             }
@@ -168,7 +168,7 @@ struct LoanRequestsView: View {
         .navigationBarHidden(true)
         .task { loadLoans() }
         .sheet(item: $selectedLoan) { loan in LoanDetailSheet(loan: loan) }
-        .alert(AppStrings.loanRequests, isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) { Button(AppStrings.ok, role: .cancel) {} } message: { Text(AppStrings.option(alertMessage ?? "")) }
+        .alert(AppStrings.loanRequests, isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) { Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {} } message: { Text(AppStrings.option(alertMessage ?? "")) }
     }
 
     private func loadLoans() {
@@ -202,7 +202,7 @@ struct LoanRequestsView: View {
 private func outlinedLoanFilter(title: String, selection: Binding<String>, options: [(String, String)], highlighted: Bool = false) -> some View {
     Menu {
         ForEach(Array(options.enumerated()), id: \.offset) { _, option in
-            Button(option.1) { selection.wrappedValue = option.0 }
+            Button(AppStrings.buttonTitle(option.1)) { selection.wrappedValue = option.0 }
         }
     } label: {
         VStack(alignment: .leading, spacing: 0) {
@@ -256,7 +256,7 @@ private struct LoanDetailSheet: View {
                     detail(AppStrings.currentStatus, AppStrings.option(record.status ?? "PENDING"), emphasized: true, tint: statusColor(record.status))
                     Text(AppStrings.yourRequestStatusWillUpdateAsItProgresses).font(.subheadline).foregroundColor(.secondary).padding(.top, 20)
                     if (record.status ?? "").uppercased() == "PENDING" || (record.status ?? "").uppercased() == "UNDER_REVIEW" {
-                        Button(AppStrings.cancelRequest, role: .destructive) { confirmingCancel = true }.padding(.top, 20)
+                        Button(AppStrings.buttonTitle(AppStrings.cancelRequest), role: .destructive) { confirmingCancel = true }.padding(.top, 20)
                     }
                 }.padding(20)
             }
@@ -267,11 +267,11 @@ private struct LoanDetailSheet: View {
                     if case .success(let response) = result { latestLoan = response.result }
                 }
             }
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(AppStrings.done) { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(AppStrings.buttonTitle(AppStrings.done)) { dismiss() } } }
             .confirmationDialog(AppStrings.cancelThisLoanRequest, isPresented: $confirmingCancel, titleVisibility: .visible) {
-                Button(AppStrings.cancelRequest, role: .destructive) { cancel() }
+                Button(AppStrings.buttonTitle(AppStrings.cancelRequest), role: .destructive) { cancel() }
             }
-            .alert(AppStrings.loanRequest, isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button(AppStrings.ok, role: .cancel) { dismiss() } } message: { Text(message ?? "") }
+            .alert(AppStrings.loanRequest, isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { dismiss() } } message: { Text(message ?? "") }
         }
     }
     private func detail(_ title: String, _ value: String, emphasized: Bool = false, tint: Color = .primary) -> some View {
@@ -319,7 +319,7 @@ struct LoanHelpView: View {
                     HStack(spacing: 10) { Image(systemName: "magnifyingglass").foregroundColor(.secondary); TextField(AppStrings.searchTermsAndFaqs, text: $search) }
                         .padding(15).background(.white).clipShape(RoundedRectangle(cornerRadius: 18)).shadow(color: .black.opacity(0.06), radius: 5, y: 2)
                     ForEach(visibleTerms, id: \.0) { row in expandableRow(row.0, detail: row.1) }
-                    Button { accepted = true } label: { Text(accepted ? AppStrings.accepted : AppStrings.acceptContinue).fontWeight(.bold).frame(maxWidth: .infinity).padding(.vertical, 15) }
+                    Button { accepted = true } label: { Text(AppStrings.buttonTitle(accepted ? AppStrings.accepted : AppStrings.acceptContinue)).fontWeight(.bold).frame(maxWidth: .infinity).padding(.vertical, 15) }
                         .buttonStyle(LoanPrimaryButtonStyle())
                     Text(AppStrings.loanFaqs).font(.system(size: 25, weight: .bold)).padding(.top, 14)
                     ForEach(visibleFaqs, id: \.0) { row in expandableRow(row.0, detail: row.1) }
@@ -331,7 +331,7 @@ struct LoanHelpView: View {
     private func expandableRow(_ title: String, detail: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Button { withAnimation(.easeInOut(duration: 0.2)) { expanded = expanded == title ? nil : title } } label: {
-                HStack { Text(title).font(.system(size: 16, weight: .semibold)).foregroundColor(.primary).multilineTextAlignment(.leading); Spacer(); Image(systemName: expanded == title ? "chevron.down" : "chevron.right").foregroundColor(.gray) }.padding(17)
+                HStack { Text(AppStrings.buttonTitle(title)).font(.system(size: 16, weight: .semibold)).foregroundColor(.primary).multilineTextAlignment(.leading); Spacer(); Image(systemName: expanded == title ? "chevron.down" : "chevron.right").foregroundColor(.gray) }.padding(17)
             }
             if expanded == title { Text(detail).font(.subheadline).foregroundColor(.secondary).padding([.horizontal, .bottom], 17) }
         }.background(.white).clipShape(RoundedRectangle(cornerRadius: 18)).shadow(color: .black.opacity(0.06), radius: 5, y: 2)

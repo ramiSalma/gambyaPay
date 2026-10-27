@@ -56,7 +56,7 @@ struct MobileMoneyView: View {
                         amountCard
                         referenceCard
                         Button { validateAndConfirm() } label: {
-                            Text(isVerifyingReceiver ? AppStrings.verifying : (isSubmitting ? AppStrings.submitting : AppStrings.submit))
+                            Text(AppStrings.buttonTitle(isVerifyingReceiver ? AppStrings.verifying : (isSubmitting ? AppStrings.submitting : AppStrings.submit)))
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(width: 170, height: 54)
@@ -79,14 +79,14 @@ struct MobileMoneyView: View {
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             if alertTitle == AppStrings.saveRecipient {
-                Button(AppStrings.save) { saveRecipient() }
-                Button(AppStrings.notNow, role: .cancel) { finishAndReturnHome() }
+                Button(AppStrings.buttonTitle(AppStrings.save)) { saveRecipient() }
+                Button(AppStrings.buttonTitle(AppStrings.notNow), role: .cancel) { finishAndReturnHome() }
             } else if alertTitle == AppStrings.recipientSaved {
-                Button(AppStrings.ok, role: .cancel) {
+                Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {
                     if shouldReturnHomeAfterSave { finishAndReturnHome() }
                 }
             } else {
-                Button(AppStrings.ok, role: .cancel) {
+                Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {
                     if shouldReturnHomeAfterSave { finishAndReturnHome() }
                 }
             }
@@ -176,7 +176,7 @@ struct MobileMoneyView: View {
             sectionTitle(AppStrings.providerDetails)
             Menu {
                 ForEach(Array(providers.enumerated()), id: \.offset) { _, provider in
-                    Button(provider.displayName) { selectedProvider = provider }
+                    Button(AppStrings.buttonTitle(provider.displayName)) { selectedProvider = provider }
                 }
             } label: {
                 HStack {
@@ -197,7 +197,7 @@ struct MobileMoneyView: View {
                 HStack {
                     Text(providerError).font(.caption).foregroundColor(.red)
                     Spacer()
-                    Button(AppStrings.retry, action: loadProviders).font(.caption).foregroundColor(blue)
+                    Button(AppStrings.buttonTitle(AppStrings.retry), action: loadProviders).font(.caption).foregroundColor(blue)
                 }
             }
         }
@@ -226,7 +226,7 @@ struct MobileMoneyView: View {
                 .frame(height: 52)
                 .overlay(fieldBorder)
             Button(action: saveRecipient) {
-                Label(isSavingRecipient ? AppStrings.saving : AppStrings.saveRecipient2, systemImage: "bookmark")
+                Label(AppStrings.buttonTitle(isSavingRecipient ? AppStrings.saving : AppStrings.saveRecipient2), systemImage: "bookmark")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(blue)
             }
@@ -278,7 +278,7 @@ struct MobileMoneyView: View {
                     .font(.system(size: 23))
                     .frame(width: 46, height: 52)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(cyan, lineWidth: 1.2))
-                Text(title).font(.system(size: 11, weight: .medium))
+                Text(AppStrings.buttonTitle(title)).font(.system(size: 11, weight: .medium))
             }
             .foregroundColor(cyan)
         }

@@ -76,7 +76,7 @@ struct RegistrationFlowView: View {
             .background(RegistrationTheme.canvas)
         }
         .alert(AppStrings.registration, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -98,7 +98,7 @@ struct RegistrationFlowView: View {
                         imagePickerSourceType = .photoLibrary
                         showImagePicker = true
                     },
-                    .cancel(Text(AppStrings.cancel))
+                    .cancel(Text(AppStrings.buttonTitle(AppStrings.cancel)))
                 ]
             )
         }
@@ -235,8 +235,8 @@ struct RegistrationFlowView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(RegistrationTheme.ink)
                 Menu {
-                    Button(AppStrings.male) { registrationData.gender = "M" }
-                    Button(AppStrings.female) { registrationData.gender = "F" }
+                    Button(AppStrings.buttonTitle(AppStrings.male)) { registrationData.gender = "M" }
+                    Button(AppStrings.buttonTitle(AppStrings.female)) { registrationData.gender = "F" }
                 } label: {
                     HStack {
                         Text(registrationData.gender.isEmpty ? AppStrings.selectYourGender : (registrationData.gender == "M" ? AppStrings.male : AppStrings.female))
@@ -271,7 +271,7 @@ struct RegistrationFlowView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Menu {
                     ForEach(branches, id: \.id) { branch in
-                        Button(branch.name ?? branch.id ?? AppStrings.branch) {
+                        Button(AppStrings.buttonTitle(branch.name ?? branch.id ?? AppStrings.branch)) {
                             registrationData.branchCode = branch.id ?? ""
                             registrationData.branchDisplay = branch.name ?? branch.id ?? ""
                         }
@@ -311,11 +311,11 @@ struct RegistrationFlowView: View {
                 
                 Menu {
                     if secretQuestions.isEmpty {
-                        Button(AppStrings.loading) { }
+                        Button(AppStrings.buttonTitle(AppStrings.loading)) { }
                             .disabled(true)
                     } else {
                         ForEach(secretQuestions, id: \.id) { question in
-                            Button(question.question) {
+                            Button(AppStrings.buttonTitle(question.question)) {
                                 registrationData.secretQ = question.id
                                 registrationData.secretQDisplay = question.question
                             }
@@ -565,7 +565,7 @@ struct RegistrationFlowView: View {
                             termsDefinitionItem("Cash-Out", AppStrings.ilSAgitDUneOperationDeRetraitD)
                             termsDefinitionItem(AppStrings.compteDeRattachement, AppStrings.designeLeCompteOuvertDansLesLivresDeLa)
                             termsDefinitionItem(AppStrings.detenteurDuWallet, AppStrings.peutEtreLeTitulaireDuCompteOuTouteAutre)
-                            termsDefinitionItem("DIAMACASH", AppStrings.designeLApplicationDePaiementMobilePourLesClients)
+                            termsDefinitionItem("GambiaPay", AppStrings.designeLApplicationDePaiementMobilePourLesClients)
                             termsDefinitionItem("DAB/GAB", AppStrings.appareilsDeDistributionAutomatiqueDeBilletsDeBanque)
                             termsDefinitionItem(AppStrings.tpe, AppStrings.terminalDePaiementElectronique)
                         }
@@ -780,7 +780,7 @@ struct RegistrationFlowView: View {
                             .font(.system(size: 22))
                             .foregroundColor(registrationData.acceptTerms ? .blueH : .gray)
                         
-                        Text(AppStrings.iHaveReadAndAcceptTheTermsAndConditions)
+                        Text(AppStrings.buttonTitle(AppStrings.iHaveReadAndAcceptTheTermsAndConditions))
                             .font(.system(size: 14))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.leading)
@@ -797,7 +797,7 @@ struct RegistrationFlowView: View {
                             .font(.system(size: 22))
                             .foregroundColor(registrationData.acceptPrivacy ? .blueH : .gray)
                         
-                        Text(AppStrings.iAgreeToTheProcessingOfMyPersonalDataUnder)
+                        Text(AppStrings.buttonTitle(AppStrings.iAgreeToTheProcessingOfMyPersonalDataUnder))
                             .font(.system(size: 14))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.leading)
@@ -838,7 +838,7 @@ struct RegistrationFlowView: View {
                         .font(.system(size: 16))
                         .frame(width: 24)
                     
-                    Text(title)
+                    Text(AppStrings.buttonTitle(title))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
                     
@@ -892,12 +892,12 @@ struct RegistrationFlowView: View {
                             .fill(Color.blueH.opacity(0.1))
                             .frame(width: 36, height: 36)
                         
-                        Text("\(number)")
+                        Text(AppStrings.buttonTitle("\(number)"))
                             .font(.system(size: 13, weight: .bold))
                             .foregroundColor(.blueH)
                     }
                     
-                    Text(title)
+                    Text(AppStrings.buttonTitle(title))
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.leading)
@@ -1106,7 +1106,7 @@ struct RegistrationFlowView: View {
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 .scaleEffect(0.8)
                         }
-                Text(isLoading ? AppStrings.loading2 : (currentStep == 4 ? AppStrings.accept2 : (currentStep == 5 ? AppStrings.verify2 : AppStrings.next)))
+                Text(AppStrings.buttonTitle(isLoading ? AppStrings.loading2 : (currentStep == 4 ? AppStrings.accept2 : (currentStep == 5 ? AppStrings.verify2 : AppStrings.next))))
                             .foregroundColor(.white)
                             .fontWeight(.semibold)
                     }
@@ -1117,7 +1117,7 @@ struct RegistrationFlowView: View {
                 }
                 .disabled(isLoading || !canAttemptCurrentStep)
             } else {
-                Button(AppStrings.goToLogin) {
+                Button(AppStrings.buttonTitle(AppStrings.goToLogin)) {
                     dismiss()
                 }
                 .frame(maxWidth: .infinity)
@@ -1544,7 +1544,7 @@ struct SearchableNationalityPicker: View {
                     .foregroundColor(RegistrationTheme.teal)
                         .frame(width: 20)
                     
-                    Text(selectedNationality.isEmpty ? AppStrings.chooseANationality : AppStrings.option(selectedNationality))
+                    Text(AppStrings.buttonTitle(selectedNationality.isEmpty ? AppStrings.chooseANationality : AppStrings.option(selectedNationality)))
                         .foregroundColor(selectedNationality.isEmpty ? .gray : .primary)
                     
                     Spacer()
@@ -1605,7 +1605,7 @@ struct SearchableNationalityPicker: View {
                                     showSheet = false
                                 }) {
                                     HStack {
-                                        Text(AppStrings.option(nationality.wording))
+                                        Text(AppStrings.buttonTitle(AppStrings.option(nationality.wording)))
                                             .foregroundColor(.primary)
                                         
                                         Spacer()
@@ -1627,7 +1627,7 @@ struct SearchableNationalityPicker: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(AppStrings.done) {
+                        Button(AppStrings.buttonTitle(AppStrings.done)) {
                             searchText = ""
                             showSheet = false
                         }
@@ -1710,7 +1710,7 @@ struct GenderButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text(title)
+            Text(AppStrings.buttonTitle(title))
                 .font(.system(size: 14, weight: .medium))
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
@@ -1805,7 +1805,7 @@ private func identificationCard(
         Button(action: action) {
             HStack {
                 Image(systemName: systemIcon)
-                Text(buttonText)
+                Text(AppStrings.buttonTitle(buttonText))
             }
             .font(.system(size: 15, weight: .semibold))
             .foregroundColor(.white)

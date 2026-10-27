@@ -75,7 +75,7 @@ struct ForgotPinView: View {
             loadSecurityQuestions()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -239,7 +239,7 @@ struct ForgotPinView: View {
     private var actionButtons: some View {
         HStack(spacing: 16) {
             Button(action: handleBackButton) {
-                Text(currentStep == 1 ? AppStrings.retourALaConnexion : "Retour")
+                Text(AppStrings.buttonTitle(currentStep == 1 ? AppStrings.retourALaConnexion : "Retour"))
                     .font(.system(size: 16))
                     .foregroundColor(.blueH)
                     .frame(maxWidth: .infinity)
@@ -247,7 +247,7 @@ struct ForgotPinView: View {
             }
             
             Button(action: handleActionButton) {
-                Text(actionButtonText)
+                Text(AppStrings.buttonTitle(actionButtonText))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

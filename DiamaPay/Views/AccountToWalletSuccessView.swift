@@ -110,7 +110,7 @@ struct AccountToWalletSuccessView: View {
                         }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.up")
-                                Text(AppStrings.partagerLeRecu)
+                                Text(AppStrings.buttonTitle(AppStrings.partagerLeRecu))
                             }
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -121,7 +121,7 @@ struct AccountToWalletSuccessView: View {
                         }
                         
                         Button(action: onClose) {
-                            Text(AppStrings.fermer)
+                            Text(AppStrings.buttonTitle(AppStrings.fermer))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.blueH)
                                 .frame(maxWidth: .infinity)
@@ -136,7 +136,7 @@ struct AccountToWalletSuccessView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarItems(trailing: Button(AppStrings.buttonTitle(AppStrings.fermer), action: onClose))
             .navigationBarTitle(AppStrings.recuDeTransfert2, displayMode: .inline)
         }
     }
@@ -157,8 +157,8 @@ struct AccountToWalletSuccessView: View {
     
     private func createPDF() -> Data {
         let pdfMetaData = [
-            kCGPDFContextCreator: "DIAMACASH",
-            kCGPDFContextAuthor: "DIAMACASH",
+            kCGPDFContextCreator: "GambiaPay",
+            kCGPDFContextAuthor: "GambiaPay",
             kCGPDFContextTitle: AppStrings.recuDeTransfertVersPortefeuille
         ]
         let format = UIGraphicsPDFRendererFormat()

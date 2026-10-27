@@ -76,15 +76,15 @@ struct LoginView: View {
         .ignoresSafeArea(edges: .top)
         .onAppear(perform: setupView)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
         .alert(AppStrings.updateRequired, isPresented: $showVersionUpdateAlert) {
-            Button(AppStrings.update) {
+            Button(AppStrings.buttonTitle(AppStrings.update)) {
                 openAppStore()
             }
-            Button(AppStrings.quit, role: .destructive) {
+            Button(AppStrings.buttonTitle(AppStrings.quit), role: .destructive) {
                 exit(0)
             }
         } message: {
@@ -129,7 +129,7 @@ struct LoginView: View {
         GeometryReader { proxy in
             ZStack {
                 LoginHeaderShape().fill(Color(hex: "174EA6"))
-                Image("logo_diama")
+                Image("BITSLoginLogo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: logoSize, height: logoSize)
@@ -213,7 +213,7 @@ struct LoginView: View {
             
             // Forgot PIN button
             Button(action: showForgotPinAlert) {
-                Text(AppStrings.forgotPin)
+                Text(AppStrings.buttonTitle(AppStrings.forgotPin))
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(Color(hex: "0788B9"))
             }
@@ -230,7 +230,7 @@ struct LoginView: View {
                     .foregroundColor(Color(hex: "222222"))
                 
                 Button(action: { navigateToSignUp = true }) {
-                    Text(AppStrings.signUp)
+                    Text(AppStrings.buttonTitle(AppStrings.signUp))
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "0788B9"))
                 }
@@ -822,7 +822,7 @@ struct PrimaryButton: View {
                         .scaleEffect(0.9)
                 }
                 
-                Text(title)
+                Text(AppStrings.buttonTitle(title))
                     .font(.system(size: 21, weight: .medium))
                     .foregroundColor(.white)
             }

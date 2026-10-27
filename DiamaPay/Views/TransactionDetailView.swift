@@ -6,13 +6,14 @@
 //
 
 import SwiftUI
-import PDFKit
+import UIKit
 
 struct TransactionDetailView: View {
     @ObservedObject private var localization = AppLanguageStore.shared
     @Environment(\.dismiss) private var dismiss
     let transaction: Transaction
-    @State private var itemsToShare: [Any]?
+    @State private var receiptToShare: ShareItem?
+    @State private var showReceiptError = false
 
     var body: some View {
         ZStack {
@@ -30,7 +31,7 @@ struct TransactionDetailView: View {
                         }) {
                             HStack(spacing: 10) {
                                 Image(systemName: "square.and.arrow.up")
-                                Text(AppStrings.shareReceipt)
+                                Text(AppStrings.buttonTitle(AppStrings.shareReceipt))
                             }
                             .foregroundColor(.white)
                             .font(.system(size: 16, weight: .semibold))
@@ -52,11 +53,13 @@ struct TransactionDetailView: View {
                 }
             }
         }
-        .sheet(item: Binding(
-            get: { itemsToShare != nil ? ShareItem(items: itemsToShare!) : nil },
-            set: { itemsToShare = $0?.items }
-        )) { shareItem in
+        .sheet(item: $receiptToShare) { shareItem in
             ActivityViewController(activityItems: shareItem.items)
+        }
+        .alert(AppStrings.error, isPresented: $showReceiptError) {
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
+        } message: {
+            Text(AppStrings.receiptGenerationFailed)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
@@ -196,83 +199,88 @@ struct TransactionDetailView: View {
     }
 
     private func generatePDF() {
-        //print("🔵 Starting PDF generation")
-        
-        let pdfMetaData = [
-            kCGPDFContextCreator: AppStrings.brand,
-            kCGPDFContextAuthor: "DIAMACASH App",
-            kCGPDFContextTitle: AppStrings.transactionReceipt
-        ]
         let format = UIGraphicsPDFRendererFormat()
-        format.documentInfo = pdfMetaData as [String: Any]
-
-        let pageWidth: CGFloat = 8.5 * 72.0
-        let pageHeight: CGFloat = 11 * 72.0
-        let pageRect = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
-
-        let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
-
-        //print("🔵 Creating PDF data")
-        let data = renderer.pdfData { context in
-            context.beginPage()
-            
-            let titleFont = UIFont.boldSystemFont(ofSize: 22)
-            let textFont = UIFont.systemFont(ofSize: 14)
-            let textColor = UIColor.black
-            
-            var yOffset: CGFloat = 40
-            let leftMargin: CGFloat = 40
-            
-            AppStrings.transactionReceipt2.draw(at: CGPoint(x: leftMargin, y: yOffset), withAttributes: [
-                .font: titleFont,
-                .foregroundColor: textColor
-            ])
-            yOffset += 40
-            
-            let lines = [
-                AppStrings.referenceValue(String(describing: transaction.transactionReference ?? AppStrings.nA)),
-                AppStrings.dateValue(String(describing: transaction.displayDate)),
-                AppStrings.typeValue(String(describing: transaction.displayTitle)),
-                AppStrings.amountValue(String(describing: transaction.amount)),
-                AppStrings.statusValue(String(describing: transaction.status ?? AppStrings.unknown)),
-                AppStrings.detailsValue(String(describing: transaction.details ?? AppStrings.nA)),
-                AppStrings.openingBalanceValue(String(describing: transaction.openingBalance ?? AppStrings.nA)),
-                AppStrings.closingBalanceValue(String(describing: transaction.closingBalance ?? AppStrings.nA))
-            ]
-            
-            //print("🔵 Drawing \(lines.count) lines")
-            for line in lines {
-                line.draw(at: CGPoint(x: leftMargin, y: yOffset), withAttributes: [
-                    .font: textFont,
-                    .foregroundColor: textColor
-                ])
-                yOffset += 24
-            }
+        format.documentInfo = [
+            kCGPDFContextCreator as String: AppStrings.brand,
+            kCGPDFContextAuthor as String: "GambiaPay",
+            kCGPDFContextTitle as String: AppStrings.transactionReceipt
+        ]
+        let pageRect = CGRect(x: 0, y: 0, width: 612, height: 792)
+        let contentRect = CGRect(x: 40, y: 126, width: 532, height: 606)
+        let fields = [
+            (AppStrings.reference, transaction.transactionReference ?? AppStrings.nA),
+            (AppStrings.date, transaction.displayDate),
+            (AppStrings.type, transaction.displayTitle),
+            (AppStrings.amount, transaction.amount),
+            (AppStrings.status, transaction.status ?? AppStrings.unknown),
+            (AppStrings.details, transaction.details ?? AppStrings.noAdditionalDetails),
+            (AppStrings.openingBalance, transaction.openingBalance ?? AppStrings.nA),
+            (AppStrings.closingBalance, transaction.closingBalance ?? AppStrings.nA)
+        ]
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byWordWrapping
+        paragraph.paragraphSpacing = 14
+        let body = NSMutableAttributedString(string: "")
+        for (label, value) in fields {
+            body.append(NSAttributedString(string: label + "\n", attributes: [
+                .font: UIFont.boldSystemFont(ofSize: 12),
+                .foregroundColor: UIColor.darkGray,
+                .paragraphStyle: paragraph
+            ]))
+            body.append(NSAttributedString(string: value + "\n", attributes: [
+                .font: UIFont.systemFont(ofSize: 14),
+                .foregroundColor: UIColor.black,
+                .paragraphStyle: paragraph
+            ]))
         }
-        
-        //print("🔵 PDF data size: \(data.count) bytes")
-        
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Transaction-\(transaction.transactionReference ?? UUID().uuidString).pdf")
-        
-        //print("🔵 Attempting to write to: \(url.path)")
-        
+        // Text containers paginate the entire receipt, including unusually long details.
+        let storage = NSTextStorage(attributedString: body)
+        let layout = NSLayoutManager()
+        storage.addLayoutManager(layout)
+        let renderer = UIGraphicsPDFRenderer(bounds: pageRect, format: format)
+        let data = renderer.pdfData { context in
+            var renderedGlyphs = 0
+            var page = 0
+            repeat {
+                let container = NSTextContainer(size: contentRect.size)
+                container.lineFragmentPadding = 0
+                layout.addTextContainer(container)
+                let range = layout.glyphRange(for: container)
+                guard range.length > 0 else { break }
+                context.beginPage()
+                page += 1
+                UIColor.white.setFill()
+                context.cgContext.fill(pageRect)
+                UIImage(named: "BITSLogo")?.draw(in: CGRect(x: 40, y: 26, width: 110, height: 66))
+                (AppStrings.brand as NSString).draw(at: CGPoint(x: 170, y: 35), withAttributes: [
+                    .font: UIFont.boldSystemFont(ofSize: 22),
+                    .foregroundColor: UIColor(red: 0.09, green: 0.31, blue: 0.65, alpha: 1)
+                ])
+                (AppStrings.transactionReceipt as NSString).draw(at: CGPoint(x: 170, y: 66), withAttributes: [
+                    .font: UIFont.systemFont(ofSize: 15), .foregroundColor: UIColor.darkGray
+                ])
+                layout.drawBackground(forGlyphRange: range, at: contentRect.origin)
+                layout.drawGlyphs(forGlyphRange: range, at: contentRect.origin)
+                ("GambiaPay · \(page)" as NSString).draw(at: CGPoint(x: 40, y: 755), withAttributes: [
+                    .font: UIFont.systemFont(ofSize: 10), .foregroundColor: UIColor.gray
+                ])
+                renderedGlyphs = NSMaxRange(range)
+            } while renderedGlyphs < layout.numberOfGlyphs
+        }
         do {
-            try data.write(to: url)
-            //print("✅ PDF written successfully")
-            //print("🔵 File exists: \(FileManager.default.fileExists(atPath: url.path))")
-            
-            if let attributes = try? FileManager.default.attributesOfItem(atPath: url.path) {
-                //print("🔵 File size: \(attributes[.size] ?? 0) bytes")
-            }
-            
-            //print("🔵 Setting itemsToShare with URL: \(url)")
-            self.itemsToShare = [url]
-            //print("🔵 itemsToShare is now: \(String(describing: self.itemsToShare))")
-            
+            // Keep untrusted transaction references out of filesystem paths.
+            let directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent("Receipts", isDirectory: true)
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let url = directory.appendingPathComponent("GambiaPay-receipt.pdf")
+            try data.write(to: url, options: .atomic)
+            receiptToShare = ShareItem(items: [url])
         } catch {
-            //print("❌ Error writing PDF: \(error.localizedDescription)")
+            showReceiptError = true
         }
     }
+
 }
 
 // Helper struct to make the items identifiable
@@ -286,23 +294,8 @@ struct ActivityViewController: UIViewControllerRepresentable {
     var applicationActivities: [UIActivity]? = nil
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        //print("🔵 Creating UIActivityViewController with \(activityItems.count) items")
-        for (index, item) in activityItems.enumerated() {
-            //print("🔵 Item \(index): \(item)")
-        }
-        
-        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-        
-        // For iPad support
-        if let popover = controller.popoverPresentationController {
-            popover.sourceView = UIView()
-            popover.permittedArrowDirections = []
-        }
-        
-        return controller
+        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
     }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {
-        //print("🔵 updateUIViewController called")
-    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

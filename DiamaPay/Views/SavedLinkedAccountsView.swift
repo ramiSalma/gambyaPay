@@ -36,7 +36,7 @@ struct SavedLinkedAccountsView: View {
                         .foregroundColor(Color(hex: "505A69"))
                 }
                 Spacer()
-                Button(AppStrings.close) { dismiss() }
+                Button(AppStrings.buttonTitle(AppStrings.close)) { dismiss() }
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "0788B9"))
             }

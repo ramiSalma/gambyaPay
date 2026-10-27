@@ -62,7 +62,7 @@ struct BiometricSettingsView: View {
             }
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -318,7 +318,7 @@ struct PINPromptView: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text(AppStrings.confirmer)
+                            Text(AppStrings.buttonTitle(AppStrings.confirmer))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                         }
@@ -335,7 +335,7 @@ struct PINPromptView: View {
             }
             .background(Color.white)
             .navigationBarItems(
-                leading: Button(AppStrings.annuler) { presentationMode.wrappedValue.dismiss() }
+                leading: Button(AppStrings.buttonTitle(AppStrings.annuler)) { presentationMode.wrappedValue.dismiss() }
                     .foregroundColor(Color(hex: "174EA6"))
             )
         }

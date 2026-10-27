@@ -135,7 +135,7 @@ struct FileComplaintView: View {
             setDefaultDate()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -237,7 +237,7 @@ struct FileComplaintView: View {
                         selectedComplaintType = index
                     }) {
                         HStack {
-                            Text(AppStrings.option(complaintTypes[index]))
+                            Text(AppStrings.buttonTitle(AppStrings.option(complaintTypes[index])))
                             if selectedComplaintType == index {
                                 Image(systemName: "checkmark")
                             }
@@ -289,7 +289,7 @@ struct FileComplaintView: View {
                         selectedPriority = index
                     }) {
                         HStack {
-                            Text(AppStrings.option(priorities[index]))
+                            Text(AppStrings.buttonTitle(AppStrings.option(priorities[index])))
                             if selectedPriority == index {
                                 Image(systemName: "checkmark")
                             }
@@ -468,7 +468,7 @@ struct FileComplaintView: View {
                         selectedContactMethod = index
                     }) {
                         HStack {
-                            Text(AppStrings.option(contactMethods[index]))
+                            Text(AppStrings.buttonTitle(AppStrings.option(contactMethods[index])))
                             if selectedContactMethod == index {
                                 Image(systemName: "checkmark")
                             }
@@ -538,7 +538,7 @@ struct FileComplaintView: View {
                 showConfirmationDialog = true
             }
         }) {
-            Text(AppStrings.soumettre)
+            Text(AppStrings.buttonTitle(AppStrings.soumettre))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 180, height: 50)
@@ -740,7 +740,7 @@ struct ComplaintConfirmationDialog: View {
                 // Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -750,7 +750,7 @@ struct ComplaintConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text(AppStrings.deposer)
+                        Text(AppStrings.buttonTitle(AppStrings.deposer))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -813,7 +813,7 @@ struct ComplaintSuccessDialogView: View {
                         .padding(.horizontal)
                     
                     Button(action: onClose) {
-                        Text(AppStrings.fermer)
+                        Text(AppStrings.buttonTitle(AppStrings.fermer))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -827,7 +827,7 @@ struct ComplaintSuccessDialogView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarItems(trailing: Button(AppStrings.buttonTitle(AppStrings.fermer), action: onClose))
             .navigationBarTitle(AppStrings.confirmation, displayMode: .inline)
         }
     }
@@ -863,7 +863,7 @@ struct SuccessDialogView: View {
                 Spacer()
                 
                 Button(action: onClose) {
-                    Text(AppStrings.fermer)
+                    Text(AppStrings.buttonTitle(AppStrings.fermer))
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -874,7 +874,7 @@ struct SuccessDialogView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 32)
             }
-            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarItems(trailing: Button(AppStrings.buttonTitle(AppStrings.fermer), action: onClose))
             .navigationBarTitle(AppStrings.succes, displayMode: .inline)
         }
     }

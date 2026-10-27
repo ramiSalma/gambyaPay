@@ -137,7 +137,7 @@ struct ProviderCard: View {
                 
                 // Text Content
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
+                    Text(AppStrings.buttonTitle(title))
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.primary)
                     

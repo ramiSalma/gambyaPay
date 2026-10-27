@@ -61,7 +61,7 @@ struct UpdateSponsoredWalletView: View {
             loadInitialData()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) {
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {
                 if alertTitle == AppStrings.succes {
                     onSuccess()
                 }
@@ -332,7 +332,7 @@ struct UpdateSponsoredWalletView: View {
         Button(action: {
             validateAndShowConfirmation()
         }) {
-            Text(AppStrings.update)
+            Text(AppStrings.buttonTitle(AppStrings.update))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 150, height: 48)
@@ -398,7 +398,7 @@ struct UpdateSponsoredWalletView: View {
                             Button(action: {
                                 showConfirmation = false
                             }) {
-                                Text(AppStrings.annuler)
+                                Text(AppStrings.buttonTitle(AppStrings.annuler))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.primary)
                                     .frame(maxWidth: .infinity)
@@ -411,7 +411,7 @@ struct UpdateSponsoredWalletView: View {
                                 showConfirmation = false
                                 performUpdate()
                             }) {
-                                Text(AppStrings.update)
+                                Text(AppStrings.buttonTitle(AppStrings.update))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)

@@ -33,7 +33,7 @@ struct ModernSideMenuView: View {
                             Spacer()
                         }
                         
-                        Text("DIAMACASH")
+                        Text("GambiaPay")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                         
@@ -304,7 +304,7 @@ struct ModernSideMenuView: View {
                                     .foregroundColor(.red)
                             }
                             
-                            Text(AppStrings.logout)
+                            Text(AppStrings.buttonTitle(AppStrings.logout))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.red)
                             
@@ -400,7 +400,7 @@ struct ModernDrawerItem: View {
                         .foregroundColor(iconColor)
                 }
                 
-                Text(title)
+                Text(AppStrings.buttonTitle(title))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.primary)
                 

@@ -99,7 +99,7 @@ struct ChangePinView: View {
         .tint(blue)
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) {
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {
                 if alertTitle == AppStrings.pinChanged {
                     presentationMode.wrappedValue.dismiss()
                 }
@@ -226,7 +226,7 @@ struct ChangePinView: View {
             Button(action: {
                 verifyCurrentPin()
             }) {
-                Text(isPinVerified ? AppStrings.pinVerified : AppStrings.verifyPin)
+                Text(AppStrings.buttonTitle(isPinVerified ? AppStrings.pinVerified : AppStrings.verifyPin))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -320,7 +320,7 @@ struct ChangePinView: View {
             Button(action: {
                 showChangePinConfirmationDialog()
             }) {
-                Text(AppStrings.changePin)
+                Text(AppStrings.buttonTitle(AppStrings.changePin))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -370,7 +370,7 @@ struct ChangePinView: View {
                             Button(action: {
                                 showConfirmationDialog = false
                             }) {
-                                Text(AppStrings.cancel)
+                                Text(AppStrings.buttonTitle(AppStrings.cancel))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(blue)
                                     .frame(maxWidth: .infinity)
@@ -383,7 +383,7 @@ struct ChangePinView: View {
                                 showConfirmationDialog = false
                                 changePin()
                             }) {
-                                Text(AppStrings.changePin)
+                                Text(AppStrings.buttonTitle(AppStrings.changePin))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)

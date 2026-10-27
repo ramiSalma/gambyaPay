@@ -31,7 +31,7 @@ struct MyProfileView: View {
                         .multilineTextAlignment(.center)
                         .foregroundColor(.secondary)
                     Button(action: loadProfile) {
-                        Label(AppStrings.tryAgain, systemImage: "arrow.clockwise")
+                        Label(AppStrings.buttonTitle(AppStrings.tryAgain), systemImage: "arrow.clockwise")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 22)
@@ -60,18 +60,17 @@ struct MyProfileView: View {
                             (AppStrings.walletStatus, AppStrings.profileStatusValue(profile.walletStatus)),
                             (AppStrings.kycLevel, profile.kycLevel),
                             (AppStrings.registrationDate, profile.registrationDate),
-                            (AppStrings.bankCode, profile.bankCode)
+                            (AppStrings.bank, profileBankName(profile))
                         ])
                         profileSection(AppStrings.identification, icon: "person.text.rectangle.fill", fields: [
-                            (AppStrings.nationalId, profile.nationalId),
-                            (AppStrings.documentCode, profile.documentCode)
+                            (AppStrings.nationalId, profile.nationalId)
                         ])
                         profileSection(AppStrings.nextOfKin, icon: "person.2", fields: [
                             (AppStrings.name, profile.nextOfKinName),
                             (AppStrings.phoneNumber2, profile.nextOfKinPhone)
                         ])
                         Button(action: loadProfile) {
-                            Label(AppStrings.refreshProfile, systemImage: "arrow.clockwise")
+                            Label(AppStrings.buttonTitle(AppStrings.refreshProfile), systemImage: "arrow.clockwise")
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(Color(hex: "174EA6"))
                                 .frame(maxWidth: .infinity)
@@ -206,6 +205,12 @@ struct MyProfileView: View {
             .map(String.init)
             .joined()
         return initials.isEmpty ? "?" : initials.uppercased()
+    }
+
+    private func profileBankName(_ profile: WalletProfile) -> String? {
+        [profile.bankName, profile.bankWording, UserDataManager.shared.getBankWording()]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty }
     }
 
     private func displayValue(_ value: String?) -> String {

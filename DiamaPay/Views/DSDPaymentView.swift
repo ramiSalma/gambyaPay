@@ -52,7 +52,7 @@ struct DSDPaymentView: View {
             loadPendingPayments()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -493,7 +493,7 @@ struct DSDOperationCard: View {
             // Action Buttons
             HStack(spacing: 12) {
                 Button(action: onReject) {
-                    Text(AppStrings.rejeter)
+                    Text(AppStrings.buttonTitle(AppStrings.rejeter))
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.red)
                         .frame(maxWidth: .infinity)
@@ -506,7 +506,7 @@ struct DSDOperationCard: View {
                 }
                 
                 Button(action: onValidate) {
-                    Text(AppStrings.approuver)
+                    Text(AppStrings.buttonTitle(AppStrings.approuver))
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)

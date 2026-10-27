@@ -109,7 +109,7 @@ struct DSDPinValidationDialog: View {
                 // Action Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.green)
                             .frame(maxWidth: .infinity)
@@ -126,7 +126,7 @@ struct DSDPinValidationDialog: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text(AppStrings.confirmer)
+                        Text(AppStrings.buttonTitle(AppStrings.confirmer))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -199,7 +199,7 @@ struct DSDValidationConfirmationDialog: View {
                 // Action Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.green)
                             .frame(maxWidth: .infinity)
@@ -212,7 +212,7 @@ struct DSDValidationConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text(AppStrings.continuer)
+                        Text(AppStrings.buttonTitle(AppStrings.continuer))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -281,7 +281,7 @@ struct DSDRejectionConfirmationDialog: View {
                 // Action Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.gray)
                             .frame(maxWidth: .infinity)
@@ -294,7 +294,7 @@ struct DSDRejectionConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text(AppStrings.rejeter)
+                        Text(AppStrings.buttonTitle(AppStrings.rejeter))
                             .font(.system(size: 14, weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

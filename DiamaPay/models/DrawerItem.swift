@@ -39,7 +39,7 @@ struct DrawerItem: View {
                         .foregroundColor(Color(hex: "174EA6"))
                 }
                 
-                Text(title)
+                Text(AppStrings.buttonTitle(title))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color(hex: "394353"))
                     .padding(.leading, 12)

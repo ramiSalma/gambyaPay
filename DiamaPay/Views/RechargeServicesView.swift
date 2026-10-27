@@ -46,12 +46,43 @@ private struct RechargeField: View {
     }
 }
 
+private struct RechargeSelector: View {
+    let title: String
+    let options: [String]
+    @Binding var selection: String
+
+    var body: some View {
+        Menu {
+            Picker(title, selection: $selection) {
+                ForEach(options, id: \.self) { option in
+                    Text(option).tag(option)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selection)
+                Spacer()
+                Image(systemName: "chevron.down")
+                    .foregroundColor(RechargeStyle.gray)
+            }
+            .font(.system(size: 16, weight: .medium))
+            .foregroundColor(.black)
+            .padding(.horizontal, 19)
+            .frame(height: 46)
+            .contentShape(Rectangle())
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(RechargeStyle.gray, lineWidth: 1.1))
+        }
+        .accessibilityLabel(title)
+        .accessibilityValue(selection)
+    }
+}
+
 private struct RechargeAction: View {
     let title: String
     let action: () -> Void
     var body: some View {
         Button(action: action) {
-            Text(title)
+            Text(AppStrings.buttonTitle(title))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 144, height: 46)
@@ -74,7 +105,7 @@ private struct RechargeSavedButton: View {
                     .font(.system(size: 23))
                     .frame(width: 46, height: 46)
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(RechargeStyle.cyan, lineWidth: 1))
-                Text(title).font(.system(size: 10))
+                Text(AppStrings.buttonTitle(title)).font(.system(size: 10))
             }
             .foregroundColor(RechargeStyle.blue)
         }
@@ -87,6 +118,8 @@ struct RechargeServiceView: View {
     let isData: Bool
     @State private var phone = ""
     @State private var amount = ""
+    @State private var selectedProvider = "MTN"
+    @State private var selectedProduct = "MTN DATA 1GB"
     @State private var showContacts = false
     @State private var showSaved = false
     @State private var message = ""
@@ -103,15 +136,11 @@ struct RechargeServiceView: View {
                     SourceOfFundsView(walletTransferStyle: true)
                         .padding(.bottom, 12)
                     RechargeCard(title: AppStrings.rechargeProviderDetails) {
-                        Group {
-                            Text("MTN")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 19)
-                                .frame(height: 46)
-                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(RechargeStyle.gray, lineWidth: 1.1))
-                        }
+                        RechargeSelector(
+                            title: AppStrings.rechargeProviderDetails,
+                            options: ["MTN", "Orange", "Telecel"],
+                            selection: $selectedProvider
+                        )
                     }
                     RechargeCard(title: isData ? AppStrings.rechargeRecipientDetails : AppStrings.phoneNumber) {
                         HStack(alignment: .top, spacing: 8) {
@@ -122,12 +151,11 @@ struct RechargeServiceView: View {
                         if isData {
                             VStack(alignment: .leading, spacing: 9) {
                                 Text(AppStrings.rechargeProducts).font(.system(size: 12)).foregroundColor(RechargeStyle.gray)
-                                Text("MTN Data 1GB")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 19)
-                                    .frame(height: 46)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(RechargeStyle.gray, lineWidth: 1.1))
+                                RechargeSelector(
+                                    title: AppStrings.rechargeProducts,
+                                    options: ["MTN DATA 1GB", "MTN DATA 3GB", "MTN DATA 5GB", "MTN DATA 10GB"],
+                                    selection: $selectedProduct
+                                )
                             }
                             .padding(.top, 6)
                         }
@@ -152,17 +180,17 @@ struct RechargeServiceView: View {
         }
         .confirmationDialog(AppStrings.rechargeSaved, isPresented: $showSaved, titleVisibility: .visible) {
             ForEach(numbers, id: \.self) { number in
-                Button(number) { phone = number }
+                Button(AppStrings.buttonTitle(number)) { phone = number }
             }
             if !phone.isEmpty && !numbers.contains(phone) {
-                Button(AppStrings.rechargeSaveNumber) { savedNumbers = (numbers + [phone]).joined(separator: ",") }
+                Button(AppStrings.buttonTitle(AppStrings.rechargeSaveNumber)) { savedNumbers = (numbers + [phone]).joined(separator: ",") }
             }
-            Button(AppStrings.annuler, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.annuler), role: .cancel) { }
         } message: {
             Text(numbers.isEmpty ? AppStrings.rechargeNoSaved : AppStrings.rechargeChooseSaved)
         }
         .alert(AppStrings.information, isPresented: $showMessage) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: { Text(message) }
     }
 
@@ -235,17 +263,17 @@ struct NawecServiceView: View {
             AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
         .confirmationDialog(AppStrings.rechargeSaved, isPresented: $showSaved, titleVisibility: .visible) {
-            ForEach(saved, id: \.self) { value in Button(value) { account = value } }
+            ForEach(saved, id: \.self) { value in Button(AppStrings.buttonTitle(value)) { account = value } }
             if !account.isEmpty && !saved.contains(account) {
-                Button(AppStrings.rechargeSaveNumber) {
+                Button(AppStrings.buttonTitle(AppStrings.rechargeSaveNumber)) {
                     let updated = (saved + [account]).joined(separator: ",")
                     if service == .water { waterAccounts = updated } else { powerMeters = updated }
                 }
             }
-            Button(AppStrings.annuler, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.annuler), role: .cancel) { }
         } message: { Text(saved.isEmpty ? AppStrings.rechargeNoSaved : AppStrings.rechargeChooseSaved) }
         .alert(AppStrings.information, isPresented: $showMessage) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: { Text(message) }
     }
 

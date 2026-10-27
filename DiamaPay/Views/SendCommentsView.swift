@@ -100,7 +100,7 @@ struct SendCommentsView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -198,7 +198,7 @@ struct SendCommentsView: View {
                         selectedCategory = index
                     }) {
                         HStack {
-                            Text(AppStrings.option(categories[index]))
+                            Text(AppStrings.buttonTitle(AppStrings.option(categories[index])))
                             if selectedCategory == index {
                                 Image(systemName: "checkmark")
                             }
@@ -338,7 +338,7 @@ struct SendCommentsView: View {
                 showConfirmationDialog = true
             }
         }) {
-            Text(AppStrings.envoyer)
+            Text(AppStrings.buttonTitle(AppStrings.envoyer))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 180, height: 50)
@@ -510,7 +510,7 @@ struct CommentConfirmationDialog: View {
                 // Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -520,7 +520,7 @@ struct CommentConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text(AppStrings.envoyer)
+                        Text(AppStrings.buttonTitle(AppStrings.envoyer))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

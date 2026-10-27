@@ -33,7 +33,7 @@ struct CheckLimitView: View {
                                 Text(AppStrings.option(errorMessage))
                                     .foregroundColor(.secondary)
                                     .multilineTextAlignment(.center)
-                                Button(AppStrings.tryAgain, action: loadWalletLimits)
+                                Button(AppStrings.buttonTitle(AppStrings.tryAgain), action: loadWalletLimits)
                                     .tint(accent)
                             }
                             .frame(maxWidth: .infinity)
@@ -238,7 +238,7 @@ struct CheckLimitView: View {
                 }
             } label: {
                 HStack {
-                    Text(expanded ? AppStrings.hideDetails : AppStrings.viewDetails)
+                    Text(AppStrings.buttonTitle(expanded ? AppStrings.hideDetails : AppStrings.viewDetails))
                     Spacer()
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
                 }

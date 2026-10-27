@@ -146,7 +146,7 @@ struct AmountInputView: View {
                     }
                     
                     HStack(spacing: 16) {
-                        Button(AppStrings.annuler) {
+                        Button(AppStrings.buttonTitle(AppStrings.annuler)) {
                             presentationMode.wrappedValue.dismiss()
                         }
                         .frame(maxWidth: .infinity)
@@ -155,7 +155,7 @@ struct AmountInputView: View {
                         .foregroundColor(.black)
                         .cornerRadius(8)
                         
-                        Button(AppStrings.confirmer) {
+                        Button(AppStrings.buttonTitle(AppStrings.confirmer)) {
                             if rawAmount > 0 {
                                 onConfirm(rawAmount, isFeeEnabled, currentWithdrawalFee, withdrawalFeeRuleIndex)
                             }

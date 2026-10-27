@@ -164,10 +164,10 @@ enum AppStrings {
         "forgotPinTitle": Entry(source: "Forgot PIN", language: "en", french: "Code PIN oublié"),
         "forgotPinHelp": Entry(source: "Please contact customer support with your identity document for security verification.", language: "en", french: "Merci de contacter le service client muni de votre pièce d'identité pour des questions de sécurité"),
         "traitementEnCours": Entry(source: "Traitement en cours...", language: "fr"),
-        "saveBeneficiary": Entry(source: "Save beneficiary?", language: "en"),
-        "save": Entry(source: "Save", language: "en"),
+        "saveBeneficiary": Entry(source: "Save beneficiary?", language: "en", french: "Enregistrer le bénéficiaire ?"),
+        "save": Entry(source: "Save", language: "en", french: "Enregistrer"),
         "notNow": Entry(source: "Not now", language: "en"),
-        "wouldYouLikeToSaveValueToYourBeneficiaries": Entry(source: "Would you like to save __ARG_0__ to your beneficiaries for future transfers?", language: "en"),
+        "wouldYouLikeToSaveValueToYourBeneficiaries": Entry(source: "Would you like to save __ARG_0__ to your beneficiaries for future transfers?", language: "en", french: "Souhaitez-vous enregistrer __ARG_0__ parmi vos bénéficiaires pour de futurs transferts ?"),
         "accountDetails": Entry(source: "Account Details", language: "en"),
         "enterAccountNumber": Entry(source: "Enter account number", language: "en"),
         "verify": Entry(source: "Verify", language: "en"),
@@ -203,8 +203,8 @@ enum AppStrings {
         "pleaseCheckYourConnectionAndTryAgain": Entry(source: "Please check your connection and try again.", language: "en"),
         "succes": Entry(source: "Succès", language: "fr"),
         "walletToWallet": Entry(source: "Wallet to Wallet", language: "en"),
-        "saveRecipient": Entry(source: "Save recipient?", language: "en"),
-        "wouldYouLikeToSaveValueForFutureTransfers": Entry(source: "Would you like to save __ARG_0__ for future transfers?", language: "en"),
+        "saveRecipient": Entry(source: "Save recipient?", language: "en", french: "Enregistrer le destinataire ?"),
+        "wouldYouLikeToSaveValueForFutureTransfers": Entry(source: "Would you like to save __ARG_0__ for future transfers?", language: "en", french: "Souhaitez-vous enregistrer __ARG_0__ pour de futurs transferts ?"),
         "recipientDetails": Entry(source: "Recipient Details", language: "en"),
         "recipientIdentifier": Entry(source: "Recipient identifier", language: "en"),
         "walletNumber": Entry(source: "Wallet Number", language: "en", french: "Numéro de portefeuille"),
@@ -218,7 +218,7 @@ enum AppStrings {
         "choosePhoneContact": Entry(source: "Choose phone contact", language: "en"),
         "unableToVerifyThisRecipient": Entry(source: "Unable to verify this recipient.", language: "en"),
         "unableToVerifyTheRecipientPleaseTryAgain": Entry(source: "Unable to verify the recipient. Please try again.", language: "en"),
-        "enterTheRecipientPhoneNumberCustomerIdOrWallet": Entry(source: "Enter the recipient phone number, customer ID, or wallet number.", language: "en"),
+        "enterTheRecipientPhoneNumberCustomerIdOrWallet": Entry(source: "Enter the recipient number.", language: "en", french: "Saisissez le numéro du destinataire."),
         "pleaseVerifyTheRecipientFirst": Entry(source: "Please verify the recipient first.", language: "en"),
         "pleaseChooseAnotherRecipient": Entry(source: "Please choose another recipient.", language: "en"),
         "enterAValidAmountWithUpToTwoDecimal": Entry(source: "Enter a valid amount with up to two decimal places.", language: "en"),
@@ -322,7 +322,7 @@ enum AppStrings {
         "banque": Entry(source: "Banque", language: "fr"),
         "laDiamaBankSa": Entry(source: "La DIAMA BANK SA.", language: "fr"),
         "contrat": Entry(source: "Contrat", language: "fr"),
-        "designeLePresentContratDAdhesionAuServiceDiamacash": Entry(source: "Désigne le présent contrat d'adhésion au service DIAMACASH, ses Conditions Générales de fonctionnement, ses Conditions Particulières ainsi que tout document annexe et avenant, qui constitue un tout indivisible.", language: "fr"),
+        "designeLePresentContratDAdhesionAuServiceDiamacash": Entry(source: "Désigne le présent contrat d'adhésion au service GambiaPay, ses Conditions Générales de fonctionnement, ses Conditions Particulières ainsi que tout document annexe et avenant, qui constitue un tout indivisible.", language: "fr"),
         "applicationMobile": Entry(source: "Application mobile", language: "fr"),
         "uneApplicationMobileEstUnLogicielApplicatifDeveloppePour": Entry(source: "Une application mobile est un logiciel applicatif développé pour un appareil électronique mobile, tel qu'un assistant personnel, un téléphone portable, un smartphone…", language: "fr"),
         "wallet": Entry(source: "Wallet", language: "fr"),
@@ -342,38 +342,38 @@ enum AppStrings {
         "appareilsDeDistributionAutomatiqueDeBilletsDeBanque": Entry(source: "Appareils de distribution automatique de billets de Banque.", language: "fr"),
         "tpe": Entry(source: "TPE", language: "fr"),
         "terminalDePaiementElectronique": Entry(source: "Terminal de Paiement Electronique.", language: "fr"),
-        "leWalletDiamacashEstUnMoyenDePaiementElectronique": Entry(source: "Le Wallet DIAMACASH est un moyen de paiement électronique sécurisé, pouvant être lié au compte bancaire du client ouvert dans les livres de la DIAMA BANK SA, qui permet à son titulaire d'effectuer en temps réel différents services de paiement et de transfert d'argent et ce, via l'application mobile DIAMACASH.", language: "fr"),
+        "leWalletDiamacashEstUnMoyenDePaiementElectronique": Entry(source: "Le Wallet GambiaPay est un moyen de paiement électronique sécurisé, pouvant être lié au compte bancaire du client ouvert dans les livres de la DIAMA BANK SA, qui permet à son titulaire d'effectuer en temps réel différents services de paiement et de transfert d'argent et ce, via l'application mobile GambiaPay.", language: "fr"),
         "cetteApplicationEstTelechargeableAPartirDeGooglePlay": Entry(source: "Cette application est téléchargeable à partir de Google Play et Apple Store.", language: "fr"),
-        "lesFonctionnalitesDisponiblesAuNiveauDeLApplicationDiamacash": Entry(source: "Les fonctionnalités disponibles au niveau de l'application DIAMACASH sont :", language: "fr"),
+        "lesFonctionnalitesDisponiblesAuNiveauDeLApplicationDiamacash": Entry(source: "Les fonctionnalités disponibles au niveau de l'application GambiaPay sont :", language: "fr"),
         "laSouscription": Entry(source: "La souscription", language: "fr"),
-        "leClientPeutInitierDirectementSonInscriptionSurL": Entry(source: "Le client peut initier directement son inscription sur l'application DIAMACASH en renseignant les formulaires associés ou se rendre soit chez un agent agréé, soit en agence pour se faire assister pour son inscription.", language: "fr"),
+        "leClientPeutInitierDirectementSonInscriptionSurL": Entry(source: "Le client peut initier directement son inscription sur l'application GambiaPay en renseignant les formulaires associés ou se rendre soit chez un agent agréé, soit en agence pour se faire assister pour son inscription.", language: "fr"),
         "laConnexion": Entry(source: "La connexion", language: "fr"),
-        "leClientSeConnecteASonCompteDiamacashA": Entry(source: "Le client se connecte à son compte DIAMACASH à l'aide de son numéro de téléphone et de son code secret. Lors de la toute première connexion, il lui sera demandé de saisir un code de confirmation qu'il recevra par sms pour des raisons de sécurité.", language: "fr"),
+        "leClientSeConnecteASonCompteDiamacashA": Entry(source: "Le client se connecte à son compte GambiaPay à l'aide de son numéro de téléphone et de son code secret. Lors de la toute première connexion, il lui sera demandé de saisir un code de confirmation qu'il recevra par sms pour des raisons de sécurité.", language: "fr"),
         "laLiaisonDeSonCompteBancaire": Entry(source: "La liaison de son compte bancaire", language: "fr"),
-        "leClientQuiAUnCompteBancaireOuvertDans": Entry(source: "Le client qui a un compte bancaire ouvert dans les livres de la DIAMA BANK SA peut se rendre en agence pour demander la liaison de son compte et ainsi effectuer les opérations de transfert gratuitement entre son compte DIAMACASH et son compte bancaire.", language: "fr"),
+        "leClientQuiAUnCompteBancaireOuvertDans": Entry(source: "Le client qui a un compte bancaire ouvert dans les livres de la DIAMA BANK SA peut se rendre en agence pour demander la liaison de son compte et ainsi effectuer les opérations de transfert gratuitement entre son compte GambiaPay et son compte bancaire.", language: "fr"),
         "leDeplafonnementDuWallet": Entry(source: "Le déplafonnement du wallet", language: "fr"),
-        "parDefautLeCompteDiamacashDuClientEstLimite": Entry(source: "Par défaut, le compte DIAMACASH du client est limité à un solde maximum de 5.000.000 GNF lors de l'ouverture de son compte à distance. Il peut cependant se rendre en agence ou chez un distributeur agréé pour signer la convention de contrat et demander le déplafonnement de son compte DIAMACASH.", language: "fr"),
+        "parDefautLeCompteDiamacashDuClientEstLimite": Entry(source: "Par défaut, le compte GambiaPay du client est limité à un solde maximum de 5.000.000 GNF lors de l'ouverture de son compte à distance. Il peut cependant se rendre en agence ou chez un distributeur agréé pour signer la convention de contrat et demander le déplafonnement de son compte GambiaPay.", language: "fr"),
         "leChargementDuWalletCashIn": Entry(source: "Le Chargement du Wallet (Cash-In)", language: "fr"),
         "leDetenteurDuWalletPeutBeneficierDeDeuxCanaux": Entry(source: "Le détenteur du Wallet peut bénéficier de deux canaux de chargement : Chargement au niveau des distributeurs en faisant un versement espèces, ou Chargement via son compte bancaire DIAMA BANK SA lié à son wallet.", language: "fr"),
         "retraitDArgentCashOut": Entry(source: "Retrait d'argent (Cash-Out)", language: "fr"),
-        "leClientPeutSeRendreChezNImporteQuels": Entry(source: "Le client peut se rendre chez n'importe quels distributeurs pour effectuer un retrait sur son compte DIAMACASH.", language: "fr"),
-        "transfertVersUnAutreCompteDiamacash": Entry(source: "Transfert vers un autre compte DIAMACASH", language: "fr"),
+        "leClientPeutSeRendreChezNImporteQuels": Entry(source: "Le client peut se rendre chez n'importe quels distributeurs pour effectuer un retrait sur son compte GambiaPay.", language: "fr"),
+        "transfertVersUnAutreCompteDiamacash": Entry(source: "Transfert vers un autre compte GambiaPay", language: "fr"),
         "leClientPeutAToutMomentEffectuerDesTransferts": Entry(source: "Le client peut à tout moment effectuer des transferts d'argent à un autre wallet client dans la limite de son solde et de ces autorisations.", language: "fr"),
         "transfertVersMaBanque": Entry(source: "Transfert vers ma banque", language: "fr"),
         "leClientPeutAToutMomentEffectuerDesTransferts2": Entry(source: "Le client peut à tout moment effectuer des transferts d'argent vers son compte bancaire DIAMA BANK SA qui a été au préalable lié à son wallet.", language: "fr"),
         "transfertDeMaBanque": Entry(source: "Transfert de ma banque", language: "fr"),
         "leClientPeutAToutMomentEffectuerDesTransferts3": Entry(source: "Le client peut à tout moment effectuer des transferts d'argent depuis son compte bancaire DIAMA BANK SA qui a été au préalable lié à son wallet.", language: "fr"),
-        "leClientPeutAToutMomentEffectuerDesTransferts4": Entry(source: "Le client peut à tout moment effectuer des transferts d'argent à une personne n'ayant pas de compte DIAMACASH.", language: "fr"),
-        "leClientPeutAToutMomentEffectuerLeParrainage": Entry(source: "Le client peut à tout moment effectuer le parrainage d'un autre compte DIAMACASH.", language: "fr"),
+        "leClientPeutAToutMomentEffectuerDesTransferts4": Entry(source: "Le client peut à tout moment effectuer des transferts d'argent à une personne n'ayant pas de compte GambiaPay.", language: "fr"),
+        "leClientPeutAToutMomentEffectuerLeParrainage": Entry(source: "Le client peut à tout moment effectuer le parrainage d'un autre compte GambiaPay.", language: "fr"),
         "virementPermanent": Entry(source: "Virement permanent", language: "fr"),
-        "leClientPeutAToutMomentInitierDesVirements": Entry(source: "Le client peut à tout moment initier des virements permanents vers un autre compte DIAMACASH.", language: "fr"),
+        "leClientPeutAToutMomentInitierDesVirements": Entry(source: "Le client peut à tout moment initier des virements permanents vers un autre compte GambiaPay.", language: "fr"),
         "paiementChezLeCommercant": Entry(source: "Paiement chez le commerçant", language: "fr"),
-        "leClientPeutPayerSesAchatsAPartirDe": Entry(source: "Le Client peut payer ses achats à partir de son Wallet DIAMACASH, auprès des commerçants accepteurs détenant un Wallet DIAMACASH PRO.", language: "fr"),
+        "leClientPeutPayerSesAchatsAPartirDe": Entry(source: "Le Client peut payer ses achats à partir de son Wallet GambiaPay, auprès des commerçants accepteurs détenant un Wallet GambiaPay PRO.", language: "fr"),
         "conditionsDInscriptionAuService": Entry(source: "Conditions d'inscription au service", language: "fr"),
         "leServiceEstReserveALaClienteleDesParticuliers": Entry(source: "Le Service est réservé à la clientèle des particuliers, personnes physiques majeures titulaires disposant :", language: "fr"),
         "dUnSmartphoneCompatibleAvecPlayStoreOuApple": Entry(source: "D'un smartphone compatible avec Play Store ou Apple Store", language: "fr"),
         "dUnNumeroMobileGuineenEnLeurNom": Entry(source: "D'un numéro mobile guinéen en leur nom", language: "fr"),
-        "lUtilisationDeDiamacashSeFaitEnGuineeComme": Entry(source: "L'utilisation de DIAMACASH se fait en Guinée comme à l'étranger.", language: "fr"),
+        "lUtilisationDeDiamacashSeFaitEnGuineeComme": Entry(source: "L'utilisation de GambiaPay se fait en Guinée comme à l'étranger.", language: "fr"),
         "accesAuService": Entry(source: "Accès au service", language: "fr"),
         "lAccesAuServiceEstSubordonneAuRespectPar": Entry(source: "L'accès au service est subordonné au respect par l'Utilisateur des dispositions de ce contrat.", language: "fr"),
         "moyensTechniques": Entry(source: "Moyens techniques :", language: "fr"),
@@ -382,13 +382,13 @@ enum AppStrings {
         "dUnAccesAInternetSurSonTerminalMobile": Entry(source: "D'un accès à Internet sur son terminal mobile", language: "fr"),
         "deLaCompatibiliteDuMaterielEtDesLogicielsDestines": Entry(source: "De la compatibilité du matériel et des logiciels destinés à utiliser le Service", language: "fr"),
         "codesEtSecurite": Entry(source: "Codes et sécurité", language: "fr"),
-        "leCodePersonnelDefiniLorsDeLInscriptionA": Entry(source: "Le code personnel défini lors de l'inscription à DIAMACASH est strictement confidentiel. Le Client s'engage à le tenir secret et s'interdit de le communiquer à quiconque.", language: "fr"),
+        "leCodePersonnelDefiniLorsDeLInscriptionA": Entry(source: "Le code personnel défini lors de l'inscription à GambiaPay est strictement confidentiel. Le Client s'engage à le tenir secret et s'interdit de le communiquer à quiconque.", language: "fr"),
         "leClientEstEntierementResponsableDeLaConservationEt": Entry(source: "Le Client est entièrement responsable de la conservation et de l'utilisation de ses codes et, le cas échéant, des conséquences de leur divulgation et/ou de leur utilisation par des tiers.", language: "fr"),
         "ilAppartientNotammentAuClientDeSAssurerQue": Entry(source: "Il appartient notamment au client de s'assurer que la conservation et la saisie de ses codes personnels soient effectuées dans des conditions parfaites de sécurité et de confidentialité.", language: "fr"),
         "pourDesRaisonsDeSecuriteLAccesAuService": Entry(source: "Pour des raisons de sécurité, l'accès au Service pourra être bloqué temporairement au Client après composition à trois reprises d'un mot de passe erroné.", language: "fr"),
-        "laBanqueRecommandeDeModifierLeMotDePasse": Entry(source: "La Banque recommande de modifier le mot de passe de l'application DIAMACASH chaque 3 mois.", language: "fr"),
+        "laBanqueRecommandeDeModifierLeMotDePasse": Entry(source: "La Banque recommande de modifier le mot de passe de l'application GambiaPay chaque 3 mois.", language: "fr"),
         "evolutionsDuService": Entry(source: "Évolutions du service", language: "fr"),
-        "enFonctionNotammentDesEvolutionsTechnologiquesLaBanqueApportera": Entry(source: "En fonction notamment des évolutions technologiques, la Banque apportera aux services de DIAMACASH les adaptations qui lui sembleront souhaitables. Elle en informera le client par tout moyen.", language: "fr"),
+        "enFonctionNotammentDesEvolutionsTechnologiquesLaBanqueApportera": Entry(source: "En fonction notamment des évolutions technologiques, la Banque apportera aux services de GambiaPay les adaptations qui lui sembleront souhaitables. Elle en informera le client par tout moyen.", language: "fr"),
         "assistance": Entry(source: "Assistance", language: "fr"),
         "laBanqueMetADispositionDeLUtilisateurUn": Entry(source: "La Banque met à disposition de l'utilisateur un service d'assistance via son Centre de relations clients (CRC).", language: "fr"),
         "secretProfessionnel": Entry(source: "Secret professionnel", language: "fr"),
@@ -402,9 +402,9 @@ enum AppStrings {
         "leClientDoitPrendreTouteMesurePourConserverA": Entry(source: "Le Client doit prendre toute mesure pour conserver à tout moment en sa possession son smartphone et préserver la confidentialité de ses codes.", language: "fr"),
         "leClientDoitUtiliserLeServiceConformementAuxFinalites": Entry(source: "Le Client doit utiliser le service conformément aux finalités spécifiées dans le présent Contrat. Il assume les conséquences de l'utilisation du Service tant qu'il n'a pas fait une demande d'opposition (ou de blocage).", language: "fr"),
         "leClientSEngageAMettreAJourLes": Entry(source: "Le Client s'engage à mettre à jour les informations communiquées lors de l'inscription, en cas de changement de celles-ci.", language: "fr"),
-        "leClientEstResponsableDesOperationsEffectueesViaSon": Entry(source: "Le Client est responsable des opérations effectuées via son Wallet DIAMACASH. La banque décline toute responsabilité liée à l'exécution d'une transaction par erreur à un autre bénéficiaire différent que celui souhaité ou un montant autre que celui voulu lors de l'action.", language: "fr"),
+        "leClientEstResponsableDesOperationsEffectueesViaSon": Entry(source: "Le Client est responsable des opérations effectuées via son Wallet GambiaPay. La banque décline toute responsabilité liée à l'exécution d'une transaction par erreur à un autre bénéficiaire différent que celui souhaité ou un montant autre que celui voulu lors de l'action.", language: "fr"),
         "interruptionDuService": Entry(source: "Interruption du service", language: "fr"),
-        "laBanquePeutBloquerLAccesTotalAuxServices": Entry(source: "La Banque peut bloquer l'accès total aux services DIAMACASH pour des raisons de sécurité ou de présomption d'opération non autorisée ou frauduleuse. Cette décision de blocage sera notifiée dans tous les cas au Client.", language: "fr"),
+        "laBanquePeutBloquerLAccesTotalAuxServices": Entry(source: "La Banque peut bloquer l'accès total aux services GambiaPay pour des raisons de sécurité ou de présomption d'opération non autorisée ou frauduleuse. Cette décision de blocage sera notifiée dans tous les cas au Client.", language: "fr"),
         "leServicePourraEtrePonctuellementInterrompuPourDeCourtes": Entry(source: "Le Service pourra être ponctuellement interrompu pour de courtes périodes pour des raisons d'ordre technique, notamment pour effectuer des opérations de maintenance.", language: "fr"),
         "oppositionOuBlocageParLeClient": Entry(source: "Opposition ou blocage par le client", language: "fr"),
         "enCasDeVolDeDetournementOuDeToute": Entry(source: "En cas de vol, de détournement ou de toute utilisation frauduleuse de ses codes d'accès ou de son smartphone, le Client doit en informer sans tarder la Banque aux fins de blocage de l'accès au Service.", language: "fr"),
@@ -412,15 +412,15 @@ enum AppStrings {
         "alerterLaBanque": Entry(source: "Alerter la banque", language: "fr"),
         "ouAppelerLeCentreDeRelationsClientsCrcDe": Entry(source: "Ou appeler le centre de relations clients (CRC) de la banque par téléphone", language: "fr"),
         "tarificationDuService": Entry(source: "Tarification du service", language: "fr"),
-        "lesServicesCiApresSontOffertsGratuitementPourLe": Entry(source: "Les services ci-après sont offerts gratuitement pour le détenteur du Wallet DIAMACASH :", language: "fr"),
-        "laSouscriptionAuWalletDiamacash": Entry(source: "La souscription au Wallet DIAMACASH", language: "fr"),
-        "leChargementDuWalletDiamacash": Entry(source: "Le chargement du Wallet DIAMACASH", language: "fr"),
+        "lesServicesCiApresSontOffertsGratuitementPourLe": Entry(source: "Les services ci-après sont offerts gratuitement pour le détenteur du Wallet GambiaPay :", language: "fr"),
+        "laSouscriptionAuWalletDiamacash": Entry(source: "La souscription au Wallet GambiaPay", language: "fr"),
+        "leChargementDuWalletDiamacash": Entry(source: "Le chargement du Wallet GambiaPay", language: "fr"),
         "lePaiementChezLeCommercantOuAutresPrestataires": Entry(source: "Le paiement chez le commerçant ou autres prestataires", language: "fr"),
         "laDesinscription": Entry(source: "La désinscription", language: "fr"),
         "leClientConserveASaChargeLesCoutsDe": Entry(source: "Le Client conserve à sa charge les coûts de connexion facturés par son fournisseur d'accès Internet lors de l'utilisation du Service.", language: "fr"),
         "dureeDuContratResiliation": Entry(source: "Durée du contrat - Résiliation", language: "fr"),
         "lePresentContratEstConcluPourUneDureeIndeterminee": Entry(source: "Le présent Contrat est conclu pour une durée indéterminée.", language: "fr"),
-        "ilPeutEtreResilieAToutMomentParLe": Entry(source: "Il peut être résilié à tout moment par le Client dans son compte DIAMACASH ou par la Banque.", language: "fr"),
+        "ilPeutEtreResilieAToutMomentParLe": Entry(source: "Il peut être résilié à tout moment par le Client dans son compte GambiaPay ou par la Banque.", language: "fr"),
         "laResiliationParLeClientPrendEffetTrente30": Entry(source: "La résiliation par le Client prend effet trente (30) jours après la date de réception de sa demande de résiliation sous réserve de la bonne exécution des opérations de paiement effectuées au moyen du Service et encore en cours.", language: "fr"),
         "laResiliationParLaBanquePrendEffetQuinzeJours": Entry(source: "La résiliation par La Banque prend effet quinze jours (15) après la date d'envoi de sa notification au Client.", language: "fr"),
         "modificationDuContrat": Entry(source: "Modification du contrat", language: "fr"),
@@ -1046,7 +1046,7 @@ enum AppStrings {
         "echecDuTelechargementDuReleve": Entry(source: "Échec du téléchargement du relevé", language: "fr"),
         "ref": Entry(source: "Réf:", language: "fr"),
         "solde2": Entry(source: "Solde:", language: "fr"),
-        "wouldYouLikeToSaveValueForFutureMobileMoney": Entry(source: "Would you like to save __ARG_0__ for future Mobile Money transfers?", language: "en"),
+        "wouldYouLikeToSaveValueForFutureMobileMoney": Entry(source: "Would you like to save __ARG_0__ for future Mobile Money transfers?", language: "en", french: "Souhaitez-vous enregistrer __ARG_0__ pour de futurs transferts Mobile Money ?"),
         "confirmMobileMoney": Entry(source: "Confirm Mobile Money", language: "en"),
         "providerDetails": Entry(source: "Provider Details", language: "en"),
         "loadingProviders": Entry(source: "Loading providers...", language: "en"),
@@ -1054,7 +1054,7 @@ enum AppStrings {
         "beneficiaryDetails": Entry(source: "Beneficiary Details", language: "en"),
         "phoneNumber2": Entry(source: "Phone number", language: "en", french: "Numéro de téléphone"),
         "beneficiaryName2": Entry(source: "Beneficiary name", language: "en"),
-        "saveRecipient2": Entry(source: "Save recipient", language: "en"),
+        "saveRecipient2": Entry(source: "Save recipient", language: "en", french: "Enregistrer le destinataire"),
         "paymentReference": Entry(source: "Payment Reference", language: "en"),
         "enterPaymentReference": Entry(source: "Enter payment reference", language: "en"),
         "noProvidersAreAvailable": Entry(source: "No providers are available.", language: "en"),
@@ -1088,7 +1088,7 @@ enum AppStrings {
         "connexionBiometrique": Entry(source: "Connexion biométrique", language: "fr"),
         "ecrireUnCommentaire": Entry(source: "Écrire un commentaire", language: "fr"),
         "declarerUnIncident": Entry(source: "Déclarer un incident", language: "fr"),
-        "wouldYouLikeToSaveValueForFutureVoucherTransfers": Entry(source: "Would you like to save __ARG_0__ for future voucher transfers?", language: "en"),
+        "wouldYouLikeToSaveValueForFutureVoucherTransfers": Entry(source: "Would you like to save __ARG_0__ for future voucher transfers?", language: "en", french: "Souhaitez-vous enregistrer __ARG_0__ pour de futurs transferts par bon ?"),
         "miseADisposition": Entry(source: "Mise à Disposition", language: "fr"),
         "recipientName2": Entry(source: "Recipient name", language: "en"),
         "idNumber": Entry(source: "ID Number", language: "en"),
@@ -1339,7 +1339,7 @@ enum AppStrings {
         "noSavedWalletRecipients": Entry(source: "No saved wallet recipients", language: "en"),
         "nameOrRecipientNumber": Entry(source: "Name or recipient number", language: "en"),
         "savedRecipients2": Entry(source: "Saved Recipients", language: "en"),
-        "toSavings": Entry(source: "To Savings", language: "en"),
+        "toSavings": Entry(source: "To Savings", language: "en", french: "Vers l'épargne"),
         "fromSavings": Entry(source: "From Savings", language: "en"),
         "savingsWalletBalance": Entry(source: "Savings wallet balance", language: "en"),
         "currentBalance": Entry(source: "Current Balance", language: "en"),
@@ -1703,7 +1703,7 @@ enum AppStrings {
         "closed": Entry(source: "Closed", language: "en"),
         "confirmed": Entry(source: "Confirmed", language: "en"),
         "appareilNonSecurise": Entry(source: "⚠️ Appareil Non Sécurisé", language: "fr"),
-        "votreAppareilSembleEtreJailbreakePourVotreSecuriteDiamacash": Entry(source: "Votre appareil semble être jailbreaké. Pour votre sécurité, DIAMACASH ne peut pas fonctionner sur des appareils compromis.\n\nVeuillez utiliser un appareil iOS sécurisé.", language: "fr"),
+        "votreAppareilSembleEtreJailbreakePourVotreSecuriteDiamacash": Entry(source: "Votre appareil semble être jailbreaké. Pour votre sécurité, GambiaPay ne peut pas fonctionner sur des appareils compromis.\n\nVeuillez utiliser un appareil iOS sécurisé.", language: "fr"),
         "enterTheNumberShownOnYourNationalId": Entry(source: "Enter the number shown on your National ID.", language: "en"),
         "walletDetailsAreMissingPleaseSignInAgain": Entry(source: "Wallet details are missing. Please sign in again.", language: "en"),
         "invalidUrl": Entry(source: "Invalid URL", language: "en"),
@@ -1809,10 +1809,21 @@ enum AppStrings {
         "loanPurposeEmergency": Entry(source: "Emergency", language: "en", french: "Urgence"),
         "loanPurposeHomeImprovement": Entry(source: "Home improvement", language: "en", french: "Amélioration du logement"),
         "loanPurposeOther": Entry(source: "Other", language: "en", french: "Autre"),
+        "receiptGenerationFailed": Entry(source: "Unable to generate the receipt. Please try again.", language: "en", french: "Impossible de générer le reçu. Veuillez réessayer."),
         "refreshTranslations": Entry(source: "Refresh translations", language: "en", french: "Actualiser les traductions"),
     ]
 
+    static var receiptGenerationFailed: String { value("receiptGenerationFailed") }
+
     static func original(_ key: String) -> String { catalog[key]?.source ?? key }
+
+    /// Apply sentence case after localization, only to visible button labels.
+    static func buttonTitle(_ title: String) -> String {
+        guard let firstLetter = title.firstIndex(where: { $0.isLetter }) else { return title }
+        return String(title[..<firstLetter])
+            + String(title[firstLetter]).uppercased()
+            + title[title.index(after: firstLetter)...].lowercased()
+    }
 
     static func value(_ key: String, arguments: [String] = [], original: Bool = false) -> String {
         let template = original ? self.original(key) : AppLanguageStore.shared.text(for: key)
@@ -2300,7 +2311,7 @@ enum AppStrings {
     static var automaticTermsNotice: String { value("automaticTermsNotice") }
     static var showOriginalTerms: String { value("showOriginalTerms") }
     static var showTranslatedTerms: String { value("showTranslatedTerms") }
-    static let brand = "DIAMACASH"
+    static let brand = "GambiaPay"
     static var processing: String { value("processing") }
     static var dateLabel: String { value("dateLabel") }
     static var nameLabel: String { value("nameLabel") }
@@ -3641,6 +3652,8 @@ enum AppStrings {
     static func profileTypeValue(_ raw: String?) -> String? {
         guard let raw else { return nil }
         switch raw.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() {
+        case "C": return "Client"
+        case "B": return "Business"
         case "PERSONAL": return profilePersonal
         case "BUSINESS": return profileBusiness
         case "SAVINGS": return profileSavings

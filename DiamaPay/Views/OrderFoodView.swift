@@ -74,10 +74,10 @@ struct OrderFoodView: View {
         .navigationBarHidden(true)
         .task { if showingOrders { loadOrders() } else { loadInitialData() } }
         .alert(AppStrings.orderFood2, isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button(AppStrings.ok, role: .cancel) { errorMessage = nil }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { errorMessage = nil }
         } message: { Text(AppStrings.option(errorMessage ?? "")) }
         .alert(AppStrings.orderPlaced, isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) {
-            Button(AppStrings.done) { notice = nil; dismiss() }
+            Button(AppStrings.buttonTitle(AppStrings.done)) { notice = nil; dismiss() }
         } message: { Text(AppStrings.option(notice ?? "")) }
         .sheet(isPresented: $showAddressForm) { addressForm }
         .sheet(item: $complaintOrder) { order in complaintForm(for: order) }
@@ -88,7 +88,7 @@ struct OrderFoodView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(AppStrings.restaurantsNearYou).font(.system(size: 22, weight: .bold)).padding(.top, 8)
                 Button { showingOrders = true; showingClosedOrders = false; loadOrders() } label: {
-                    HStack { Image(systemName: "bag"); Text(AppStrings.myOrders); Spacer(); Image(systemName: "chevron.right") }
+                    HStack { Image(systemName: "bag"); Text(AppStrings.buttonTitle(AppStrings.myOrders)); Spacer(); Image(systemName: "chevron.right") }
                         .font(.system(size: 14, weight: .semibold)).foregroundStyle(blue).padding(14).background(blue.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
                 }.buttonStyle(.plain)
                 if isLoading && restaurants.isEmpty { ProgressView().frame(maxWidth: .infinity).padding(40) }
@@ -98,9 +98,9 @@ struct OrderFoodView: View {
                         HStack(spacing: 14) {
                             restaurantLogo(restaurant.logoUrl)
                             VStack(alignment: .leading, spacing: 5) {
-                                Text(restaurant.name ?? AppStrings.restaurant).font(.system(size: 16, weight: .semibold)).foregroundStyle(.primary)
+                                Text(AppStrings.buttonTitle(restaurant.name ?? AppStrings.restaurant)).font(.system(size: 16, weight: .semibold)).foregroundStyle(.primary)
                                 Text([restaurant.address1, restaurant.city].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1)
-                                HStack(spacing: 5) { Circle().fill(restaurant.isOpen ? blue : .orange).frame(width: 7, height: 7); Text(restaurant.isOpen ? AppStrings.openNow : (restaurant.status ?? AppStrings.checkAvailability)).font(.system(size: 11, weight: .medium)).foregroundStyle(restaurant.isOpen ? blue : .orange) }
+                                HStack(spacing: 5) { Circle().fill(restaurant.isOpen ? blue : .orange).frame(width: 7, height: 7); Text(AppStrings.buttonTitle(restaurant.isOpen ? AppStrings.openNow : (restaurant.status ?? AppStrings.checkAvailability))).font(.system(size: 11, weight: .medium)).foregroundStyle(restaurant.isOpen ? blue : .orange) }
                             }
                             Spacer()
                             Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(.tertiary)
@@ -165,18 +165,18 @@ struct OrderFoodView: View {
                 VStack(alignment: .leading, spacing: 2) { Text(AppStrings.deliverTo).font(.system(size: 10)).foregroundStyle(.secondary); Text(selectedAddress?.displayName.isEmpty == false ? selectedAddress!.displayName : AppStrings.chooseDeliveryAddress).font(.system(size: 12, weight: .medium)).foregroundStyle(.primary).lineLimit(1) }
                 Spacer()
                 if addresses.isEmpty {
-                    Button(AppStrings.addAddress) { showAddressForm = true }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
+                    Button(AppStrings.buttonTitle(AppStrings.addAddress)) { showAddressForm = true }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
                 } else {
                     Menu {
-                        ForEach(addresses) { address in Button(address.displayName.isEmpty ? AppStrings.deliveryAddress : address.displayName) { selectedAddress = address } }
-                        Button { showAddressForm = true } label: { Label(AppStrings.addNewAddress, systemImage: "plus") }
+                        ForEach(addresses) { address in Button(AppStrings.buttonTitle(address.displayName.isEmpty ? AppStrings.deliveryAddress : address.displayName)) { selectedAddress = address } }
+                        Button { showAddressForm = true } label: { Label(AppStrings.buttonTitle(AppStrings.addNewAddress), systemImage: "plus") }
                     } label: { Image(systemName: "chevron.up.chevron.down").font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary) }
                 }
             }.padding(10).background(Color(.systemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
             Button(action: submitOrder) {
                 HStack {
-                    Text(isSubmitting ? AppStrings.placingOrder : AppStrings.placeOrderGmdValue(String(describing: String(format: "%.2f", cartTotal)))).font(.system(size: 15, weight: .semibold))
-                    Spacer(); if isSubmitting { ProgressView().tint(.white) } else { Text(AppStrings.valueItems(String(describing: cartCount))).font(.system(size: 12, weight: .medium)).opacity(0.85) }
+                    Text(AppStrings.buttonTitle(isSubmitting ? AppStrings.placingOrder : AppStrings.placeOrderGmdValue(String(describing: String(format: "%.2f", cartTotal))))).font(.system(size: 15, weight: .semibold))
+                    Spacer(); if isSubmitting { ProgressView().tint(.white) } else { Text(AppStrings.buttonTitle(AppStrings.valueItems(String(describing: cartCount)))).font(.system(size: 12, weight: .medium)).opacity(0.85) }
                 }.foregroundStyle(.white).padding(.horizontal, 16).frame(height: 50).background(blue, in: RoundedRectangle(cornerRadius: 14))
             }.disabled(isSubmitting || selectedAddress == nil || cartCount == 0)
         }.padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 12).background(.white.shadow(.drop(color: .black.opacity(0.07), radius: 8, y: -3)))
@@ -200,8 +200,8 @@ struct OrderFoodView: View {
             .navigationTitle(AppStrings.deliveryAddress)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.cancel) { showAddressForm = false } }
-                ToolbarItem(placement: .confirmationAction) { Button(AppStrings.save) { saveAddress() }.disabled(addressLine1.trimmingCharacters(in: .whitespaces).isEmpty || addressCity.trimmingCharacters(in: .whitespaces).isEmpty) }
+                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.buttonTitle(AppStrings.cancel)) { showAddressForm = false } }
+                ToolbarItem(placement: .confirmationAction) { Button(AppStrings.buttonTitle(AppStrings.save)) { saveAddress() }.disabled(addressLine1.trimmingCharacters(in: .whitespaces).isEmpty || addressCity.trimmingCharacters(in: .whitespaces).isEmpty) }
             }
         }
         .presentationDetents([.medium, .large])
@@ -228,8 +228,8 @@ struct OrderFoodView: View {
                                     Spacer(); Text(AppStrings.option(order.status ?? "ORDERED")).font(.system(size: 10, weight: .bold)).foregroundStyle(blue).padding(.horizontal, 9).padding(.vertical, 6).background(blue.opacity(0.1), in: Capsule())
                                 }
                                 HStack { Text("GMD \(String(format: "%.2f", order.totalAmount ?? 0))").font(.system(size: 13, weight: .semibold)); Spacer()
-                                    if !showingClosedOrders && ["CREATED", "CONFIRMED"].contains(order.status?.uppercased() ?? "") { Button(AppStrings.cancel) { cancel(order) }.font(.system(size: 12, weight: .semibold)).foregroundStyle(.red) }
-                                    Button(AppStrings.getHelp) { complaintDescription = ""; complaintOrder = order }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
+                                    if !showingClosedOrders && ["CREATED", "CONFIRMED"].contains(order.status?.uppercased() ?? "") { Button(AppStrings.buttonTitle(AppStrings.cancel)) { cancel(order) }.font(.system(size: 12, weight: .semibold)).foregroundStyle(.red) }
+                                    Button(AppStrings.buttonTitle(AppStrings.getHelp)) { complaintDescription = ""; complaintOrder = order }.font(.system(size: 12, weight: .semibold)).foregroundStyle(blue)
                                 }
                             }.padding(14).background(.white, in: RoundedRectangle(cornerRadius: 15))
                         }
@@ -240,12 +240,12 @@ struct OrderFoodView: View {
     }
 
     private func orderTab(_ title: String, active: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) { Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(active ? .white : .primary).frame(maxWidth: .infinity).padding(.vertical, 10).background(active ? blue : .white, in: Capsule()) }.buttonStyle(.plain)
+        Button(action: action) { Text(AppStrings.buttonTitle(title)).font(.system(size: 13, weight: .semibold)).foregroundStyle(active ? .white : .primary).frame(maxWidth: .infinity).padding(.vertical, 10).background(active ? blue : .white, in: Capsule()) }.buttonStyle(.plain)
     }
 
     private func categoryChip(_ title: String, id: String?) -> some View {
         Button { selectedCategoryId = id; if let selectedRestaurant { loadItems(selectedRestaurant) } } label: {
-            Text(title).font(.system(size: 12, weight: .semibold)).foregroundStyle(selectedCategoryId == id ? .white : blue).padding(.horizontal, 14).padding(.vertical, 8).background(selectedCategoryId == id ? blue : blue.opacity(0.1), in: Capsule())
+            Text(AppStrings.buttonTitle(title)).font(.system(size: 12, weight: .semibold)).foregroundStyle(selectedCategoryId == id ? .white : blue).padding(.horizontal, 14).padding(.vertical, 8).background(selectedCategoryId == id ? blue : blue.opacity(0.1), in: Capsule())
         }.buttonStyle(.plain)
     }
 
@@ -254,8 +254,8 @@ struct OrderFoodView: View {
             Form { Section(AppStrings.orderValue(String(describing: order.orderRef ?? order.orderId))) { TextField(AppStrings.tellUsWhatHappened, text: $complaintDescription, axis: .vertical).lineLimit(4...7) } }
                 .navigationTitle(AppStrings.contactSupport).navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    ToolbarItem(placement: .cancellationAction) { Button(AppStrings.cancel) { complaintOrder = nil } }
-                    ToolbarItem(placement: .confirmationAction) { Button(AppStrings.send) { sendComplaint(for: order) }.disabled(complaintDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
+                    ToolbarItem(placement: .cancellationAction) { Button(AppStrings.buttonTitle(AppStrings.cancel)) { complaintOrder = nil } }
+                    ToolbarItem(placement: .confirmationAction) { Button(AppStrings.buttonTitle(AppStrings.send)) { sendComplaint(for: order) }.disabled(complaintDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
                 }
         }.presentationDetents([.medium, .large])
     }

@@ -126,12 +126,12 @@ struct WalletToAccountTransferView: View {
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             if isSavePrompt {
-                Button(AppStrings.save) { saveCurrentBeneficiary() }
-                Button(AppStrings.notNow, role: .cancel) {
+                Button(AppStrings.buttonTitle(AppStrings.save)) { saveCurrentBeneficiary() }
+                Button(AppStrings.buttonTitle(AppStrings.notNow), role: .cancel) {
                     presentationMode.wrappedValue.dismiss()
                 }
             } else {
-                Button(AppStrings.ok, role: .cancel) { }
+                Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
             }
         } message: {
             Text(isSavePrompt
@@ -438,7 +438,7 @@ struct WalletToAccountTransferView: View {
             Button(action: {
                 validateAndShowConfirmation()
             }) {
-                Text(AppStrings.submit)
+                Text(AppStrings.buttonTitle(AppStrings.submit))
                     .font(.system(size: 15, weight: .bold)).tracking(1)
                     .foregroundColor(.white)
                     .frame(width: 120, height: 42)

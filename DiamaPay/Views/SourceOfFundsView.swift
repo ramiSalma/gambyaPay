@@ -68,7 +68,7 @@ struct SourceOfFundsView: View {
             loadSponsoringWallets()
         }
         .alert(AppStrings.errorHeading, isPresented: $showAlert) {
-            Button(AppStrings.ok) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok)) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -118,7 +118,7 @@ struct SourceOfFundsView: View {
                     update()
                 }
             }) {
-                Text(walletTransferStyle ? AppStrings.wallet : AppStrings.monPortefeuille)
+                Text(AppStrings.buttonTitle(walletTransferStyle ? AppStrings.wallet : AppStrings.monPortefeuille))
                     .font(.system(size: walletTransferStyle ? 14 : 14, weight: .semibold))
                     .foregroundColor(selectedSource == .wallet ? .white : (walletTransferStyle ? Color.gray : Color.blueH))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -139,7 +139,7 @@ struct SourceOfFundsView: View {
                     }
                 }
             }) {
-                Text(AppStrings.sponsor)
+                Text(AppStrings.buttonTitle(AppStrings.sponsor))
                     .font(.system(size: walletTransferStyle ? 14 : 14, weight: .semibold))
                     .foregroundColor(selectedSource == .sponsor ? .white : Color(red: 0.4, green: 0.4, blue: 0.4))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -185,7 +185,7 @@ struct SourceOfFundsView: View {
                             balance = "00.00"
                         }
                     }) {
-                        Text(sponsor.walletNumber.isEmpty ? (walletTransferStyle ? AppStrings.selectASponsor : AppStrings.selectionnerUnSponsor) : (sponsor.userName.isEmpty ? (walletTransferStyle ? AppStrings.unnamedSponsor : AppStrings.sponsorSansNom) : sponsor.userName))
+                        Text(AppStrings.buttonTitle(sponsor.walletNumber.isEmpty ? (walletTransferStyle ? AppStrings.selectASponsor : AppStrings.selectionnerUnSponsor) : (sponsor.userName.isEmpty ? (walletTransferStyle ? AppStrings.unnamedSponsor : AppStrings.sponsorSansNom) : sponsor.userName)))
                     }
                 }
             } label: {

@@ -122,7 +122,7 @@ struct QRPaymentSuccessView: View {
                         Button(action: { shareReceipt() }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.up")
-                                Text(AppStrings.partagerLeRecu)
+                                Text(AppStrings.buttonTitle(AppStrings.partagerLeRecu))
                             }
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -133,7 +133,7 @@ struct QRPaymentSuccessView: View {
                         }
                         
                         Button(action: onClose) {
-                            Text(AppStrings.fermer)
+                            Text(AppStrings.buttonTitle(AppStrings.fermer))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.blueH)
                                 .frame(maxWidth: .infinity)
@@ -148,7 +148,7 @@ struct QRPaymentSuccessView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button(AppStrings.fermer, action: onClose))
+            .navigationBarItems(trailing: Button(AppStrings.buttonTitle(AppStrings.fermer), action: onClose))
             .navigationBarTitle(AppStrings.recuDePaiementQr, displayMode: .inline)
         }
     }
@@ -220,7 +220,7 @@ struct QRPaymentSuccessView: View {
     
     private func generatePDF() -> Data {
         let pdfMeta = [
-            kCGPDFContextCreator: "DIAMACASH",
+            kCGPDFContextCreator: "GambiaPay",
             kCGPDFContextAuthor: senderName,
             kCGPDFContextTitle: AppStrings.recuDePaiementQrEmv
         ]

@@ -73,7 +73,7 @@ struct StandingInstructionListView: View {
             loadStandingInstructions()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -161,7 +161,7 @@ struct StandingInstructionListView: View {
             Button(action: {
                 showCreateSheet = true
             }) {
-                Text(AppStrings.creerUnVirement)
+                Text(AppStrings.buttonTitle(AppStrings.creerUnVirement))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 24)
@@ -378,6 +378,17 @@ struct StandingInstructionRow: View {
                         .foregroundColor(StandingInstructionStyle.secondaryText)
                 }
                 Spacer(minLength: 0)
+                Menu {
+                    Button(AppStrings.buttonTitle(AppStrings.modifier), action: onUpdate)
+                    Button(AppStrings.buttonTitle(AppStrings.supprimer), role: .destructive, action: onDelete)
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(StandingInstructionStyle.blue)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel(standingText("Instruction actions", "Actions de l’instruction"))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 17)
@@ -398,9 +409,11 @@ struct StandingInstructionRow: View {
         .cornerRadius(14)
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(StandingInstructionStyle.separator, lineWidth: 1))
         .shadow(color: .black.opacity(0.03), radius: 1, y: 1)
+        .contentShape(RoundedRectangle(cornerRadius: 14))
+        .onTapGesture(perform: onUpdate)
         .contextMenu {
-            Button(AppStrings.modifier, action: onUpdate)
-            Button(AppStrings.supprimer, role: .destructive, action: onDelete)
+            Button(AppStrings.buttonTitle(AppStrings.modifier), action: onUpdate)
+            Button(AppStrings.buttonTitle(AppStrings.supprimer), role: .destructive, action: onDelete)
         }
         .accessibilityAction(named: Text(AppStrings.modifier), onUpdate)
         .accessibilityAction(named: Text(AppStrings.supprimer), onDelete)
@@ -547,7 +560,7 @@ struct DeleteConfirmationDialog: View {
                 // Buttons
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(StandingInstructionStyle.blue)
                             .frame(maxWidth: .infinity)
@@ -564,7 +577,7 @@ struct DeleteConfirmationDialog: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text(AppStrings.confirmer)
+                        Text(AppStrings.buttonTitle(AppStrings.confirmer))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

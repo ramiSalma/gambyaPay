@@ -16,7 +16,7 @@ struct DiamaPayHeader: View {
     @Environment(\.dismiss) private var dismiss
     var onBackToHome: (() -> Void)?
     
-    init(title: String = "DIAMACASH", headerColor: Color = .greenH, onBackToHome: (() -> Void)? = nil) {
+    init(title: String = "GambiaPay", headerColor: Color = .greenH, onBackToHome: (() -> Void)? = nil) {
         self.title = title
         self.headerColor = headerColor
         self.onBackToHome = onBackToHome

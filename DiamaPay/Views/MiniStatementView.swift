@@ -115,7 +115,7 @@ struct MiniStatementView: View {
         }
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -232,7 +232,7 @@ struct MiniStatementView: View {
             Button(action: {
                 validateAndDownloadStatement()
             }) {
-                Text(AppStrings.telechargerLeReleve)
+                Text(AppStrings.buttonTitle(AppStrings.telechargerLeReleve))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                     .frame(maxWidth: .infinity)

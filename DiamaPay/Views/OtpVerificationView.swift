@@ -23,10 +23,10 @@ struct OtpVerificationView: View {
     
     var body: some View {
         VStack(spacing: 30) {
-            Image("logo_diama")
+            Image("BITSLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 100, height: 100)
+                .frame(width: 220, height: 132)
                 .padding(.top, 50)
             
             Text(AppStrings.verifiezVotreAppareil)
@@ -53,7 +53,7 @@ struct OtpVerificationView: View {
                 if isLoading {
                     ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
                 } else {
-                    Text(AppStrings.verifier)
+                    Text(AppStrings.buttonTitle(AppStrings.verifier))
                         .bold()
                 }
             }
@@ -72,7 +72,7 @@ struct OtpVerificationView: View {
         .tint(Color(hex: "174EA6"))
         .preferredColorScheme(.light)
         .alert(AppStrings.error, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }

@@ -163,7 +163,7 @@ struct AccountTransferConfirmationDialog: View {
                     .foregroundColor(.secondary)
                 Spacer()
                 if pinFieldFocused {
-                    Button(AppStrings.done) { pinFieldFocused = false }
+                    Button(AppStrings.buttonTitle(AppStrings.done)) { pinFieldFocused = false }
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(Color(hex: "0788B9"))
                 }
@@ -197,7 +197,7 @@ struct AccountTransferConfirmationDialog: View {
     private var actionButtons: some View {
         HStack(spacing: 12) {
             Button(action: onCancel) {
-                Text(AppStrings.annuler)
+                Text(AppStrings.buttonTitle(AppStrings.annuler))
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(Color(hex: "0788B9"))
                     .frame(maxWidth: .infinity)
@@ -215,7 +215,7 @@ struct AccountTransferConfirmationDialog: View {
                     if isVerifyingPin {
                         ProgressView().tint(.white)
                     }
-                    Text(AppStrings.transferer)
+                    Text(AppStrings.buttonTitle(AppStrings.transferer))
                         .font(.system(size: 17, weight: .bold))
                 }
                 .foregroundColor(.white)

@@ -95,7 +95,7 @@ struct SavingsWalletView: View {
             }
         }
         .alert(AppStrings.savingsWallet, isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
-            Button(AppStrings.ok, role: .cancel) { alertMessage = nil }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { alertMessage = nil }
         } message: { Text(AppStrings.option(alertMessage ?? "")) }
     }
 
@@ -132,7 +132,7 @@ struct SavingsWalletView: View {
                         HStack(spacing: 8) {
                             Image(systemName: direction == value ? "largecircle.fill.circle" : "circle")
                                 .foregroundColor(direction == value ? SavingsStyle.cyan : .gray)
-                            Text(AppStrings.option(value)).foregroundColor(.gray)
+                            Text(AppStrings.buttonTitle(AppStrings.option(value))).foregroundColor(.gray)
                         }
                     }.buttonStyle(.plain)
                     if value == directions.first { Spacer(minLength: 0) }
@@ -155,7 +155,7 @@ struct SavingsWalletView: View {
                 transferError = nil
                 showTransferReview = true
             } label: {
-                HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text(AppStrings.transfer).font(.system(size: 19, weight: .semibold)).tracking(1); Spacer() }
+                HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text(AppStrings.buttonTitle(AppStrings.transfer)).font(.system(size: 19, weight: .semibold)).tracking(1); Spacer() }
                     .foregroundColor(.white).frame(height: 56).background(SavingsStyle.blue, in: RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isLoading || Double(amount) == nil || (Double(amount) ?? 0) <= 0)
@@ -266,14 +266,14 @@ struct SavingsWalletView: View {
                         }
                         HStack(spacing: 12) {
                             Button(action: closeTransferReview) {
-                                Text(AppStrings.cancel).frame(maxWidth: .infinity).frame(height: 54)
+                                Text(AppStrings.buttonTitle(AppStrings.cancel)).frame(maxWidth: .infinity).frame(height: 54)
                                     .foregroundColor(SavingsStyle.cyan).background(Color.white, in: RoundedRectangle(cornerRadius: 12))
                                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.25), lineWidth: 1))
                             }
                             Button(action: verifyPinAndTransfer) {
                                 HStack(spacing: 8) {
                                     if isVerifyingPin { ProgressView().tint(.white) }
-                                    Text(AppStrings.transfer)
+                                    Text(AppStrings.buttonTitle(AppStrings.transfer))
                                 }
                                 .frame(maxWidth: .infinity).frame(height: 54).foregroundColor(.white)
                                 .background(SavingsStyle.cyan, in: RoundedRectangle(cornerRadius: 12))
@@ -447,12 +447,12 @@ struct SavingsWalletStatementView: View {
                                 HStack(spacing: 10) {
                                     Image(systemName: format == value ? "largecircle.fill.circle" : "circle")
                                         .foregroundColor(format == value ? SavingsStyle.cyan : .gray)
-                                    Text(AppStrings.option(value)).foregroundColor(.gray).multilineTextAlignment(.leading)
+                                    Text(AppStrings.buttonTitle(AppStrings.option(value))).foregroundColor(.gray).multilineTextAlignment(.leading)
                                 }.font(.system(size: 16))
                             }.buttonStyle(.plain)
                         }
                         Button(action: generateStatement) {
-                            HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text(AppStrings.generateStatement).font(.system(size: 18, weight: .semibold)).tracking(1); Spacer() }
+                            HStack { Spacer(); if isLoading { ProgressView().tint(.white) }; Text(AppStrings.buttonTitle(AppStrings.generateStatement)).font(.system(size: 18, weight: .semibold)).tracking(1); Spacer() }
                                 .foregroundColor(.white).frame(height: 56).background(SavingsStyle.blue, in: RoundedRectangle(cornerRadius: 12))
                         }.disabled(isLoading || startDate > endDate)
                     }.padding(20).savingsCard()
@@ -468,7 +468,7 @@ struct SavingsWalletStatementView: View {
         }
         .navigationBarHidden(true)
         .alert(AppStrings.savingsStatement2, isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
-            Button(AppStrings.ok, role: .cancel) { alertMessage = nil }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { alertMessage = nil }
         } message: { Text(AppStrings.option(alertMessage ?? "")) }
     }
 

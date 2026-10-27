@@ -9,7 +9,6 @@ struct WalletTransferView: View {
     @State private var selectedSource: SourceOfFunds = .wallet
     @State private var selectedWallet: SponsoringWallet?
     @State private var destinationPhone = ""
-    @State private var recipientKind: WalletTransferRecipientKind = .phoneOrCustomerID
     @State private var selectedBeneficiary: WalletBeneficiary?
     @State private var recipientName = ""
     @State private var verifiedRecipientKey = ""
@@ -47,7 +46,7 @@ struct WalletTransferView: View {
            let bank = saved.destBankCode, !bank.isEmpty { return bank }
         return "00100"
     }
-    private var recipientKey: String { recipientKind.rawValue + "|" + recipientIdentifier + "|" + recipientBank }
+    private var recipientKey: String { "P|" + recipientIdentifier + "|" + recipientBank }
     private var quoteKey: String {
         recipientKey + "|" + amount + "|" + (selectedSource == .wallet ? "wallet" : "sponsor") + "|" + (selectedWallet?.walletNumber ?? "")
     }
@@ -71,7 +70,7 @@ struct WalletTransferView: View {
                         recipientDetailsCard
                         referenceCard
                         Button(action: prepareConfirmation) {
-                            Text(AppStrings.submit)
+                            Text(AppStrings.buttonTitle(AppStrings.submit))
                                 .font(.system(size: 19, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(width: 170, height: 54)
@@ -114,10 +113,10 @@ struct WalletTransferView: View {
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             if isSavePrompt {
-                Button(AppStrings.save) { saveCurrentBeneficiary() }
-                Button(AppStrings.notNow, role: .cancel) { presentationMode.wrappedValue.dismiss() }
+                Button(AppStrings.buttonTitle(AppStrings.save)) { saveCurrentBeneficiary() }
+                Button(AppStrings.buttonTitle(AppStrings.notNow), role: .cancel) { presentationMode.wrappedValue.dismiss() }
             } else {
-                Button(AppStrings.ok, role: .cancel) { }
+                Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
             }
         } message: { Text(AppStrings.option(alertMessage)) }
         .sheet(isPresented: $showContactPicker) {
@@ -181,15 +180,9 @@ struct WalletTransferView: View {
     private var recipientDetailsCard: some View {
         VStack(alignment: .leading, spacing: 20) {
             sectionTitle(AppStrings.recipientDetails)
-            Picker(AppStrings.recipientIdentifier, selection: $recipientKind) {
-                ForEach(WalletTransferRecipientKind.allCases, id: \.self) { kind in
-                    Text(kind.title).tag(kind)
-                }
-            }
-            .pickerStyle(.segmented)
             HStack(alignment: .top, spacing: 8) {
                 HStack(spacing: 4) {
-                    TextField(recipientKind == .wallet ? AppStrings.walletNumber : AppStrings.phoneOrCustomerId, text: $destinationPhone)
+                    TextField(AppStrings.recipientNumber, text: $destinationPhone)
                         .keyboardType(.default)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -204,7 +197,7 @@ struct WalletTransferView: View {
                 .frame(height: 52)
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "505A69"), lineWidth: 1.2))
                 recipientButton(AppStrings.saved, icon: "book.closed.fill") { showSavedRecipients = true }
-                recipientButton(AppStrings.contacts, icon: "person.crop.rectangle.fill") { recipientKind = .phoneOrCustomerID; showContactPicker = true }
+                recipientButton(AppStrings.contacts, icon: "person.crop.rectangle.fill") { showContactPicker = true }
             }
             Text(recipientName.isEmpty ? AppStrings.recipientName : recipientName)
                 .foregroundColor(recipientName.isEmpty ? .secondary : .primary)
@@ -215,7 +208,7 @@ struct WalletTransferView: View {
             if let verificationError {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(verificationError).font(.caption).foregroundColor(.red)
-                    Button(AppStrings.verifyAgain) { verifyRecipient(key: recipientKey) }.font(.caption)
+                    Button(AppStrings.buttonTitle(AppStrings.verifyAgain)) { verifyRecipient(key: recipientKey) }.font(.caption)
                 }
             }
             TextField(AppStrings.amount2, text: $amount)
@@ -266,7 +259,7 @@ struct WalletTransferView: View {
                     .font(.system(size: 23))
                     .frame(width: 46, height: 52)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(cyan, lineWidth: 1.2))
-                Text(title).font(.system(size: 11, weight: .medium))
+                Text(AppStrings.buttonTitle(title)).font(.system(size: 11, weight: .medium))
             }
             .foregroundColor(cyan)
         }
@@ -283,9 +276,9 @@ struct WalletTransferView: View {
         recipientName = ""
         let identifier = recipientIdentifier
         var request = RequestNameEnquiry()
-        request.source = recipientKind.source
-        request.walletNumber = request.source == "W" ? identifier : ""
-        request.phoneNumber = request.source == "P" ? identifier : ""
+        request.source = "P"
+        request.walletNumber = ""
+        request.phoneNumber = identifier
         request.bank = recipientBank
         request.entityId = user.getUserCode()
         request.requestId = requestId()
@@ -377,8 +370,8 @@ struct WalletTransferView: View {
         request.srcPhoneNumber = user.getPhoneNumber()
         request.source = request.srcWalletNumber.isEmpty ? "P" : "W"
         request.srcBank = user.getBankCode().isEmpty ? "00100" : user.getBankCode()
-        request.desWalletNumber = recipientKind == .wallet ? recipientIdentifier : ""
-        request.desPhoneNumber = request.desWalletNumber.isEmpty ? recipientIdentifier : ""
+        request.desWalletNumber = ""
+        request.desPhoneNumber = recipientIdentifier
         request.desBank = recipientBank
         request.amount = String(format: "%.2f", locale: Locale(identifier: "en_US_POSIX"), value)
         request.currency = "270"
@@ -670,7 +663,7 @@ struct TransactionSuccessView: View {
                         Button(action: { shareReceipt() }) {
                             HStack {
                                 Image(systemName: "square.and.arrow.up")
-                                Text(AppStrings.shareReceipt)
+                                Text(AppStrings.buttonTitle(AppStrings.shareReceipt))
                             }
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
@@ -681,7 +674,7 @@ struct TransactionSuccessView: View {
                         }
                         
                         Button(action: onClose) {
-                            Text(AppStrings.close)
+                            Text(AppStrings.buttonTitle(AppStrings.close))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(hex: "174EA6"))
                                 .frame(maxWidth: .infinity)
@@ -696,7 +689,7 @@ struct TransactionSuccessView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            .navigationBarItems(trailing: Button(AppStrings.close, action: onClose).foregroundColor(Color(hex: "174EA6")))
+            .navigationBarItems(trailing: Button(AppStrings.buttonTitle(AppStrings.close), action: onClose).foregroundColor(Color(hex: "174EA6")))
             .navigationBarTitle(AppStrings.transferReceipt, displayMode: .inline)
         }
     }

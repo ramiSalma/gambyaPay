@@ -6,8 +6,10 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.diamabank.diamacash</string>
+	<key>CFBundleDisplayName</key>
+	<string>GambiaPay</string>
 	<key>CFBundleName</key>
-	<string>DIAMACASH</string>
+	<string>GambiaPay</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -31,9 +33,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Nous avons besoin d&apos;accéder à votre caméra pour scanner les codes QR</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Nous utilisons Face ID pour sécuriser votre accès à DIAMACASH</string>
+	<string>Nous utilisons Face ID pour sécuriser votre accès à GambiaPay</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>DIAMACASH se connecte au serveur bancaire sur le réseau local pour authentifier votre compte et traiter vos opérations.</string>
+	<string>GambiaPay se connecte au serveur bancaire sur le réseau local pour authentifier votre compte et traiter vos opérations.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Nous avons besoin d&apos;accéder à votre galerie pour lire les images de codes QR</string>
 	<key>UIApplicationSceneManifest</key>

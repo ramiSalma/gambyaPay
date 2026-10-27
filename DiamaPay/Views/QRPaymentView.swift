@@ -524,7 +524,7 @@ struct QRPaymentView: View {
         }
         .navigationBarHidden(true)
         .alert(AppStrings.error, isPresented: $vm.showAlert) {
-            Button(AppStrings.ok) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok)) { }
         } message: {
             Text(vm.alertMessage)
         }
@@ -583,7 +583,7 @@ struct QRPaymentView: View {
                     .background(tint)
                     .clipShape(Circle())
 
-                Text(title)
+                Text(AppStrings.buttonTitle(title))
                     .font(.system(size: 17, weight: .bold))
                     .foregroundColor(color)
                 Text(subtitle)

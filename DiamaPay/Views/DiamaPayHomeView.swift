@@ -189,10 +189,10 @@ private struct OrderFoodHomeBanner: View {
                         .background(Color.white.opacity(0.94), in: Circle())
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(AppStrings.orderFood)
+                        Text(AppStrings.buttonTitle(AppStrings.orderFood))
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white)
-                        Text(AppStrings.fastDelivery)
+                        Text(AppStrings.buttonTitle(AppStrings.fastDelivery))
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white)
                     }
@@ -649,7 +649,7 @@ struct TransferCard: View {
                     .frame(height: 46)
             }
             
-            Text(title)
+            Text(AppStrings.buttonTitle(title))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color(hex: "303949"))
                 .multilineTextAlignment(.leading)
@@ -713,6 +713,19 @@ struct PromotionsSection: View {
 }
 
 struct AppBottomBar: View {
+    @Environment(\.navigateBottomTab) private var navigateBottomTab
+    @Environment(\.bottomNavigationSelection) private var bottomNavigationSelection
+
+    private var activeTab: String { bottomNavigationSelection?.title ?? selectedTab }
+
+    private func navigate(to tab: BottomNavigationTab, fallback: () -> Void) {
+        if let navigateBottomTab {
+            navigateBottomTab(tab)
+        } else {
+            fallback()
+        }
+    }
+
     @ObservedObject private var localization = AppLanguageStore.shared
     let onSponsors: () -> Void
     let onQR: () -> Void
@@ -724,18 +737,18 @@ struct AppBottomBar: View {
     var body: some View {
         ZStack(alignment: .top) {
             HStack {
-                item("house.fill", AppStrings.home, selected: selectedTab == "Home", action: onHome)
+                item("house.fill", AppStrings.home, selected: activeTab == "Home", action: { navigate(to: .home, fallback: onHome) })
                 Spacer()
-                item("hand.thumbsup", AppStrings.sponsors, selected: selectedTab == "Sponsors", action: onSponsors)
+                item("hand.thumbsup", AppStrings.sponsors, selected: activeTab == "Sponsors", action: { navigate(to: .sponsors, fallback: onSponsors) })
                 Spacer(minLength: 76)
-                item("speedometer", AppStrings.limits, selected: selectedTab == "Limits", action: onLimits)
+                item("speedometer", AppStrings.limits, selected: activeTab == "Limits", action: { navigate(to: .limits, fallback: onLimits) })
                 Spacer()
-                item("gearshape.fill", AppStrings.settings, selected: selectedTab == "Settings", action: onSettings)
+                item("gearshape.fill", AppStrings.settings, selected: activeTab == "Settings", action: { navigate(to: .settings, fallback: onSettings) })
             }
             .padding(.horizontal, 20)
             .padding(.top, 22)
 
-            Button(action: onQR) {
+            Button(action: { navigate(to: .qr, fallback: onQR) }) {
                 Image(systemName: "qrcode")
                     .font(.system(size: 26, weight: .semibold))
                     .foregroundColor(.white)
@@ -764,7 +777,7 @@ struct AppBottomBar: View {
         Button(action: action) {
             VStack(spacing: 3) {
                 Image(systemName: icon).font(.system(size: 22, weight: .semibold))
-                Text(title).font(.system(size: 11, weight: .semibold))
+                Text(AppStrings.buttonTitle(title)).font(.system(size: 11, weight: .semibold))
             }
             .foregroundColor(selected ? .white : Color.white.opacity(0.4))
             .frame(maxWidth: .infinity, minHeight: 44)
@@ -941,7 +954,7 @@ struct FloatingMenuItem: View {
     var body: some View {
         HStack(spacing: 12) {
             Spacer()
-            Text(label)
+            Text(AppStrings.buttonTitle(label))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.white)
                 .padding(.horizontal, 12)

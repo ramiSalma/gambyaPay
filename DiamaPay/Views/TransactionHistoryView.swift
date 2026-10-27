@@ -84,7 +84,7 @@ struct TransactionHistoryView: View {
             loadLast30DaysTransactions()
         }
         .alert(AppStrings.error, isPresented: $showError) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(errorMessage ?? AppStrings.somethingWentWrong)
         }
@@ -143,7 +143,7 @@ struct TransactionHistoryView: View {
 
             HStack(spacing: 12) {
                 Button(action: resetFilters) {
-                    Text(AppStrings.reset)
+                    Text(AppStrings.buttonTitle(AppStrings.reset))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -152,7 +152,7 @@ struct TransactionHistoryView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 Button(action: filterTransactions) {
-                    Text(AppStrings.filter)
+                    Text(AppStrings.buttonTitle(AppStrings.filter))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -238,13 +238,13 @@ struct TransactionHistoryView: View {
     private var exportMenu: some View {
         Menu {
             Button { exportTransactions(as: .pdf) } label: {
-                Label(AppStrings.pdf, systemImage: "doc.richtext")
+                Label(AppStrings.buttonTitle(AppStrings.pdf), systemImage: "doc.richtext")
             }
             Button { exportTransactions(as: .excel) } label: {
-                Label(AppStrings.excel, systemImage: "tablecells")
+                Label(AppStrings.buttonTitle(AppStrings.excel), systemImage: "tablecells")
             }
             Button { exportTransactions(as: .csv) } label: {
-                Label(AppStrings.csv, systemImage: "doc.text")
+                Label(AppStrings.buttonTitle(AppStrings.csv), systemImage: "doc.text")
             }
         } label: {
             Image(systemName: "arrow.down.to.line")
@@ -382,7 +382,7 @@ struct TransactionHistoryView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            Button(AppStrings.refresh) {
+            Button(AppStrings.buttonTitle(AppStrings.refresh)) {
                 loadLast30DaysTransactions()
             }
             .font(.system(size: 16, weight: .medium))
@@ -409,13 +409,13 @@ struct TransactionHistoryView: View {
             
             // Navigation buttons
             HStack(spacing: 8) {
-                Button("<<") {
+                Button(AppStrings.buttonTitle("<<")) {
                     goToPage(1)
                 }
                 .disabled(currentPage <= 1)
                 .buttonStyle(PaginationButtonStyle(isDisabled: currentPage <= 1))
                 
-                Button("<") {
+                Button(AppStrings.buttonTitle("<")) {
                     goToPage(currentPage - 1)
                 }
                 .disabled(currentPage <= 1)
@@ -423,13 +423,13 @@ struct TransactionHistoryView: View {
                 
                 Spacer()
                 
-                Button(">") {
+                Button(AppStrings.buttonTitle(">")) {
                     goToPage(currentPage + 1)
                 }
                 .disabled(currentPage >= totalPages)
                 .buttonStyle(PaginationButtonStyle(isDisabled: currentPage >= totalPages))
                 
-                Button(">>") {
+                Button(AppStrings.buttonTitle(">>")) {
                     goToPage(totalPages)
                 }
                 .disabled(currentPage >= totalPages)
@@ -442,7 +442,7 @@ struct TransactionHistoryView: View {
                 let endPage = min(totalPages, currentPage + 2)
                 
                 ForEach(startPage...endPage, id: \.self) { page in
-                    Button("\(page)") {
+                    Button(AppStrings.buttonTitle("\(page)")) {
                         goToPage(page)
                     }
                     .buttonStyle(PageNumberButtonStyle(isSelected: page == currentPage))
@@ -689,10 +689,10 @@ struct DatePickerSheet: View {
             }
             .navigationTitle(title)
             .navigationBarItems(
-                leading: Button(AppStrings.cancel) {
+                leading: Button(AppStrings.buttonTitle(AppStrings.cancel)) {
                     presentationMode.wrappedValue.dismiss()
                 },
-                trailing: Button(AppStrings.done) {
+                trailing: Button(AppStrings.buttonTitle(AppStrings.done)) {
                     dateString = dateFormatter.string(from: selectedDate)
                     presentationMode.wrappedValue.dismiss()
                 }

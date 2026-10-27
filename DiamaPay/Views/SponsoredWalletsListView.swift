@@ -53,13 +53,13 @@ struct SponsoredWalletsListView: View {
             loadSponsoredWallets()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
         .alert(AppStrings.unlinkWallet, isPresented: $showUnlinkAlert) {
-            Button(AppStrings.cancel, role: .cancel) { }
-            Button(AppStrings.unlink, role: .destructive) {
+            Button(AppStrings.buttonTitle(AppStrings.cancel), role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.unlink), role: .destructive) {
                 pinDialogAction = .unlink
                 showPinDialog = true
             }
@@ -429,7 +429,7 @@ struct SponsoredWalletCard: View {
                     .destructive(Text(AppStrings.unlink)) {
                         onUnlink()
                     },
-                    .cancel(Text(AppStrings.cancel))
+                    .cancel(Text(AppStrings.buttonTitle(AppStrings.cancel)))
                 ]
             )
         }
@@ -559,7 +559,7 @@ struct PinDialogView: View {
                     Button(action: {
                         isPresented = false
                     }) {
-                        Text(AppStrings.cancel)
+                        Text(AppStrings.buttonTitle(AppStrings.cancel))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity)
@@ -576,7 +576,7 @@ struct PinDialogView: View {
                             onConfirm(pin)
                         }
                     }) {
-                        Text(AppStrings.confirm)
+                        Text(AppStrings.buttonTitle(AppStrings.confirm))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

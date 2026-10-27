@@ -229,7 +229,7 @@ struct QRPaymentConfirmationDialog: View {
                     Button(action: {
                         if !isValidatingPin { onCancel() }
                     }) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -250,7 +250,7 @@ struct QRPaymentConfirmationDialog: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 50)
                         } else {
-                            Text(AppStrings.payer)
+                            Text(AppStrings.buttonTitle(AppStrings.payer))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)

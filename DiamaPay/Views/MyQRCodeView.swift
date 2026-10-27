@@ -38,7 +38,7 @@ struct MyQRCodeView: View {
             generateCustomerQR()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -121,7 +121,7 @@ struct MyQRCodeView: View {
         HStack(spacing: 16) {
             // Save Button
             Button(action: saveQRCode) {
-                Text(AppStrings.enregistrer)
+                Text(AppStrings.buttonTitle(AppStrings.enregistrer))
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -133,7 +133,7 @@ struct MyQRCodeView: View {
             
             // Share Button
             Button(action: { showShareSheet = true }) {
-                Text(AppStrings.partager)
+                Text(AppStrings.buttonTitle(AppStrings.partager))
                     .font(.system(size: 12, weight: .bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

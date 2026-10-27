@@ -52,7 +52,7 @@ struct AllBeneficiariesView: View {
                 } description: {
                     Text(AppStrings.option(errorMessage))
                 } actions: {
-                    Button(AppStrings.tryAgain) { loadBeneficiaries() }
+                    Button(AppStrings.buttonTitle(AppStrings.tryAgain)) { loadBeneficiaries() }
                         .buttonStyle(.borderedProminent)
                         .tint(blue)
                 }
@@ -93,13 +93,13 @@ struct AllBeneficiariesView: View {
         .navigationBarHidden(true)
         .onAppear { loadBeneficiaries() }
         .alert(AppStrings.removeBeneficiary, isPresented: $showDeleteConfirmation) {
-            Button(AppStrings.remove, role: .destructive) { deleteSelectedBeneficiary() }
-            Button(AppStrings.cancel, role: .cancel) { beneficiaryToDelete = nil }
+            Button(AppStrings.buttonTitle(AppStrings.remove), role: .destructive) { deleteSelectedBeneficiary() }
+            Button(AppStrings.buttonTitle(AppStrings.cancel), role: .cancel) { beneficiaryToDelete = nil }
         } message: {
             Text(AppStrings.thisBeneficiaryWillBeRemovedFromYourSavedList)
         }
         .alert(AppStrings.couldntRemoveBeneficiary, isPresented: $showDeleteError) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(deleteErrorMessage.isEmpty ? AppStrings.pleaseTryAgain : deleteErrorMessage)
         }

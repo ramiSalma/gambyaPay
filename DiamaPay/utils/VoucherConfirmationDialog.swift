@@ -221,7 +221,7 @@ struct VoucherConfirmationDialog: View {
                     Button(action: {
                         onCancel()
                     }) {
-                        Text((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.cancel : AppStrings.annuler)
+                        Text(AppStrings.buttonTitle((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.cancel : AppStrings.annuler))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(moneyVoucherStyle ? .white : .blueH)
                             .frame(maxWidth: .infinity)
@@ -240,7 +240,7 @@ struct VoucherConfirmationDialog: View {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text(moneyVoucherStyle ? AppStrings.transfer : (mobileMoneyStyle ? AppStrings.confirm : AppStrings.confirmer))
+                                Text(AppStrings.buttonTitle(moneyVoucherStyle ? AppStrings.transfer : (mobileMoneyStyle ? AppStrings.confirm : AppStrings.confirmer)))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                             }

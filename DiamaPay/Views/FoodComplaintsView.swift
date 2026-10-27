@@ -51,10 +51,10 @@ struct FoodComplaintsView: View {
         .task { loadData() }
         .sheet(isPresented: $showForm) { complaintForm }
         .alert(AppStrings.foodComplaints2, isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button(AppStrings.ok, role: .cancel) { errorMessage = nil }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { errorMessage = nil }
         } message: { Text(AppStrings.option(errorMessage ?? "")) }
         .alert(AppStrings.complaintSubmitted, isPresented: Binding(get: { successMessage != nil }, set: { if !$0 { successMessage = nil } })) {
-            Button(AppStrings.done) { successMessage = nil }
+            Button(AppStrings.buttonTitle(AppStrings.done)) { successMessage = nil }
         } message: { Text(AppStrings.option(successMessage ?? "")) }
     }
 
@@ -72,7 +72,7 @@ struct FoodComplaintsView: View {
             Button { showForm = true } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "plus.circle.fill").font(.system(size: 20))
-                    Text(AppStrings.fileAFoodServiceComplaint).font(.system(size: 15, weight: .semibold))
+                    Text(AppStrings.buttonTitle(AppStrings.fileAFoodServiceComplaint)).font(.system(size: 15, weight: .semibold))
                     Spacer()
                     Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
                 }
@@ -114,7 +114,7 @@ struct FoodComplaintsView: View {
                 Section(AppStrings.order) {
                     Menu {
                         ForEach(orders) { order in
-                            Button(AppStrings.valueValue2(String(describing: order.orderRef ?? order.orderId), String(describing: order.status ?? AppStrings.order))) { selectedOrder = order }
+                            Button(AppStrings.buttonTitle(AppStrings.valueValue2(String(describing: order.orderRef ?? order.orderId), String(describing: order.status ?? AppStrings.order)))) { selectedOrder = order }
                         }
                     } label: {
                         HStack { Text(selectedOrder.map { $0.orderRef ?? $0.orderId } ?? AppStrings.selectAnOrder); Spacer(); Image(systemName: "chevron.up.chevron.down").foregroundStyle(.secondary) }
@@ -130,9 +130,9 @@ struct FoodComplaintsView: View {
             .navigationTitle(AppStrings.newComplaint)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.cancel) { showForm = false } }
+                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.buttonTitle(AppStrings.cancel)) { showForm = false } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isSubmitting ? AppStrings.sending : AppStrings.submit) { submitComplaint() }
+                    Button(AppStrings.buttonTitle(isSubmitting ? AppStrings.sending : AppStrings.submit)) { submitComplaint() }
                         .disabled(isSubmitting || selectedOrder == nil || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }

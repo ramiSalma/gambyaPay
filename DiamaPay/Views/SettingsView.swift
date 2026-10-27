@@ -125,11 +125,11 @@ struct SettingsView: View {
                         .foregroundColor(blue)
                         .frame(width: 40)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(AppStrings.biometricAuthentication)
+                        Text(AppStrings.buttonTitle(AppStrings.biometricAuthentication))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.black)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text(AppStrings.biometricHelp)
+                        Text(AppStrings.buttonTitle(AppStrings.biometricHelp))
                             .font(.footnote)
                             .foregroundColor(Color(hex: "475467"))
                     }
@@ -180,7 +180,7 @@ struct SettingsView: View {
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(blue)
                 .frame(width: 40)
-            Text(title)
+            Text(AppStrings.buttonTitle(title))
                 .font(.subheadline.weight(.semibold))
                 .foregroundColor(.black)
                 .fixedSize(horizontal: false, vertical: true)

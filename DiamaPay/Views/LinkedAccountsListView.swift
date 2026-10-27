@@ -54,7 +54,7 @@ struct LinkedAccountsListView: View {
             showPinDialog = true
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -276,7 +276,7 @@ struct AccountCard: View {
                        
                         
                         if !account.accountType.isEmpty {
-                            Text("•")
+                            Text(AppStrings.buttonTitle("•"))
                                 .foregroundColor(.secondary)
                             Text(account.accountType)
                                 .font(.system(size: 12, weight: .medium))
@@ -292,7 +292,7 @@ struct AccountCard: View {
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.blueH)
                     
-                    Text(AppStrings.solde)
+                    Text(AppStrings.buttonTitle(AppStrings.solde))
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                 }
@@ -385,7 +385,7 @@ struct PinDialogViewA: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text(AppStrings.verifier)
+                            Text(AppStrings.buttonTitle(AppStrings.verifier))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                         }
@@ -400,7 +400,7 @@ struct PinDialogViewA: View {
                     Spacer()
                 }
             }
-            .navigationBarItems(leading: Button(AppStrings.annuler) { onCancel() })
+            .navigationBarItems(leading: Button(AppStrings.buttonTitle(AppStrings.annuler)) { onCancel() })
             .navigationBarTitle("", displayMode: .inline)
         }
     }

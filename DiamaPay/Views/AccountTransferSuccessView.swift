@@ -83,14 +83,14 @@ struct AccountTransferSuccessView: View {
 
                     HStack(spacing: 12) {
                         Button(action: shareReceipt) {
-                            Label(AppStrings.share, systemImage: "square.and.arrow.up")
+                            Label(AppStrings.buttonTitle(AppStrings.share), systemImage: "square.and.arrow.up")
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity, minHeight: 50)
                                 .background(Color(hex: "174EA6"), in: RoundedRectangle(cornerRadius: 11))
                         }
                         Button(action: onClose) {
-                            Text(AppStrings.closeHeading)
+                            Text(AppStrings.buttonTitle(AppStrings.closeHeading))
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(Color(hex: "0788B9"))
                                 .frame(maxWidth: .infinity, minHeight: 50)

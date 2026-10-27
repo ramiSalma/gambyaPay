@@ -39,7 +39,7 @@ struct SavedAccountRecipientsView: View {
                         .foregroundColor(Color(hex: "505A69"))
                 }
                 Spacer()
-                Button(AppStrings.close) { dismiss() }
+                Button(AppStrings.buttonTitle(AppStrings.close)) { dismiss() }
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "0788B9"))
             }
@@ -68,7 +68,7 @@ struct SavedAccountRecipientsView: View {
                 } else if let errorMessage {
                     VStack(spacing: 14) {
                         Text(AppStrings.option(errorMessage)).multilineTextAlignment(.center)
-                        Button(AppStrings.tryAgain, action: loadRecipients)
+                        Button(AppStrings.buttonTitle(AppStrings.tryAgain), action: loadRecipients)
                             .buttonStyle(.borderedProminent)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

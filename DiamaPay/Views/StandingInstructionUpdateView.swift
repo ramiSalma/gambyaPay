@@ -23,6 +23,7 @@ struct StandingInstructionUpdateView: View {
     let onSuccess: () -> Void
     
     private let currencies = [
+        ("GMD", "270"),
         ("GNF", "324"),
         ("USD", "840"),
         ("EUR", "978"),
@@ -107,7 +108,7 @@ struct StandingInstructionUpdateView: View {
             loadInstructionData()
         }
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: {
             Text(AppStrings.option(alertMessage))
         }
@@ -355,7 +356,7 @@ struct StandingInstructionUpdateView: View {
     private var updateButton: some View {
         VStack(spacing: 16) {
             Button(action: validateAndUpdate) {
-                Text(AppStrings.update)
+                Text(AppStrings.buttonTitle(AppStrings.update))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 150, height: 48)

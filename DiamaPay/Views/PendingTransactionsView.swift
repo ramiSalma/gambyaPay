@@ -46,7 +46,7 @@ struct PendingTransactionsView: View {
         .navigationBarHidden(true)
         .onAppear(perform: loadPendingTransactions)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) {
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {
                 if alertTitle == AppStrings.succes {
                     loadPendingTransactions()
                 }
@@ -419,7 +419,7 @@ struct PendingTransactionCard: View {
                 Image(systemName: icon)
             .font(.system(size: 16))
                 
-                Text(title)
+                Text(AppStrings.buttonTitle(title))
                     .font(.system(size: 15, weight: .bold))
                     .tracking(0)
             }
@@ -614,7 +614,7 @@ struct PinDialogView1: View {
     private var actionButtons: some View {
         HStack(spacing: 12) {
             Button(action: { isPresented = false }) {
-                Text(AppStrings.annuler)
+                Text(AppStrings.buttonTitle(AppStrings.annuler))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color(hex: "6B7280"))
                     .frame(maxWidth: .infinity)
@@ -630,7 +630,7 @@ struct PinDialogView1: View {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
-                        Text(AppStrings.confirmer)
+                        Text(AppStrings.buttonTitle(AppStrings.confirmer))
                             .font(.system(size: 15, weight: .bold))
                             .foregroundColor(.white)
                     }

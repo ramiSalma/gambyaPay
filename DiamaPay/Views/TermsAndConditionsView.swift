@@ -55,7 +55,7 @@ struct TermsAndConditionsView: View {
                         .font(.system(size: isRegistrationMode ? 22 : 20, weight: .bold))
                         .foregroundColor(Color(hex: "263445"))
                     
-                    Text(isRegistrationMode ? "GambiaPay - Moneya" : "DIAMACASH - DIAMA BANK SA")
+                    Text(isRegistrationMode ? "GambiaPay - Moneya" : "GambiaPay - DIAMA BANK SA")
                         .font(.system(size: isRegistrationMode ? 14 : 13, weight: .semibold))
                         .foregroundColor(Color(hex: "0788B9"))
                 }
@@ -73,7 +73,7 @@ struct TermsAndConditionsView: View {
                         if !showOriginal {
                             Text(AppStrings.automaticTermsNotice).font(.caption).foregroundStyle(.secondary)
                         }
-                        Button(showOriginal ? AppStrings.showTranslatedTerms : AppStrings.showOriginalTerms) {
+                        Button(AppStrings.buttonTitle(showOriginal ? AppStrings.showTranslatedTerms : AppStrings.showOriginalTerms)) {
                             showOriginal.toggle()
                         }
                         .font(.footnote)
@@ -143,12 +143,12 @@ struct TermsAndConditionsView: View {
                         .buttonStyle(.plain)
 
                         HStack(spacing: 14) {
-                            Button(termsText("refuse"), action: { onRefuse?() })
+                            Button(AppStrings.buttonTitle(termsText("refuse")), action: { onRefuse?() })
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                                 .foregroundColor(Color(hex: "0788B9"))
                                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "0788B9"), lineWidth: 2))
-                            Button(termsText("accept"), action: { onAccept?() })
+                            Button(AppStrings.buttonTitle(termsText("accept")), action: { onAccept?() })
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
                                 .foregroundColor(.white)
@@ -195,7 +195,7 @@ struct TermsAndConditionsView: View {
                         .font(.system(size: isRegistrationMode ? 19 : 17, weight: .semibold))
                         .frame(width: isRegistrationMode ? 36 : 34, height: isRegistrationMode ? 36 : 34)
                     
-                    Text(title)
+                    Text(AppStrings.buttonTitle(title))
                         .font(.system(size: isRegistrationMode ? 15 : 15, weight: .semibold))
                         .foregroundColor(Color(hex: "263445"))
 
@@ -307,7 +307,7 @@ struct TermsAndConditionsView: View {
                             .fill(Color(hex: "F1F8F2"))
                             .frame(width: isRegistrationMode ? 40 : 34, height: isRegistrationMode ? 40 : 34)
                         
-                        Text("\(article.number)")
+                        Text(AppStrings.buttonTitle("\(article.number)"))
                             .font(.system(size: isRegistrationMode ? 15 : 14, weight: .bold))
                             .foregroundColor(Color(hex: "174EA6"))
                     }

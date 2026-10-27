@@ -121,7 +121,7 @@ struct CrowdfundingView: View {
             query = ""
         } label: {
             VStack(spacing: 10) {
-                Text(title)
+                Text(AppStrings.buttonTitle(title))
                     .font(.system(size: 16, weight: selectedTab == index ? .bold : .regular))
                     .foregroundColor(selectedTab == index ? CrowdfundingTheme.accent : CrowdfundingTheme.text)
                 Rectangle()
@@ -139,7 +139,7 @@ struct CrowdfundingView: View {
         VStack(spacing: 12) {
             Text(message).font(.system(size: 14)).multilineTextAlignment(.center)
             if retry {
-                Button(copy("Retry", "Réessayer"), action: loadGroups)
+                Button(AppStrings.buttonTitle(copy("Retry", "Réessayer")), action: loadGroups)
             }
         }
         .foregroundColor(CrowdfundingTheme.text)
@@ -271,12 +271,12 @@ struct CrowdfundingCreateGroupView: View {
         .tint(CrowdfundingTheme.blue)
         .preferredColorScheme(.light)
         .alert(copy("Approval Policy", "Politique d’approbation"), isPresented: $showPolicyInfo) {
-            Button(AppStrings.ok, role: .cancel) {}
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {}
         } message: {
             Text(copy("The percentage of group members required to approve a group decision.", "Le pourcentage des membres du groupe requis pour approuver une décision du groupe."))
         }
         .alert(AppStrings.information, isPresented: $showAlert) {
-            Button(AppStrings.ok, role: .cancel) {}
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) {}
         } message: { Text(message) }
     }
 

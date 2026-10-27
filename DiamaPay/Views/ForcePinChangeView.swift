@@ -74,14 +74,14 @@ struct ForcePinChangeView: View {
         .navigationBarHidden(true)
         .alert(alertTitle, isPresented: $showAlert) {
             if pinChangeSuccess {
-                Button(AppStrings.ok) {
+                Button(AppStrings.buttonTitle(AppStrings.ok)) {
                     // Delay before navigating to login
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         navigateToLogin = true
                     }
                 }
             } else {
-                Button(AppStrings.ok, role: .cancel) { }
+                Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
             }
         } message: {
             Text(AppStrings.option(alertMessage))
@@ -263,7 +263,7 @@ struct ForcePinChangeView: View {
             Button(action: {
                 showChangePinConfirmationDialog()
             }) {
-                Text(AppStrings.changerLePin)
+                Text(AppStrings.buttonTitle(AppStrings.changerLePin))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -312,7 +312,7 @@ struct ForcePinChangeView: View {
                             Button(action: {
                                 showConfirmationDialog = false
                             }) {
-                                Text(AppStrings.annuler)
+                                Text(AppStrings.buttonTitle(AppStrings.annuler))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.blueH)
                                     .frame(maxWidth: .infinity)
@@ -325,7 +325,7 @@ struct ForcePinChangeView: View {
                                 showConfirmationDialog = false
                                 changePin()
                             }) {
-                                Text(AppStrings.changerLePin)
+                                Text(AppStrings.buttonTitle(AppStrings.changerLePin))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)

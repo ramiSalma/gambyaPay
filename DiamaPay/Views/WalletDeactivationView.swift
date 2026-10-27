@@ -161,7 +161,7 @@ struct WalletDeactivationView: View {
 
             Menu {
                 ForEach(0..<deactivationReasons.count, id: \.self) { index in
-                    Button(AppStrings.option(deactivationReasons[index])) {
+                    Button(AppStrings.buttonTitle(AppStrings.option(deactivationReasons[index]))) {
                         selectedReasonIndex = index
                     }
                 }
@@ -250,7 +250,7 @@ struct WalletDeactivationView: View {
                     }
                 }
                 .frame(width: 18, height: 18)
-                Text(title)
+                Text(AppStrings.buttonTitle(title))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.black)
                 Spacer()
@@ -378,7 +378,7 @@ struct WalletDeactivationView: View {
             } else {
                 Menu {
                     ForEach(linkedAccounts, id: \.accountNumber) { account in
-                        Button("\(account.accountNumber) - \(account.accountHolder)") {
+                        Button(AppStrings.buttonTitle("\(account.accountNumber) - \(account.accountHolder)")) {
                             selectedAccount = account
                             accountHolderName = account.accountHolder
                         }
@@ -444,7 +444,7 @@ struct WalletDeactivationView: View {
             } else {
                 Menu {
                     ForEach(branches, id: \.id) { branch in
-                        Button("\(branch.id ?? "") - \(branch.name ?? "")") {
+                        Button(AppStrings.buttonTitle("\(branch.id ?? "") - \(branch.name ?? "")")) {
                             selectedBranch = branch
                         }
                     }
@@ -560,7 +560,7 @@ struct WalletDeactivationView: View {
     // MARK: - Submit Button
     private var submitButton: some View {
         Button(action: validateAndShowConfirmation) {
-            Text(AppStrings.submit)
+            Text(AppStrings.buttonTitle(AppStrings.submit))
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -1086,7 +1086,7 @@ struct DeactivationConfirmationDialog: View {
                 
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -1096,7 +1096,7 @@ struct DeactivationConfirmationDialog: View {
                     }
                     
                     Button(action: onConfirm) {
-                        Text(AppStrings.ouiDesactiver)
+                        Text(AppStrings.buttonTitle(AppStrings.ouiDesactiver))
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -1159,7 +1159,7 @@ struct OtpVerificationDialog: View {
                 
                 HStack(spacing: 12) {
                     Button(action: onCancel) {
-                        Text(AppStrings.annuler)
+                        Text(AppStrings.buttonTitle(AppStrings.annuler))
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.blueH)
                             .frame(maxWidth: .infinity)
@@ -1174,7 +1174,7 @@ struct OtpVerificationDialog: View {
                         }
                         onVerify()
                     }) {
-                        Text(AppStrings.verifier)
+                        Text(AppStrings.buttonTitle(AppStrings.verifier))
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -1222,7 +1222,7 @@ struct DeactivationSuccessDialog: View {
                 Button(action: {
                     closeAndNavigate()
                 }) {
-                    Text(AppStrings.fermer)
+                    Text(AppStrings.buttonTitle(AppStrings.fermer))
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)

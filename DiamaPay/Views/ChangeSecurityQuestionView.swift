@@ -38,7 +38,7 @@ struct ChangeSecurityQuestionView: View {
                             fieldLabel(AppStrings.selectAQuestion)
                             Menu {
                                 ForEach(questions) { question in
-                                    Button(question.question) { selectedQuestion = question.id }
+                                    Button(AppStrings.buttonTitle(question.question)) { selectedQuestion = question.id }
                                 }
                             } label: {
                                 HStack {
@@ -60,7 +60,7 @@ struct ChangeSecurityQuestionView: View {
                     Button {
                         updateQuestion()
                     } label: {
-                        Text(isSaving ? AppStrings.processing : AppStrings.value("securityUpdate"))
+                        Text(AppStrings.buttonTitle(isSaving ? AppStrings.processing : AppStrings.value("securityUpdate")))
                             .font(.system(size: 18, weight: .semibold)).tracking(2)
                             .foregroundColor(.white).frame(maxWidth: .infinity).frame(height: 46)
                             .background(cyan).clipShape(RoundedRectangle(cornerRadius: 8))
@@ -81,7 +81,7 @@ struct ChangeSecurityQuestionView: View {
         .navigationBarHidden(true).tint(blue)
         .onAppear { loadQuestions(); loadCurrentQuestion() }
         .alert(AppStrings.changeSecurityQuestion, isPresented: $showMessage) {
-            Button(AppStrings.ok, role: .cancel) { }
+            Button(AppStrings.buttonTitle(AppStrings.ok), role: .cancel) { }
         } message: { Text(message) }
     }
 
