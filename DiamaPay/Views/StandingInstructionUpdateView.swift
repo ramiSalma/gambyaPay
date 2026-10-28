@@ -31,12 +31,12 @@ struct StandingInstructionUpdateView: View {
         ("XAF", "950")
     ]
     
-    private let frequencies = [
-        (AppStrings.original("quotidien"), "D"),
-        (AppStrings.original("hebdomadaire"), "W"),
-        (AppStrings.original("mensuel"), "M"),
-        (AppStrings.original("annuel"), "Y")
-    ]
+    private var frequencies: [(String, String)] { [
+        (AppStrings.quotidien, "D"),
+        (AppStrings.hebdomadaire, "W"),
+        (AppStrings.mensuel, "M"),
+        (AppStrings.annuel, "Y")
+    ] }
     
     // MARK: - State Variables
     @State private var amount = ""

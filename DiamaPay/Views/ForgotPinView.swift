@@ -147,8 +147,8 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                TextField(AppStrings.nDeTelephone, text: $phoneNumber)
-                    .keyboardType(.phonePad)
+                TextField(AppStrings.nDeTelephone, text: $phoneNumber.walletPhoneNumber())
+                    .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
             .padding()

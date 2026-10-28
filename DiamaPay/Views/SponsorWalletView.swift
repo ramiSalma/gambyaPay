@@ -218,8 +218,8 @@ struct SponsorWalletView: View {
             
             HStack(alignment: .top, spacing: 10) {
                 HStack(spacing: 8) {
-                    TextField(AppStrings.recipientNumber2, text: $recipientPhone)
-                        .keyboardType(.phonePad)
+                    TextField(AppStrings.recipientNumber2, text: $recipientPhone.walletPhoneNumber())
+                        .keyboardType(.numberPad)
                         .textContentType(.telephoneNumber)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.leading, 12)

@@ -193,7 +193,7 @@ struct RegistrationFlowView: View {
             sectionHeader(AppStrings.basicInformation)
             CustomTextField(title: AppStrings.firstName2, text: $registrationData.firstName, error: personalInfoError("firstName"))
             CustomTextField(title: AppStrings.lastName, text: $registrationData.lastName, error: personalInfoError("lastName"))
-            CustomTextField(title: AppStrings.phoneNumber3, text: $registrationData.phoneNumber, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("phone"), digitLimit: 10)
+            CustomTextField(title: AppStrings.phoneNumber3, text: $registrationData.phoneNumber.walletPhoneNumber(), icon: "phone.fill", keyboardType: .numberPad, error: personalInfoError("phone"), digitLimit: 10)
             CustomTextField(title: AppStrings.email2, text: $registrationData.email, icon: "envelope", keyboardType: .emailAddress, error: personalInfoError("email"))
             
             VStack(alignment: .leading, spacing: 8) {
@@ -348,7 +348,7 @@ struct RegistrationFlowView: View {
             
             sectionHeader(AppStrings.nextOfKin2)
             CustomTextField(title: AppStrings.nextOfKinName, text: $registrationData.nkinName, error: personalInfoError("nkinName"))
-            CustomTextField(title: AppStrings.nextOfKinPhone, text: $registrationData.nkinPhone, icon: "phone.fill", keyboardType: .phonePad, error: personalInfoError("nkinPhone"), digitLimit: 10)
+            CustomTextField(title: AppStrings.nextOfKinPhone, text: $registrationData.nkinPhone.walletPhoneNumber(), icon: "phone.fill", keyboardType: .numberPad, error: personalInfoError("nkinPhone"), digitLimit: 10)
 
         }
         .padding(.vertical, 20)

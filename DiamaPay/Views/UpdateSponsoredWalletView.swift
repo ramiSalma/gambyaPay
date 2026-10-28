@@ -35,6 +35,7 @@ struct UpdateSponsoredWalletView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     
+    private let themeBlue = Color(hex: "174EA6")
     private let userDataManager = UserDataManager.shared
     
     var body: some View {
@@ -44,7 +45,7 @@ struct UpdateSponsoredWalletView: View {
             
             VStack(spacing: 0) {
                 // Header
-                DiamaPayHeader(title: AppStrings.updateSponsoredWallet, headerColor: Color(hex: "174EA6"))
+                DiamaPayHeader(title: AppStrings.updateSponsoredWallet, headerColor: themeBlue)
 
                 if isLoading {
                     loadingView
@@ -56,6 +57,7 @@ struct UpdateSponsoredWalletView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AppBottomBar(onSponsors: {}, onQR: {}, onLimits: {}, onSettings: {})
         }
+        .tint(themeBlue)
         .navigationBarHidden(true)
         .onAppear {
             loadInitialData()
@@ -98,7 +100,7 @@ struct UpdateSponsoredWalletView: View {
     private var loadingView: some View {
         VStack(spacing: 16) {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
+                .progressViewStyle(CircularProgressViewStyle(tint: themeBlue))
                 .scaleEffect(1.5)
             
             Text(AppStrings.traitementEnCours)
@@ -140,7 +142,7 @@ struct UpdateSponsoredWalletView: View {
     private var titleCard: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.blueH)
+                .fill(themeBlue)
                 .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
             
             VStack(spacing: 8) {
@@ -161,7 +163,7 @@ struct UpdateSponsoredWalletView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(AppStrings.beneficiaireValue(String(describing: wallet.userNameSponsored)))
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.blueH)
+                .foregroundColor(themeBlue)
             
             if !wallet.phoneNumberSponsored.isEmpty {
                 Text(wallet.phoneNumberSponsored)
@@ -182,10 +184,10 @@ struct UpdateSponsoredWalletView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.limits)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(themeBlue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(themeBlue)
                     .frame(width: 60, height: 2)
             }
             
@@ -243,17 +245,17 @@ struct UpdateSponsoredWalletView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(AppStrings.periode)
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(Color.blueH)
+                    .foregroundColor(themeBlue)
                 
                 Rectangle()
-                    .fill(Color.blueH)
+                    .fill(themeBlue)
                     .frame(width: 60, height: 2)
             }
             
             VStack(alignment: .leading, spacing: 8) {
                 Text(AppStrings.dateDeDebut)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.blueH)
+                    .foregroundColor(themeBlue)
                 
                 Button(action: {
                     showStartDatePicker = true
@@ -266,7 +268,7 @@ struct UpdateSponsoredWalletView: View {
                         Spacer()
                         
                         Image(systemName: "calendar")
-                            .foregroundColor(.blueH)
+                            .foregroundColor(themeBlue)
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 48)
@@ -278,7 +280,7 @@ struct UpdateSponsoredWalletView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(AppStrings.dateDeFin)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.blueH)
+                    .foregroundColor(themeBlue)
                 
                 Button(action: {
                     showEndDatePicker = true
@@ -291,7 +293,7 @@ struct UpdateSponsoredWalletView: View {
                         Spacer()
                         
                         Image(systemName: "calendar")
-                            .foregroundColor(.blueH)
+                            .foregroundColor(themeBlue)
                     }
                     .padding(.horizontal, 12)
                     .frame(height: 48)
@@ -311,7 +313,7 @@ struct UpdateSponsoredWalletView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(AppStrings.pin)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.blueH)
+                .foregroundColor(themeBlue)
             
             SecureField(AppStrings.entrerLeCodePin, text: $pin)
                 .keyboardType(.numberPad)
@@ -336,7 +338,7 @@ struct UpdateSponsoredWalletView: View {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(width: 150, height: 48)
-                .background(Color.blueH)
+                .background(themeBlue)
                 .cornerRadius(8)
         }
         .disabled(isLoading)
@@ -416,7 +418,7 @@ struct UpdateSponsoredWalletView: View {
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
-                                    .background(Color.blueH)
+                                    .background(themeBlue)
                                     .cornerRadius(8)
                             }
                         }

@@ -37,8 +37,6 @@ class APIClient {
               
         
            self.session = URLSession(configuration: configuration)
-       
-        
     }
     
 

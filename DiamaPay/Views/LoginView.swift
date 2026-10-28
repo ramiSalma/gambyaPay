@@ -171,8 +171,8 @@ struct LoginView: View {
             CustomTextField1(
                 icon: "phone.fill",
                 placeholder: AppStrings.phoneNumber,
-                text: $phoneNumber,
-                keyboardType: .phonePad,
+                text: $phoneNumber.walletPhoneNumber(),
+                keyboardType: .numberPad,
                 disabled: isLoading
             )
             .onChange(of: phoneNumber) {

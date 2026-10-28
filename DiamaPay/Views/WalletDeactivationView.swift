@@ -3,7 +3,7 @@
 //  DiamaPay
 //
 //  Created by Bits on 1/10/2025.
-//  Updated: Auto-verify recipient on 9 digits and UI optimizations
+//  Updated: Auto-verify recipient on 9–10 digits and UI optimizations
 //
 
 import SwiftUI
@@ -298,18 +298,13 @@ struct WalletDeactivationView: View {
                 .foregroundColor(.secondary)
             
             HStack(spacing: 8) {
-                TextField(AppStrings.phoneNumber, text: $receiverPhone)
+                TextField(AppStrings.phoneNumber, text: $receiverPhone.walletPhoneNumber())
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.leading, 12)
                     .onChange(of: receiverPhone) {
-                        // Limit to 9 digits
-                        if receiverPhone.count > 9 {
-                            receiverPhone = String(receiverPhone.prefix(9))
-                        }
-                        
-                        // Auto-verify when 9 digits are entered
-                        if receiverPhone.count == 9 {
+                        // Verify supported phone lengths up to the ten-digit input limit.
+                        if (9...10).contains(receiverPhone.count) {
                             verifyWalletRecipient()
                         } else if receiverPhone.count < 9 {
                             // Reset recipient info if digits are deleted
@@ -322,7 +317,7 @@ struct WalletDeactivationView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .blueH))
                         .scaleEffect(0.8)
                         .padding(.trailing, 12)
-                } else if isRecipientVerified && !walletHolderName.isEmpty && receiverPhone.count == 9 {
+                } else if isRecipientVerified && !walletHolderName.isEmpty && (9...10).contains(receiverPhone.count) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
                         .foregroundColor(.blueH)
@@ -640,7 +635,7 @@ struct WalletDeactivationView: View {
     }
     
     private func verifyWalletRecipient() {
-        guard receiverPhone.count == 9 else {
+        guard (9...10).contains(receiverPhone.count) else {
             return
         }
         

@@ -3,6 +3,25 @@ import Testing
 @testable import DIAMACASH
 
 struct AppLocalizationTests {
+    @Test func standingInstructionsHaveBuiltInEnglishAndFrench() {
+        let (english, defaults, suite) = makeStore()
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let keys = ["annuel", "annuler", "beneficiaryName", "chargement", "confirmer", "confirmerLaSuppression", "contacts", "createStandingInstruction", "creerUnVirement", "dateDeDebut", "dateDeFin", "dateDeFinOptionnel", "description2", "detailsDePaiement", "detailsDuBeneficiaire", "detailsDuDestinataire", "devise", "echecDeLaCreation", "echecDeLaMiseAJour", "echecDeLaSuppression", "editStandingInstruction", "entrerLeCodePin", "entrerLeMontant", "entrerUneDescription", "entrerVotrePin", "entrezVotreCodePinPourSupprimerCeVirementPermanent", "erreurReseauValue", "erreurValue", "error", "frequence", "hebdomadaire", "information", "instructionMiseAJourAvecSucces", "laDateDeDebutDoitEtreAvantLaDateDe", "laDateDeFinNePeutPasEtreDansLe", "laDescriptionEstRequise", "laDestinationEstRequise", "leCodePinEstRequis", "leMontantEstRequis", "mensuel", "modifier", "modifierLeVirement", "montant3", "nDeCompteDEpargne", "numeroDeTelephoneNonDisponible", "ok", "pin", "planification", "quotidien", "saved", "securite", "standingInstructions", "succes", "supprimer", "termine", "traitementEnCours", "typeDeTransaction", "unableToVerifyThisRecipient", "unknown", "update", "verifyAgain", "veuillezDAbordVerifierLeDestinataire", "veuillezEntrerVotrePin", "virementPermanentCreeAvecSucces", "virementPermanentSupprimeAvecSucces", "vousNAvezAucunVirementPermanent"]
+        let missingEnglish = english.missingEntries(for: .english)
+        let missingFrench = english.missingEntries(for: .french)
+        for key in keys {
+            #expect(missingEnglish[key] == nil, "Missing English translation: \(key)")
+            #expect(missingFrench[key] == nil, "Missing French translation: \(key)")
+        }
+        #expect(english.text(for: "montant3") == "Amount")
+        #expect(english.text(for: "quotidien") == "Daily")
+        defaults.set("fr", forKey: "app.preferredLanguage")
+        let french = AppLanguageStore(defaults: defaults, preferredLanguages: ["en"])
+        #expect(french.text(for: "montant3") == "Montant")
+        #expect(french.text(for: "quotidien") == "Quotidien")
+    }
+
+
     private func makeStore() -> (AppLanguageStore, UserDefaults, String) {
         let name = "AppLocalizationTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: name)!

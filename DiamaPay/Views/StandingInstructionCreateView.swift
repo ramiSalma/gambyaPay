@@ -29,12 +29,12 @@ struct StandingInstructionCreateView: View {
     @State private var verificationError: String?
     @State private var verificationID = UUID()
 
-    private let frequencies = [
-        (AppStrings.original("quotidien"), "D"),
-        (AppStrings.original("hebdomadaire"), "W"),
-        (AppStrings.original("mensuel"), "M"),
-        (AppStrings.original("annuel"), "Y")
-    ]
+    private var frequencies: [(String, String)] { [
+        (AppStrings.quotidien, "D"),
+        (AppStrings.hebdomadaire, "W"),
+        (AppStrings.mensuel, "M"),
+        (AppStrings.annuel, "Y")
+    ] }
     
     // MARK: - State Variables
     @State private var selectedTrxTypeIndex = 0
@@ -190,8 +190,8 @@ struct StandingInstructionCreateView: View {
                         .foregroundColor(StandingInstructionStyle.label)
                     HStack(alignment: .top, spacing: 8) {
                         HStack {
-                            TextField(getDestinationPlaceholder(), text: $destination)
-                                .keyboardType(transactionCode == "42" ? .default : .phonePad)
+                            TextField(getDestinationPlaceholder(), text: transactionCode == "42" ? $destination : $destination.walletPhoneNumber())
+                                .keyboardType(transactionCode == "42" ? .default : .numberPad)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                             if isVerifying { ProgressView() }
@@ -263,10 +263,10 @@ struct StandingInstructionCreateView: View {
                 Text(AppStrings.frequence).foregroundColor(StandingInstructionStyle.label)
                 Menu {
                     ForEach(0..<frequencies.count, id: \.self) { index in
-                        Button(AppStrings.buttonTitle(AppStrings.option(frequencies[index].0))) { selectedFrequencyIndex = index }
+                        Button(AppStrings.buttonTitle(frequencies[index].0)) { selectedFrequencyIndex = index }
                     }
                 } label: {
-                    Text(AppStrings.option(frequencies[selectedFrequencyIndex].0))
+                    Text(frequencies[selectedFrequencyIndex].0)
                         .font(.system(size: 17, weight: .medium))
                         .foregroundColor(.black)
                         .standingField()

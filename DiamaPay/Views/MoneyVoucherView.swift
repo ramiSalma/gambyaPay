@@ -206,7 +206,7 @@ struct MoneyVoucherView: View {
         VStack(alignment: .leading, spacing: 12) {
             cardSectionTitle(AppStrings.recipientDetails, underlineWidth: 116)
             HStack(alignment: .top, spacing: 10) {
-                TextField(AppStrings.phoneNumber2, text: $receiverPhone)
+                TextField(AppStrings.phoneNumber2, text: $receiverPhone.walletPhoneNumber())
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)

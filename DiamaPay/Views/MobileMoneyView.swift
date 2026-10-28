@@ -208,7 +208,7 @@ struct MobileMoneyView: View {
         VStack(alignment: .leading, spacing: 18) {
             sectionTitle(AppStrings.beneficiaryDetails)
             HStack(alignment: .top, spacing: 8) {
-                TextField(AppStrings.phoneNumber2, text: $receiverPhone)
+                TextField(AppStrings.phoneNumber2, text: $receiverPhone.walletPhoneNumber())
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
                     .padding(.horizontal, 12)

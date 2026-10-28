@@ -182,8 +182,8 @@ struct WalletTransferView: View {
             sectionTitle(AppStrings.recipientDetails)
             HStack(alignment: .top, spacing: 8) {
                 HStack(spacing: 4) {
-                    TextField(AppStrings.recipientNumber, text: $destinationPhone)
-                        .keyboardType(.default)
+                    TextField(AppStrings.recipientNumber, text: $destinationPhone.walletPhoneNumber())
+                        .keyboardType(.numberPad)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .font(.system(size: 15))
