@@ -96,7 +96,7 @@ struct MoneyVoucherView: View {
                                     currentBalance = balance
                                 },
                                 walletTransferStyle: true,
-                                blueAccent: true
+                                blueAccent: false
                             )
 
                             recipientDetailsCard

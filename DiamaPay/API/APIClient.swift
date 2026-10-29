@@ -19,14 +19,14 @@ class APIClient {
     
     
     private static func buildUserAgent() -> String {
-          let appName = "DiamaCash"
-            let osType = "iOS"
-    
-            let versionName = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-            let versionCode = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-            return "\(appName) OS=[\(osType)] VERSION_NAME=[\(versionName)] VERSION_CODE=[\(versionCode)]"
-        }
-    
+        let appName = "DiamaCash"
+          let osType = "iOS"
+  
+          let versionName = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+      let versionCode = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+      return "\(appName) OS=[\(osType)] VERSION_NAME=[\(versionName)] VERSION_CODE=[\(versionCode)]"
+  }
+
     private init() {
         let configuration = URLSessionConfiguration.default
            configuration.httpAdditionalHeaders = [

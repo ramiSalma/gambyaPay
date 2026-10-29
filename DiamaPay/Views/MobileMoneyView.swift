@@ -49,7 +49,7 @@ struct MobileMoneyView: View {
                             onWalletChanged: { selectedWallet = $0 },
                             onBalanceChanged: { currentBalance = $0 },
                             walletTransferStyle: true,
-                            blueAccent: true
+                            blueAccent: false
                         )
                         providerCard
                         beneficiaryCard
