@@ -1138,7 +1138,7 @@ struct OtpVerificationDialog: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                TextField(AppStrings.codeOtp, text: $otpCode.digitsOnly(maxLength: 6))
+                WalletCodeField(AppStrings.codeOtp, text: $otpCode, isSecure: false, maxLength: 6, centered: true)
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
@@ -1164,7 +1164,7 @@ struct OtpVerificationDialog: View {
                     }
                     
                     Button(action: {
-                        guard otpCode.count == 6 else {
+                        guard otpCode.isValidOTP else {
                             return
                         }
                         onVerify()

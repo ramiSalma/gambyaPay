@@ -24,6 +24,10 @@ extension Binding where Value == String {
 
 /// The wallet PIN is exactly four ASCII digits, including leading zeros.
 extension String {
+    var isValidOTP: Bool {
+        count == 6 && allSatisfy { $0.isASCII && $0.isNumber }
+    }
+
     var isValidWalletPIN: Bool {
         count == 4 && allSatisfy { $0.isASCII && $0.isNumber }
     }
@@ -36,18 +40,24 @@ extension Binding where Value == String {
 }
 
 /// Enforces the limit in the native editor, before extra characters can appear.
-struct WalletPINField: UIViewRepresentable {
+typealias WalletPINField = WalletCodeField
+
+struct WalletCodeField: UIViewRepresentable {
     let placeholder: String
     @Binding var text: String
+    let maxLength: Int
     var isSecure = true
+    var centered = false
     var prompt: Text? = nil
     @Environment(\.isEnabled) private var isEnabled
 
-    init(_ placeholder: String, text: Binding<String>, isSecure: Bool = true, prompt: Text? = nil) {
+    init(_ placeholder: String, text: Binding<String>, isSecure: Bool = true, prompt: Text? = nil, maxLength: Int = 4, centered: Bool = false) {
         self.placeholder = placeholder
         self._text = text
         self.isSecure = isSecure
         self.prompt = prompt
+        self.maxLength = maxLength
+        self.centered = centered
     }
 
     func makeUIView(context: Context) -> UITextField {
@@ -68,6 +78,9 @@ struct WalletPINField: UIViewRepresentable {
         field.placeholder = placeholder
         field.accessibilityLabel = placeholder
         field.isEnabled = isEnabled
+        field.textContentType = maxLength == 6 ? .oneTimeCode : nil
+        field.textAlignment = centered ? .center : .natural
+        field.font = maxLength == 6 ? .monospacedDigitSystemFont(ofSize: 24, weight: .medium) : .systemFont(ofSize: 18)
         if field.isSecureTextEntry != isSecure { field.isSecureTextEntry = isSecure }
         if field.text != text { field.text = text }
     }
@@ -75,14 +88,14 @@ struct WalletPINField: UIViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
     final class Coordinator: NSObject, UITextFieldDelegate {
-        var parent: WalletPINField
-        init(_ parent: WalletPINField) { self.parent = parent }
+        var parent: WalletCodeField
+        init(_ parent: WalletCodeField) { self.parent = parent }
 
         func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
             let current = textField.text ?? ""
             guard let swiftRange = Range(range, in: current) else { return false }
             let proposed = current.replacingCharacters(in: swiftRange, with: string)
-            let accepted = String(proposed.filter { $0.isASCII && $0.isNumber }.prefix(4))
+            let accepted = String(proposed.filter { $0.isASCII && $0.isNumber }.prefix(parent.maxLength))
             // Update the native editor even when the binding's value is unchanged.
             textField.text = accepted
             parent.text = accepted
@@ -90,7 +103,7 @@ struct WalletPINField: UIViewRepresentable {
         }
 
         @objc func editingChanged(_ field: UITextField) {
-            let accepted = String((field.text ?? "").filter { $0.isASCII && $0.isNumber }.prefix(4))
+            let accepted = String((field.text ?? "").filter { $0.isASCII && $0.isNumber }.prefix(parent.maxLength))
             if field.text != accepted { field.text = accepted }
             parent.text = accepted
         }

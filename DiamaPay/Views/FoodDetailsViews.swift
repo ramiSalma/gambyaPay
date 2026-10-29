@@ -5,24 +5,24 @@ struct FoodRestaurantDetailsView: View {
     @Environment(\.dismiss) private var dismiss
     let profile: FoodRestaurantProfile
 
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 18) {
-                    FoodDetailsHeader(
-                        title: profile.name ?? AppStrings.restaurant,
-                        subtitle: profile.isOpen ? AppStrings.openNow : AppStrings.closed
-                    )
-                    FoodDetailsSection(title: AppStrings.value("foodRestaurantDetails")) {
-                        Label(profile.isOpen ? AppStrings.openNow : AppStrings.closed, systemImage: "clock.fill")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(profile.isOpen ? FoodDetailsStyle.blue : .orange)
-                        if let reason = profile.temporaryClosureReason, !reason.isEmpty { Text(reason).foregroundStyle(.secondary) }
-                        if let address = profile.address, !address.displayName.isEmpty {
-                            FoodDetailsInfo(text: address.displayName, icon: "mappin.and.ellipse")
-                        }
-                        if let contact = profile.contact, !contact.isEmpty {
-                            if let url = URL(string: "tel:\(contact.filter { $0.isASCII && $0.isNumber })") {
+      var body: some View {
+          NavigationStack {
+              ScrollView {
+                  VStack(spacing: 18) {
+                      FoodDetailsHeader(
+                          title: profile.name ?? AppStrings.restaurant,
+                          subtitle: profile.isOpen ? AppStrings.openNow : AppStrings.closed
+                      )
+                      FoodDetailsSection(title: AppStrings.value("foodRestaurantDetails")) {
+                          Label(profile.isOpen ? AppStrings.openNow : AppStrings.closed, systemImage: "clock.fill")
+                              .font(.subheadline.weight(.semibold))
+                              .foregroundStyle(profile.isOpen ? FoodDetailsStyle.blue : .orange)
+                          if let reason = profile.temporaryClosureReason, !reason.isEmpty { Text(reason).foregroundStyle(.secondary) }
+                          if let address = profile.address, !address.displayName.isEmpty {
+                              FoodDetailsInfo(text: address.displayName, icon: "mappin.and.ellipse")
+                          }
+                          if let contact = profile.contact, !contact.isEmpty {
+                              if let url = URL(string: "tel:\(contact.filter { $0.isASCII && $0.isNumber })") {
                                 Link(destination: url) { FoodDetailsInfo(text: contact, icon: "phone.fill") }
                             }
                         }

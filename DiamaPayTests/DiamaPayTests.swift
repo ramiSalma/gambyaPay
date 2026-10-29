@@ -56,6 +56,30 @@ struct DiamaPayTests {
         #expect(value.isEmpty)
     }
 
+    @MainActor
+    @Test func nativeOtpEditorLimitsTypingPasteAndAutofill() {
+        var value = ""
+        let input = WalletCodeField("OTP", text: Binding(get: { value }, set: { value = $0 }), isSecure: false, maxLength: 6)
+        let coordinator = input.makeCoordinator()
+        let field = UITextField()
+        field.text = ""
+        for digit in "00123456789" {
+            _ = coordinator.textField(field, shouldChangeCharactersIn: NSRange(location: (field.text ?? "").utf16.count, length: 0), replacementString: String(digit))
+            #expect((field.text ?? "").count <= 6)
+            #expect(field.text == value)
+        }
+        #expect(value == "001234")
+        _ = coordinator.textField(field, shouldChangeCharactersIn: NSRange(location: 0, length: 6), replacementString: "09 87-654321")
+        #expect(field.text == "098765")
+        #expect(value.isValidOTP)
+        field.text = "123456789"
+        coordinator.editingChanged(field)
+        #expect(field.text == "123456")
+        #expect(value == "123456")
+        #expect(!"12345".isValidOTP)
+        #expect(!"12345a".isValidOTP)
+    }
+
     @Test func otpInputFiltersAutofillAndLimitsToSixDigits() {
         var value = ""
         let input = Binding(get: { value }, set: { value = $0 }).digitsOnly(maxLength: 6)

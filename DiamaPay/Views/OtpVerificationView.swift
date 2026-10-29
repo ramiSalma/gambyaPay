@@ -39,7 +39,7 @@ struct OtpVerificationView: View {
                 .foregroundColor(.gray)
             
             // OTP input field
-            TextField("------", text: $otp.digitsOnly(maxLength: 6))
+            WalletCodeField("------", text: $otp, isSecure: false, maxLength: 6, centered: true)
                 .multilineTextAlignment(.center)
                 .keyboardType(.numberPad)
                 .font(.system(size: 24, weight: .medium, design: .monospaced))
@@ -59,11 +59,11 @@ struct OtpVerificationView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 15)
-            .background(Color(hex: "174EA6").opacity(isLoading || otp.count != 6 ? 0.45 : 1))
+            .background(Color(hex: "174EA6").opacity(isLoading || !otp.isValidOTP ? 0.45 : 1))
             .foregroundColor(.white)
             .cornerRadius(8)
             .padding(.horizontal, 30)
-            .disabled(isLoading || otp.count != 6)
+            .disabled(isLoading || !otp.isValidOTP)
             
             Spacer()
         }
@@ -94,7 +94,7 @@ struct OtpVerificationView: View {
     }
     
     private func verifyOtp() {
-        guard otp.count == 6 else { return }
+        guard otp.isValidOTP else { return }
         
         // ✅ DEBUG: Log values before creating request
         print("🔍 verifyOtp() called")

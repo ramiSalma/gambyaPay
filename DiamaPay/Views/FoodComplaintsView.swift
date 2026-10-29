@@ -132,43 +132,64 @@ struct FoodComplaintsView: View {
     }
 
     private var complaintForm: some View {
-        NavigationStack {
-            Form {
-                Section(AppStrings.order) {
-                    Menu {
-                        ForEach(orders) { order in
-                            Button(AppStrings.buttonTitle(AppStrings.valueValue2(String(describing: order.orderRef ?? order.orderId), String(describing: order.status ?? AppStrings.order)))) { selectedOrder = order; selectedProductID = "" }
+        FoodComplaintFormLayout(
+            title: AppStrings.newComplaint,
+            submitTitle: AppStrings.submit,
+            isSubmitting: isSubmitting,
+            canSubmit: selectedOrder != nil && !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            onCancel: { showForm = false },
+            onSubmit: submitComplaint
+        ) {
+            FoodComplaintFormSection(title: AppStrings.order) {
+                Menu {
+                    ForEach(orders) { order in
+                        Button(AppStrings.buttonTitle(AppStrings.valueValue2(order.orderRef ?? order.orderId, order.status ?? AppStrings.order))) {
+                            selectedOrder = order; selectedProductID = ""
                         }
-                    } label: {
-                        HStack { Text(selectedOrder.map { $0.orderRef ?? $0.orderId } ?? AppStrings.selectAnOrder); Spacer(); Image(systemName: "chevron.up.chevron.down").foregroundStyle(.secondary) }
+                    }
+                } label: {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(selectedOrder.map { AppStrings.orderValue($0.orderRef ?? $0.orderId) } ?? AppStrings.selectAnOrder)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(Color(hex: "152C4D"))
+                            if let status = selectedOrder?.status {
+                                Text(AppStrings.option(status)).font(.system(size: 12)).foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.up.chevron.down").font(.system(size: 12, weight: .medium))
+                    }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            FoodComplaintFormSection(title: AppStrings.whatWentWrong) {
+                Picker(AppStrings.value("foodComplaintItem"), selection: $selectedProductID) {
+                    Text(AppStrings.value("foodWholeOrder")).tag("")
+                    ForEach(selectedOrder?.items ?? []) { item in
+                        Text(item.itemNameSnapshot ?? item.itemId).tag(item.itemId)
                     }
                 }
-                Section(AppStrings.whatWentWrong) {
-                    Picker(AppStrings.value("foodComplaintItem"), selection: $selectedProductID) {
-                        Text(AppStrings.value("foodWholeOrder")).tag("")
-                        ForEach(selectedOrder?.items ?? []) { item in
-                            Text(item.itemNameSnapshot ?? item.itemId).tag(item.itemId)
-                        }
-                    }
-                    Picker(AppStrings.complaintType, selection: $selectedType) {
-                        ForEach(complaintTypes, id: \.self) { Text(AppStrings.option($0)).tag($0) }
-                    }
-                    TextField(AppStrings.describeTheIssue, text: $description, axis: .vertical).lineLimit(4...8)
-                    if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+                .disabled(selectedOrder == nil)
+                Divider().overlay(blue.opacity(0.05))
+                Picker(AppStrings.complaintType, selection: $selectedType) {
+                    ForEach(complaintTypes, id: \.self) { Text(AppStrings.option($0)).tag($0) }
                 }
             }
-            .navigationTitle(AppStrings.newComplaint)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(AppStrings.buttonTitle(AppStrings.cancel)) { showForm = false }.disabled(isSubmitting) }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(AppStrings.buttonTitle(isSubmitting ? AppStrings.sending : AppStrings.submit)) { submitComplaint() }
-                        .disabled(isSubmitting || selectedOrder == nil || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
+            FoodComplaintFormSection(title: AppStrings.describeTheIssue) {
+                TextField(AppStrings.tellUsWhatHappened, text: $description, axis: .vertical)
+                    .lineLimit(5...9)
+                    .font(.system(size: 15))
+                    .lineSpacing(5)
+            }
+            if let errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.circle")
+                    .font(.system(size: 13)).foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .interactiveDismissDisabled(isSubmitting)
-        .presentationDetents([.medium, .large])
     }
 
     private func loadData() {
@@ -266,5 +287,82 @@ struct FoodComplaintsView: View {
             requestDate: DateFormatter.with(format: "yyyy-MM-dd HH:mm:ss").string(from: now),
             entityId: UserDataManager.shared.getPhoneNumber()
         )
+    }
+}
+
+/// Shared presentation for new complaints and order-specific support.
+struct FoodComplaintFormLayout<Content: View>: View {
+    let title: String
+    let submitTitle: String
+    let isSubmitting: Bool
+    let canSubmit: Bool
+    let onCancel: () -> Void
+    let onSubmit: () -> Void
+    @ViewBuilder let content: Content
+    private let blue = Color(hex: "174EA6")
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) { content }
+                    .padding(20)
+                    .disabled(isSubmitting)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .background(Color(hex: "F3F6FA"))
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color(.secondarySystemGroupedBackground), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(AppStrings.buttonTitle(AppStrings.cancel), action: onCancel)
+                        .font(.system(size: 15))
+                        .disabled(isSubmitting)
+                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Button(action: onSubmit) {
+                    HStack(spacing: 10) {
+                        if isSubmitting { ProgressView().tint(.white) }
+                        Text(AppStrings.buttonTitle(isSubmitting ? AppStrings.sending : submitTitle))
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(canSubmit && !isSubmitting ? blue : blue.opacity(0.4), in: RoundedRectangle(cornerRadius: 10))
+                }
+                .buttonStyle(.plain)
+                .disabled(!canSubmit || isSubmitting)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .background(Color(.secondarySystemGroupedBackground))
+                .overlay(alignment: .top) { Rectangle().fill(blue.opacity(0.08)).frame(height: 1) }
+            }
+        }
+        .tint(blue)
+        .interactiveDismissDisabled(isSubmitting)
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+struct FoodComplaintFormSection<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color(hex: "34465E"))
+            VStack(alignment: .leading, spacing: 14) { content }
+                .font(.system(size: 15))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+                .overlay { RoundedRectangle(cornerRadius: 12).strokeBorder(Color(hex: "174EA6").opacity(0.09), lineWidth: 1) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

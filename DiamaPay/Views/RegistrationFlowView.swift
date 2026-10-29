@@ -986,7 +986,7 @@ struct RegistrationFlowView: View {
                 Text(AppStrings.verificationCode)
                     .font(.system(size: 20, weight: .medium))
                     .foregroundColor(.gray)
-                TextField(AppStrings.enterTheVerificationCode, text: $registrationData.otpCode.digitsOnly(maxLength: 6))
+                WalletCodeField(AppStrings.enterTheVerificationCode, text: $registrationData.otpCode, isSecure: false, maxLength: 6, centered: true)
                     .keyboardType(.numberPad)
                     .padding(16)
                     .background(RoundedRectangle(cornerRadius: 14).fill(Color.white)
@@ -999,7 +999,7 @@ struct RegistrationFlowView: View {
                     registrationData.otpCode = String(registrationData.otpCode.filter(\.isNumber).prefix(6))
                     otpServerError = nil
                 }
-            inlineFieldError(otpServerError ?? (showOtpErrors && registrationData.otpCode.count != 6 ? AppStrings.enterThe6DigitVerificationCode : nil))
+            inlineFieldError(otpServerError ?? (showOtpErrors && !registrationData.otpCode.isValidOTP ? AppStrings.enterThe6DigitVerificationCode : nil))
             
             Text(AppStrings.didnTReceiveTheCodePleaseContactSupport)
                 .font(.system(size: 14))
@@ -1277,7 +1277,7 @@ struct RegistrationFlowView: View {
             submitRegistration()
 
         case 5:
-            if registrationData.otpCode.count == 6 {
+            if registrationData.otpCode.isValidOTP {
                 isLoading = true
                 verifyOtpCode()
             } else {
@@ -1493,7 +1493,7 @@ struct RegistrationFlowView: View {
                    registrationData.acceptTerms &&
                    registrationData.acceptPrivacy
         case 5:
-            return registrationData.otpCode.count == 6
+            return registrationData.otpCode.isValidOTP
         default:
             return true
         }

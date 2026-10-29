@@ -225,7 +225,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                TextField(AppStrings.entrerOtp, text: $finalOtp.digitsOnly(maxLength: 6))
+                WalletCodeField(AppStrings.entrerOtp, text: $finalOtp, isSecure: false, maxLength: 6, centered: true)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
@@ -533,7 +533,7 @@ struct ForgotPinView: View {
     
     // Step 4 (full) or 3 (short): Verify Final OTP
     private func verifyFinalOtp() {
-        guard !finalOtp.isEmpty, finalOtp.count == 6 else {
+        guard !finalOtp.isEmpty, finalOtp.isValidOTP else {
             showErrorAlert(AppStrings.veuillezEntrerUnOtpA6ChiffresValide)
             return
         }

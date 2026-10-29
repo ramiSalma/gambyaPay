@@ -635,23 +635,39 @@ struct OrderFoodView: View {
     }
 
     private func complaintForm(for order: FoodOrder) -> some View {
-        NavigationStack {
-            Form {
-                Section(AppStrings.orderValue(String(describing: order.orderRef ?? order.orderId))) {
-                    Picker(AppStrings.value("foodComplaintItem"), selection: $complaintProductID) {
-                        Text(AppStrings.value("foodWholeOrder")).tag("")
-                        ForEach(order.items ?? []) { item in Text(item.itemNameSnapshot ?? item.itemId).tag(item.itemId) }
-                    }
-                    TextField(AppStrings.tellUsWhatHappened, text: $complaintDescription, axis: .vertical).lineLimit(4...7)
-                    if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+        FoodComplaintFormLayout(
+            title: AppStrings.newComplaint,
+            submitTitle: AppStrings.send,
+            isSubmitting: isSendingComplaint,
+            canSubmit: !complaintDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+            onCancel: { complaintOrder = nil },
+            onSubmit: { sendComplaint(for: order) }
+        ) {
+            FoodComplaintFormSection(title: AppStrings.order) {
+                Text(AppStrings.orderValue(order.orderRef ?? order.orderId))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color(hex: "152C4D"))
+                if let status = order.status {
+                    Text(AppStrings.option(status)).font(.system(size: 12)).foregroundStyle(.secondary)
                 }
             }
-                .navigationTitle(AppStrings.contactSupport).navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) { Button(AppStrings.buttonTitle(AppStrings.cancel)) { complaintOrder = nil }.disabled(isSendingComplaint) }
-                    ToolbarItem(placement: .confirmationAction) { Button(AppStrings.buttonTitle(AppStrings.send)) { sendComplaint(for: order) }.disabled(isSendingComplaint || complaintDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
+            FoodComplaintFormSection(title: AppStrings.whatWentWrong) {
+                Picker(AppStrings.value("foodComplaintItem"), selection: $complaintProductID) {
+                    Text(AppStrings.value("foodWholeOrder")).tag("")
+                    ForEach(order.items ?? []) { item in Text(item.itemNameSnapshot ?? item.itemId).tag(item.itemId) }
                 }
-        }.interactiveDismissDisabled(isSendingComplaint).presentationDetents([.medium, .large])
+            }
+            FoodComplaintFormSection(title: AppStrings.describeTheIssue) {
+                TextField(AppStrings.tellUsWhatHappened, text: $complaintDescription, axis: .vertical)
+                    .lineLimit(5...9)
+                    .font(.system(size: 15))
+                    .lineSpacing(5)
+            }
+            if let errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.circle")
+                    .font(.system(size: 13)).foregroundStyle(.red)
+            }
+        }
     }
 
     private func loadInitialData() {
