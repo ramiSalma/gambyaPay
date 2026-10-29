@@ -578,7 +578,7 @@ struct PinEntryDialog: View {
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
                 
-                SecureField(AppStrings.pin, text: $pin)
+                WalletPINField(AppStrings.pin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16, weight: .medium))
                     .padding(.horizontal, 16)
@@ -612,7 +612,7 @@ struct PinEntryDialog: View {
                     }
                     
                     Button(action: {
-                        if pin.isEmpty {
+                        if (!pin.isValidWalletPIN) {
                             showError = true
                         } else {
                             showError = false

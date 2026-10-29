@@ -363,7 +363,7 @@ struct WalletTransferView: View {
         guard confirmedQuoteKey == quoteKey else {
             showError(AppStrings.transferDetailsChangedPleaseSubmitAgain); return
         }
-        guard !pin.isEmpty else { showError(AppStrings.enterYourPin); return }
+        guard (pin.isValidWalletPIN) else { showError(AppStrings.enterYourPin); return }
         isLoading = true
         var request = RequestWalletToWallet()
         request.srcWalletNumber = user.getWalletNumber()

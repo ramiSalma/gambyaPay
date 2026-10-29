@@ -283,11 +283,11 @@ struct PINPromptView: View {
                             .frame(width: 20)
                         
                         if showPassword {
-                            TextField(AppStrings.pin, text: $pin)
+                            WalletPINField(AppStrings.pin, text: $pin, isSecure: false)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                         } else {
-                            SecureField(AppStrings.pin, text: $pin)
+                            WalletPINField(AppStrings.pin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                         }
@@ -325,9 +325,9 @@ struct PINPromptView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(pin.count == 4 ? Color(hex: "174EA6") : Color.gray)
+                    .background(pin.isValidWalletPIN ? Color(hex: "174EA6") : Color.gray)
                     .cornerRadius(8)
-                    .disabled(pin.count != 4 || isVerifying)
+                    .disabled(!pin.isValidWalletPIN || isVerifying)
                 }
                 .padding(.horizontal, 30)
                 
@@ -344,7 +344,7 @@ struct PINPromptView: View {
     private func verifyPin() {
         errorMessage = ""
         
-        guard pin.count == 4 else {
+        guard pin.isValidWalletPIN else {
             errorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             return
         }

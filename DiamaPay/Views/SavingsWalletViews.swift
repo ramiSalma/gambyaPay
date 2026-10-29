@@ -246,9 +246,9 @@ struct SavingsWalletView: View {
                                 Image(systemName: "lock.fill").foregroundColor(SavingsStyle.cyan)
                                 Group {
                                     if isPinVisible {
-                                        TextField(AppStrings.pinCode, text: $pin)
+                                        WalletPINField(AppStrings.pinCode, text: $pin, isSecure: false)
                                     } else {
-                                        SecureField(AppStrings.pinCode, text: $pin)
+                                        WalletPINField(AppStrings.pinCode, text: $pin)
                                     }
                                 }
                                 .keyboardType(.numberPad)
@@ -278,8 +278,8 @@ struct SavingsWalletView: View {
                                 .frame(maxWidth: .infinity).frame(height: 54).foregroundColor(.white)
                                 .background(SavingsStyle.cyan, in: RoundedRectangle(cornerRadius: 12))
                             }
-                            .disabled(isVerifyingPin || pin.isEmpty)
-                            .opacity(pin.isEmpty ? 0.6 : 1)
+                            .disabled(isVerifyingPin || (!pin.isValidWalletPIN))
+                            .opacity((!pin.isValidWalletPIN) ? 0.6 : 1)
                         }
                         .font(.system(size: 18, weight: .semibold))
                     }
@@ -312,7 +312,7 @@ struct SavingsWalletView: View {
     }
 
     private func verifyPinAndTransfer() {
-        guard !pin.isEmpty else {
+        guard (pin.isValidWalletPIN) else {
             transferError = AppStrings.enterYourPinToContinue
             return
         }

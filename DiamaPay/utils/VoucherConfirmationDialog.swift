@@ -178,9 +178,9 @@ struct VoucherConfirmationDialog: View {
                                     .foregroundColor((mobileMoneyStyle || moneyVoucherStyle) ? Color(hex: "0788B9") : .blueH)
                                 Group {
                                     if isPinVisible {
-                                        TextField((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinCode : AppStrings.entrerLeCodePin, text: $pin)
+                                        WalletPINField((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinCode : AppStrings.entrerLeCodePin, text: $pin, isSecure: false)
                                     } else {
-                                        SecureField((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinCode : AppStrings.entrerLeCodePin, text: $pin)
+                                        WalletPINField((mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinCode : AppStrings.entrerLeCodePin, text: $pin)
                                     }
                                 }
                                 .keyboardType(.numberPad)
@@ -273,7 +273,7 @@ struct VoucherConfirmationDialog: View {
     private func validateAndConfirm() {
         showPinError = false
         
-        guard pin.count == 4 else {
+        guard pin.isValidWalletPIN else {
             pinErrorMessage = (mobileMoneyStyle || moneyVoucherStyle) ? AppStrings.pinMustContainExactly4Digits : AppStrings.lePinDoitContenirExactement4Chiffres
             showPinError = true
             return

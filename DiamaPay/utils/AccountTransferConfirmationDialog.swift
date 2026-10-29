@@ -169,7 +169,7 @@ struct AccountTransferConfirmationDialog: View {
                 }
             }
 
-            SecureField(AppStrings.pin, text: $pin)
+            WalletPINField(AppStrings.pin, text: $pin)
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
                 .focused($pinFieldFocused)
@@ -260,7 +260,7 @@ struct AccountTransferConfirmationDialog: View {
         guard !isVerifyingPin, isPresented else { return }
         showPinError = false
 
-        guard pin.count == 4, pin.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+        guard pin.isValidWalletPIN else {
             pinErrorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             showPinError = true
             return

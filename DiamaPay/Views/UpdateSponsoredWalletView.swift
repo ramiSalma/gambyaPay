@@ -315,7 +315,7 @@ struct UpdateSponsoredWalletView: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(themeBlue)
             
-            SecureField(AppStrings.entrerLeCodePin, text: $pin)
+            WalletPINField(AppStrings.entrerLeCodePin, text: $pin)
                 .keyboardType(.numberPad)
                 .font(.system(size: 12, weight: .medium))
                 .padding(.horizontal, 12)
@@ -497,7 +497,7 @@ struct UpdateSponsoredWalletView: View {
             return false
         }
         
-        if pin.isEmpty {
+        if (!pin.isValidWalletPIN) {
             showError(AppStrings.error, AppStrings.leCodePinEstRequis)
             return false
         }

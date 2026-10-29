@@ -535,7 +535,7 @@ struct DeleteConfirmationDialog: View {
                     .padding(.top, 12)
                 
                 // PIN Input
-                SecureField(AppStrings.pin, text: $pin)
+                WalletPINField(AppStrings.pin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16, weight: .medium))
                     .padding(.horizontal, 16)
@@ -570,7 +570,7 @@ struct DeleteConfirmationDialog: View {
                     }
                     
                     Button(action: {
-                        if pin.isEmpty {
+                        if (!pin.isValidWalletPIN) {
                             showError = true
                         } else {
                             showError = false

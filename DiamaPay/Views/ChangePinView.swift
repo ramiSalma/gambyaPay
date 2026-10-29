@@ -197,7 +197,7 @@ struct ChangePinView: View {
                 .foregroundColor(blue)
             
             // PIN Input
-            SecureField("****", text: $currentPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
+            WalletPINField("****", text: $currentPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
                 .foregroundColor(blue)
                 .keyboardType(.numberPad)
                 .font(.system(size: 16, weight: .medium))
@@ -208,8 +208,8 @@ struct ChangePinView: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
                 .disabled(isPinVerified)
                 .onChange(of: currentPin) {
-                    if currentPin.count > 6 {
-                        currentPin = String(currentPin.prefix(6))
+                    if currentPin.count > 4 {
+                        currentPin = String(currentPin.prefix(4))
                     }
                     if showCurrentPinError {
                         showCurrentPinError = false
@@ -262,7 +262,7 @@ struct ChangePinView: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(blue)
             
-            SecureField("****", text: $newPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
+            WalletPINField("****", text: $newPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
                 .foregroundColor(blue)
                 .keyboardType(.numberPad)
                 .font(.system(size: 16, weight: .medium))
@@ -272,8 +272,8 @@ struct ChangePinView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
                 .onChange(of: newPin) {
-                    if newPin.count > 6 {
-                        newPin = String(newPin.prefix(6))
+                    if newPin.count > 4 {
+                        newPin = String(newPin.prefix(4))
                     }
                     if showNewPinError {
                         showNewPinError = false
@@ -292,7 +292,7 @@ struct ChangePinView: View {
                 .foregroundColor(blue)
                 .padding(.top, 8)
             
-            SecureField("****", text: $confirmPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
+            WalletPINField("****", text: $confirmPin, prompt: Text("****").foregroundColor(blue.opacity(0.6)))
                 .foregroundColor(blue)
                 .keyboardType(.numberPad)
                 .font(.system(size: 16, weight: .medium))
@@ -302,8 +302,8 @@ struct ChangePinView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "C8D9F0"), lineWidth: 1))
                 .onChange(of: confirmPin) {
-                    if confirmPin.count > 6 {
-                        confirmPin = String(confirmPin.prefix(6))
+                    if confirmPin.count > 4 {
+                        confirmPin = String(confirmPin.prefix(4))
                     }
                     if showConfirmPinError {
                         showConfirmPinError = false
@@ -421,8 +421,8 @@ struct ChangePinView: View {
             return false
         }
         
-        if pin.count < 4 {
-            currentPinError = AppStrings.pinMustContainAtLeast4Digits
+        if !pin.isValidWalletPIN {
+            currentPinError = AppStrings.pinMustContainExactly4Digits
             showCurrentPinError = true
             return false
         }
@@ -438,8 +438,8 @@ struct ChangePinView: View {
             newPinError = AppStrings.pinIsRequired
             showNewPinError = true
             isValid = false
-        } else if newPin.count < 4 {
-            newPinError = AppStrings.pinMustContainAtLeast4Digits
+        } else if !newPin.isValidWalletPIN {
+            newPinError = AppStrings.pinMustContainExactly4Digits
             showNewPinError = true
             isValid = false
         } else {

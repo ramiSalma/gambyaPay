@@ -332,7 +332,7 @@ struct StandingInstructionUpdateView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 
-                SecureField(AppStrings.entrerVotrePin, text: $pin)
+                WalletPINField(AppStrings.entrerVotrePin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
@@ -412,7 +412,7 @@ struct StandingInstructionUpdateView: View {
             return
         }
         
-        guard !pin.isEmpty else {
+        guard (pin.isValidWalletPIN) else {
             showErrorAlert(AppStrings.leCodePinEstRequis)
             return
         }

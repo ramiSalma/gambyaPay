@@ -195,7 +195,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                SecureField(AppStrings.nouveauPin, text: $newPin)
+                WalletPINField(AppStrings.nouveauPin, text: $newPin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
@@ -208,7 +208,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                SecureField(AppStrings.confirmerPin, text: $confirmPin)
+                WalletPINField(AppStrings.confirmerPin, text: $confirmPin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
@@ -225,7 +225,7 @@ struct ForgotPinView: View {
                     .foregroundColor(.blueH)
                     .frame(width: 20)
                 
-                TextField(AppStrings.entrerOtp, text: $finalOtp)
+                TextField(AppStrings.entrerOtp, text: $finalOtp.digitsOnly(maxLength: 6))
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
             }
@@ -487,7 +487,7 @@ struct ForgotPinView: View {
             return
         }
         
-        guard newPin.count == 4 else {
+        guard newPin.isValidWalletPIN else {
             showErrorAlert(AppStrings.lePinDoitContenir4Chiffres)
             return
         }

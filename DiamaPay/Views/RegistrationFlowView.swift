@@ -366,7 +366,7 @@ struct RegistrationFlowView: View {
                 .foregroundColor(.secondary)
             
             VStack(spacing: 16) {
-                SecureField(AppStrings.enterYour4DigitPinCode, text: $registrationData.pin)
+                WalletPINField(AppStrings.enterYour4DigitPinCode, text: $registrationData.pin)
                     .keyboardType(.numberPad)
                     .padding(18)
                     .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
@@ -378,7 +378,7 @@ struct RegistrationFlowView: View {
                     }
                 inlineFieldError(showPinErrors ? pinError : nil)
                 
-                SecureField(AppStrings.confirmYourPinCode, text: $registrationData.confirmPin)
+                WalletPINField(AppStrings.confirmYourPinCode, text: $registrationData.confirmPin)
                     .keyboardType(.numberPad)
                     .padding(18)
                     .background(RoundedRectangle(cornerRadius: 18).fill(RegistrationTheme.canvas)
@@ -393,13 +393,13 @@ struct RegistrationFlowView: View {
                 if !registrationData.pin.isEmpty || !registrationData.confirmPin.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Image(systemName: registrationData.pin.count == 4 ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                .foregroundColor(registrationData.pin.count == 4 ? .green : .red)
+                            Image(systemName: registrationData.pin.isValidWalletPIN ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundColor(registrationData.pin.isValidWalletPIN ? .green : .red)
                             Text(AppStrings.pinMustContainExactly4Digits)
                                 .font(.caption)
                         }
                         
-                        if registrationData.pin.count == 4 {
+                        if registrationData.pin.isValidWalletPIN {
                             HStack {
                                 Image(systemName: isWeakPin(registrationData.pin) ? "xmark.circle.fill" : "checkmark.circle.fill")
                                     .foregroundColor(isWeakPin(registrationData.pin) ? .red : .green)
@@ -986,7 +986,7 @@ struct RegistrationFlowView: View {
                 Text(AppStrings.verificationCode)
                     .font(.system(size: 20, weight: .medium))
                     .foregroundColor(.gray)
-                TextField(AppStrings.enterTheVerificationCode, text: $registrationData.otpCode)
+                TextField(AppStrings.enterTheVerificationCode, text: $registrationData.otpCode.digitsOnly(maxLength: 6))
                     .keyboardType(.numberPad)
                     .padding(16)
                     .background(RoundedRectangle(cornerRadius: 14).fill(Color.white)
@@ -1044,7 +1044,7 @@ struct RegistrationFlowView: View {
     }
 
     private var pinError: String? {
-        if registrationData.pin.count != 4 || !registrationData.pin.allSatisfy(\.isNumber) { return AppStrings.yourPinMustContainExactly4Digits }
+        if !registrationData.pin.isValidWalletPIN { return AppStrings.yourPinMustContainExactly4Digits }
         if isWeakPin(registrationData.pin) { return AppStrings.chooseALessPredictablePinSuchAsOneWithoutRepeated }
         return nil
     }
@@ -1244,7 +1244,7 @@ struct RegistrationFlowView: View {
             
         case 2:
             showPinErrors = true
-            if registrationData.pin.count != 4 {
+            if !registrationData.pin.isValidWalletPIN {
                 return
             } else if isWeakPin(registrationData.pin) {
                 return
@@ -1292,7 +1292,7 @@ struct RegistrationFlowView: View {
     // MARK: - PIN Security
     /// Rejects trivial PINs: repeated digits (0000, 1111), sequences (1234, 4321), and common weak codes.
     private func isWeakPin(_ pin: String) -> Bool {
-        guard pin.count == 4, pin.allSatisfy(\.isNumber) else { return false }
+        guard pin.isValidWalletPIN else { return false }
         
         let weakPins: Set<String> = [
             "0000", "1111", "2222", "3333", "4444",
@@ -1479,8 +1479,8 @@ struct RegistrationFlowView: View {
                    !registrationData.secretQ.isEmpty &&
                    !registrationData.answer.isEmpty
         case 2:
-            return registrationData.pin.count == 4 &&
-                   registrationData.confirmPin.count == 4 &&
+            return registrationData.pin.isValidWalletPIN &&
+                   registrationData.confirmPin.isValidWalletPIN &&
                    registrationData.pin == registrationData.confirmPin &&
                    !isWeakPin(registrationData.pin)
         case 3:

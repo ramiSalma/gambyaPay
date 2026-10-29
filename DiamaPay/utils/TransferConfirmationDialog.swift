@@ -191,7 +191,7 @@ struct TransferConfirmationDialog: View {
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(Color(hex: "667085"))
                             
-                            SecureField(AppStrings.enterPin, text: $pin)
+                            WalletPINField(AppStrings.enterPin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                                 .padding(.horizontal, 16)
@@ -285,7 +285,7 @@ struct TransferConfirmationDialog: View {
         guard !isVerifyingPin, isPresented else { return }
         showPinError = false
         
-        guard pin.count == 4, pin.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+        guard pin.isValidWalletPIN else {
             pinErrorMessage = AppStrings.pinMustContainExactly4Digits
             showPinError = true
             return

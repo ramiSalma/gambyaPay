@@ -542,7 +542,7 @@ struct PinDialogView: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                 
-                SecureField(AppStrings.pin, text: $pin)
+                WalletPINField(AppStrings.pin, text: $pin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 16))
                     .padding()
@@ -569,7 +569,7 @@ struct PinDialogView: View {
                     }
                     
                     Button(action: {
-                        if pin.isEmpty {
+                        if (!pin.isValidWalletPIN) {
                             showError = true
                         } else {
                             showError = false

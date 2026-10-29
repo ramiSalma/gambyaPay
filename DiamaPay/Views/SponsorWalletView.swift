@@ -84,7 +84,7 @@ struct SponsorWalletView: View {
             Text(AppStrings.option(alertMessage))
         }
         .alert(AppStrings.entrerLeCodePin, isPresented: $showPinEntry) {
-            SecureField(AppStrings.pin, text: $pin)
+            WalletPINField(AppStrings.pin, text: $pin)
                 .keyboardType(.numberPad)
                 .onChange(of: pin) {
                     pin = String(pin.filter { $0.isASCII && $0.isNumber }.prefix(4))
@@ -94,11 +94,11 @@ struct SponsorWalletView: View {
                 let enteredPin = pin
                 pin = ""
                 guard !isLoading, validateInputs(),
-                      enteredPin.count == 4,
+                      enteredPin.isValidWalletPIN,
                       enteredPin.allSatisfy({ $0.isASCII && $0.isNumber }) else { return }
                 processSponsorWithPin(enteredPin)
             }
-            .disabled(pin.count != 4)
+            .disabled(!pin.isValidWalletPIN)
         }
         .sheet(isPresented: $showContactPicker) {
             ContactPickerView(selectedPhone: $recipientPhone, normalizePhone: WalletTransferRecipient.normalize)

@@ -150,7 +150,7 @@ struct ChangeSecurityQuestionView: View {
             return
         }
         guard !selectedQuestion.isEmpty, !newAnswer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              pin.count >= 4 else {
+              pin.isValidWalletPIN else {
             message = AppStrings.value("securityCompleteFields")
             showMessage = true
             return
@@ -229,7 +229,8 @@ private struct SecurityAnswerInput: View {
     var body: some View {
         HStack(spacing: 10) {
             Group {
-                if visible { TextField(placeholder, text: $text) }
+                if numeric { WalletPINField(placeholder, text: $text, isSecure: !visible) }
+                else if visible { TextField(placeholder, text: $text) }
                 else { SecureField(placeholder, text: $text) }
             }
             .keyboardType(numeric ? .numberPad : .default)
@@ -244,7 +245,7 @@ private struct SecurityAnswerInput: View {
         .padding(.horizontal, 16).frame(height: 55)
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.75), lineWidth: 1))
         .onChange(of: text) {
-            if numeric { text = String(text.filter(\.isNumber).prefix(6)) }
+            if numeric { text = String(text.filter { $0.isASCII && $0.isNumber }.prefix(4)) }
         }
     }
 }

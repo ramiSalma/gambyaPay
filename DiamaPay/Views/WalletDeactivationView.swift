@@ -482,7 +482,7 @@ struct WalletDeactivationView: View {
             
             HStack {
                 if showPin {
-                    TextField(AppStrings.pin, text: $pin)
+                    WalletPINField(AppStrings.pin, text: $pin, isSecure: false)
                         .keyboardType(.numberPad)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.horizontal, 12)
@@ -495,7 +495,7 @@ struct WalletDeactivationView: View {
                             }
                         }
                 } else {
-                    SecureField(AppStrings.pin, text: $pin)
+                    WalletPINField(AppStrings.pin, text: $pin)
                         .keyboardType(.numberPad)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.horizontal, 12)
@@ -856,7 +856,7 @@ struct WalletDeactivationView: View {
             return
         }
         
-        if pin.count < 4 {
+        if !pin.isValidWalletPIN {
             showErrorAlert(AppStrings.leCodePinDoitContenirAuMoins4Chiffres)
             return
         }
@@ -1138,7 +1138,7 @@ struct OtpVerificationDialog: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                TextField(AppStrings.codeOtp, text: $otpCode)
+                TextField(AppStrings.codeOtp, text: $otpCode.digitsOnly(maxLength: 6))
                     .keyboardType(.numberPad)
                     .font(.system(size: 14, weight: .medium))
                     .padding(.horizontal, 12)
@@ -1164,7 +1164,7 @@ struct OtpVerificationDialog: View {
                     }
                     
                     Button(action: {
-                        guard !otpCode.trimmingCharacters(in: .whitespaces).isEmpty else {
+                        guard otpCode.count == 6 else {
                             return
                         }
                         onVerify()

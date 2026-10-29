@@ -174,7 +174,7 @@ struct ForcePinChangeView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
-                SecureField("****", text: $currentPin)
+                WalletPINField("****", text: $currentPin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 12, weight: .medium))
                     .padding(.horizontal, 12)
@@ -182,8 +182,8 @@ struct ForcePinChangeView: View {
                     .background(Color(red: 0.96, green: 0.96, blue: 0.96))
                     .cornerRadius(8)
                     .onChange(of: currentPin) {
-                        if currentPin.count > 6 {
-                            currentPin = String(currentPin.prefix(6))
+                        if currentPin.count > 4 {
+                            currentPin = String(currentPin.prefix(4))
                         }
                         if showCurrentPinError {
                             showCurrentPinError = false
@@ -203,7 +203,7 @@ struct ForcePinChangeView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
-                SecureField("****", text: $newPin)
+                WalletPINField("****", text: $newPin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 12, weight: .medium))
                     .padding(.horizontal, 12)
@@ -211,8 +211,8 @@ struct ForcePinChangeView: View {
                     .background(Color(red: 0.96, green: 0.96, blue: 0.96))
                     .cornerRadius(8)
                     .onChange(of: newPin) {
-                        if newPin.count > 6 {
-                            newPin = String(newPin.prefix(6))
+                        if newPin.count > 4 {
+                            newPin = String(newPin.prefix(4))
                         }
                         if showNewPinError {
                             showNewPinError = false
@@ -223,7 +223,7 @@ struct ForcePinChangeView: View {
                     Text(newPinError)
                         .font(.system(size: 12))
                         .foregroundColor(.red)
-                } else if newPin.count >= 4 && isWeakPin(newPin) {
+                } else if newPin.isValidWalletPIN && isWeakPin(newPin) {
                     Text(AppStrings.cePinNEstPasSecuriseVeuillezEnChoisirUn)
                         .font(.system(size: 12))
                         .foregroundColor(.red)
@@ -236,7 +236,7 @@ struct ForcePinChangeView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.blueH)
                 
-                SecureField("****", text: $confirmPin)
+                WalletPINField("****", text: $confirmPin)
                     .keyboardType(.numberPad)
                     .font(.system(size: 12, weight: .medium))
                     .padding(.horizontal, 12)
@@ -244,8 +244,8 @@ struct ForcePinChangeView: View {
                     .background(Color(red: 0.96, green: 0.96, blue: 0.96))
                     .cornerRadius(8)
                     .onChange(of: confirmPin) {
-                        if confirmPin.count > 6 {
-                            confirmPin = String(confirmPin.prefix(6))
+                        if confirmPin.count > 4 {
+                            confirmPin = String(confirmPin.prefix(4))
                         }
                         if showConfirmPinError {
                             showConfirmPinError = false
@@ -352,15 +352,15 @@ struct ForcePinChangeView: View {
         return !currentPin.isEmpty &&
                !newPin.isEmpty &&
                !confirmPin.isEmpty &&
-               currentPin.count >= 4 &&
-               newPin.count >= 4 &&
-               confirmPin.count >= 4 &&
+               currentPin.isValidWalletPIN &&
+               newPin.isValidWalletPIN &&
+               confirmPin.isValidWalletPIN &&
                !isWeakPin(newPin)
     }
     
     /// Rejects trivial PINs: repeated digits (0000, 1111), sequences (1234, 4321), and common weak codes.
     private func isWeakPin(_ pin: String) -> Bool {
-        guard pin.count >= 4, pin.allSatisfy(\.isNumber) else { return false }
+        guard pin.isValidWalletPIN else { return false }
         
         let weakPins: Set<String> = [
             "0000", "1111", "2222", "3333", "4444",
@@ -396,8 +396,8 @@ struct ForcePinChangeView: View {
             currentPinError = AppStrings.leCodePinActuelEstRequis
             showCurrentPinError = true
             isValid = false
-        } else if currentPin.count < 4 {
-            currentPinError = AppStrings.leCodePinDoitContenirAuMoins4Chiffres
+        } else if !currentPin.isValidWalletPIN {
+            currentPinError = AppStrings.lePinDoitContenirExactement4Chiffres
             showCurrentPinError = true
             isValid = false
         }
@@ -407,8 +407,8 @@ struct ForcePinChangeView: View {
             newPinError = AppStrings.leNouveauCodePinEstRequis
             showNewPinError = true
             isValid = false
-        } else if newPin.count < 4 {
-            newPinError = AppStrings.leCodePinDoitContenirAuMoins4Chiffres
+        } else if !newPin.isValidWalletPIN {
+            newPinError = AppStrings.lePinDoitContenirExactement4Chiffres
             showNewPinError = true
             isValid = false
         } else if newPin == currentPin {

@@ -20,6 +20,11 @@ class PinVerificationService {
         onSuccess: @escaping (String) -> Void,
         onFailure: @escaping (String) -> Void
     ) {
+        guard pin.isValidWalletPIN else {
+            onFailure(AppStrings.pinMustContainExactly4Digits)
+            return
+        }
+
         let userDataManager = UserDataManager.shared
         
         var request = RequestCheckPin()

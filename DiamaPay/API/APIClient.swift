@@ -117,6 +117,18 @@ class APIClient {
         performRequest(endpoint: "api/foody/listCategories", method: .POST, body: request, requiresAuth: true, completion: completion)
     }
 
+    func getFoodRestaurantProfile(request: FoodyRestaurantRequest, completion: @escaping (Result<FoodyResponse<FoodRestaurantProfile>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/restaurantProfile", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func listFoodMenu(request: FoodyRestaurantRequest, completion: @escaping (Result<FoodyResponse<[FoodCategory]>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/listItemsWithCategories", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
+    func updateFoodAddress(request: FoodUpdateAddressRequest, completion: @escaping (Result<FoodyResponse<String>, Error>) -> Void) {
+        performRequest(endpoint: "api/foody/deliveryAddressUpdate", method: .POST, body: request, requiresAuth: true, completion: completion)
+    }
+
     func listActiveFoodOrders(request: FoodyListingRequest, completion: @escaping (Result<FoodyResponse<[FoodOrder]>, Error>) -> Void) {
         performRequest(endpoint: "api/foody/listActiveOrders", method: .POST, body: request, requiresAuth: true, completion: completion)
     }
@@ -919,6 +931,19 @@ class APIClient {
                 if endpoint == "api/wallet/transfer-to-account" {
                     logWalletToAccountRequest(jsonData)
                 }
+                #if DEBUG
+                if endpoint.hasPrefix("api/foody/"),
+                   let payload = (try? JSONSerialization.jsonObject(with: jsonData)) as? [String: Any] {
+                    var safePayload = payload
+                    for field in ["phoneNumber", "entityId", "addressLine1", "addressLine2", "city", "postalCode", "latitude", "longitude", "description", "reason", "label"] where safePayload[field] != nil {
+                        safePayload[field] = "<redacted>"
+                    }
+                    if let safeData = try? JSONSerialization.data(withJSONObject: redactSensitiveLogValues(safePayload), options: [.sortedKeys]),
+                       let safeText = String(data: safeData, encoding: .utf8) {
+                        print("[Foody] POST \(endpoint) request=\(safeText)")
+                    }
+                }
+                #endif
                 
                 // Log payload size for debugging
                 let sizeInKB = Double(jsonData.count) / 1024.0
@@ -933,9 +958,14 @@ class APIClient {
             print("Request has body: NO")
         }
 
+        let requestID = request.httpBody.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }?["requestId"] as? String
         // Perform the request
         session.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
+                if endpoint.hasPrefix("api/foody/") {
+                    self.handleFoodyResponse(data: data, response: response, error: error, endpoint: endpoint, requestID: requestID, completion: completion)
+                    return
+                }
                 if requiresAuth,
                    (endpoint.hasPrefix("api/wallet/") || endpoint.hasPrefix("api/pin/")),
                    error == nil, let data,
@@ -949,6 +979,57 @@ class APIClient {
                 self.handleResponse(data: data, response: response, error: error, completion: completion)
             }
         }.resume()
+    }
+
+    private func handleFoodyResponse<U: Codable>(
+        data: Data?, response: URLResponse?, error: Error?, endpoint: String,
+        requestID: String?, completion: @escaping (Result<U, Error>) -> Void
+    ) {
+        let httpStatus = (response as? HTTPURLResponse)?.statusCode
+        let envelope = data.flatMap { try? JSONDecoder().decode(FoodyFailureEnvelope.self, from: $0) }
+        let reference = envelope?.reference(fallback: requestID) ?? requestID
+        let operationKeys = [
+            "listRestaurants": "foodLoadingRestaurants", "restaurantProfile": "foodLoadingRestaurant",
+            "listItemsWithCategories": "foodLoadingMenu", "listItems": "foodLoadingMenu", "listCategories": "foodLoadingMenu",
+            "listAddresses": "foodLoadingAddresses", "addAddress": "foodSavingAddress", "deliveryAddressUpdate": "foodSavingAddress",
+            "addOrder": "foodPlacingOrder", "cancelOrder": "foodCancellingOrder",
+            "listActiveOrders": "foodLoadingOrders", "listClosedOrders": "foodLoadingOrders",
+            "addComplaint": "foodSendingComplaint", "listComplaints": "foodLoadingComplaints"
+        ]
+        let operation = AppStrings.value(operationKeys[String(endpoint.split(separator: "/").last ?? "")] ?? "orderFood")
+        let fail: (Error) -> Void = { originalError in
+            // A transport failure has no server response; keep its network diagnosis intact.
+            let reason = error == nil ? (envelope?.failureMessage ?? originalError.localizedDescription) : originalError.localizedDescription
+            var message = AppStrings.value("foodOperationFailed", arguments: [operation, reason])
+            if let reference, !reference.isEmpty {
+                message += "\n" + AppStrings.value("foodErrorReference", arguments: [reference])
+            }
+            #if DEBUG
+            print("[Foody] FAILED endpoint=\(endpoint) HTTP=\(httpStatus.map(String.init) ?? "none") respCode=\(envelope?.respCode ?? "none") requestId=\(reference ?? "none")")
+            // Business errors return before the generic response logger runs.
+            if let data, let object = try? JSONSerialization.jsonObject(with: data),
+               let safeData = try? JSONSerialization.data(withJSONObject: self.redactSensitiveLogValues(object), options: [.sortedKeys]),
+               let safeText = String(data: safeData, encoding: .utf8) {
+                print("[Foody] Failure response=\(safeText)")
+            }
+            #endif
+            completion(.failure(APIError(success: false, message: message, respCode: envelope?.respCode ?? httpStatus.map(String.init), details: "endpoint=\(endpoint); requestId=\(reference ?? "none")")))
+        }
+        // Order-history endpoints use 009/NOK with a null result for an empty list.
+        // Preserve that response for the history view; mutations must still fail on 009.
+        let emptyOrderHistory = envelope?.respCode == "009" &&
+            ["api/foody/listActiveOrders", "api/foody/listClosedOrders"].contains(endpoint)
+        if error == nil, let httpStatus, (200...299).contains(httpStatus),
+           let code = envelope?.respCode, code != "000", !emptyOrderHistory {
+            fail(APIError(success: false, message: envelope?.failureMessage ?? AppStrings.original("unknownError"), respCode: code, details: nil))
+            return
+        }
+        handleResponse(data: data, response: response, error: error) { (result: Result<U, Error>) in
+            switch result {
+            case .success(let value): completion(.success(value))
+            case .failure(let failure): fail(failure)
+            }
+        }
     }
 
     /// Prints the encoded transfer payload while masking credentials and personal identifiers.

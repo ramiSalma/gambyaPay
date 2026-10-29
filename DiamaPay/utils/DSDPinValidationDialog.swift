@@ -87,7 +87,7 @@ struct DSDPinValidationDialog: View {
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
                     
-                    SecureField("", text: $pin)
+                    WalletPINField("", text: $pin)
                         .keyboardType(.numberPad)
                         .font(.system(size: 14, weight: .medium))
                         .padding()
@@ -122,7 +122,7 @@ struct DSDPinValidationDialog: View {
                     }
                     
                     Button(action: {
-                        if !pin.isEmpty {
+                        if (pin.isValidWalletPIN) {
                             onConfirm(pin)
                         }
                     }) {
@@ -131,10 +131,10 @@ struct DSDPinValidationDialog: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
-                            .background(pin.isEmpty ? Color.gray : Color.green)
+                            .background((!pin.isValidWalletPIN) ? Color.gray : Color.green)
                             .cornerRadius(12)
                     }
-                    .disabled(pin.isEmpty)
+                    .disabled((!pin.isValidWalletPIN))
                 }
             }
             .padding(24)

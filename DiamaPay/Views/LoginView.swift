@@ -198,7 +198,7 @@ struct LoginView: View {
             PrimaryButton(
                 title: isLoading ? AppStrings.loggingIn : AppStrings.login,
                 isLoading: isLoading,
-                disabled: isLoading || phoneNumber.isEmpty || pin.isEmpty,
+                disabled: isLoading || phoneNumber.isEmpty || (!pin.isValidWalletPIN),
                 action: performLogin
             )
             
@@ -289,7 +289,7 @@ struct LoginView: View {
     }
     
     private func performLogin() {
-        guard !phoneNumber.isEmpty && !pin.isEmpty else {
+        guard !phoneNumber.isEmpty && (pin.isValidWalletPIN) else {
             showAlertMessage(AppStrings.fillAllFields)
             return
         }
@@ -768,7 +768,7 @@ struct CustomSecureField: View {
                 .frame(width: 28)
             
             if showPassword {
-                TextField(placeholder, text: $text)
+                WalletPINField(placeholder, text: $text, isSecure: false)
                     .font(.system(size: 18))
                     .keyboardType(.numberPad)
                     .disabled(disabled)
@@ -776,7 +776,7 @@ struct CustomSecureField: View {
                         if newValue.count > 4 { text = String(newValue.prefix(4)) }
                     }
             } else {
-                SecureField(placeholder, text: $text)
+                WalletPINField(placeholder, text: $text)
                     .font(.system(size: 18))
                     .keyboardType(.numberPad)
                     .disabled(disabled)

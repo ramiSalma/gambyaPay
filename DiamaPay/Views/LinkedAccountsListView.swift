@@ -357,7 +357,7 @@ struct PinDialogViewA: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                     
-                    SecureField(AppStrings.pin, text: $pin)
+                    WalletPINField(AppStrings.pin, text: $pin)
                         .keyboardType(.numberPad)
                         .font(.system(size: 16, weight: .medium))
                         .padding()
@@ -392,10 +392,10 @@ struct PinDialogViewA: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
-                    .background(pin.count >= 4 ? Color.blueH : Color.gray)
+                    .background(pin.isValidWalletPIN ? Color.blueH : Color.gray)
                     .cornerRadius(10)
                     .padding(.horizontal, 32)
-                    .disabled(pin.count < 4 || isVerifying)
+                    .disabled(!pin.isValidWalletPIN || isVerifying)
                     
                     Spacer()
                 }
@@ -407,7 +407,7 @@ struct PinDialogViewA: View {
     private func verifyPin() {
         errorMessage = ""
         
-        guard pin.count == 4 else {
+        guard pin.isValidWalletPIN else {
             errorMessage = AppStrings.lePinDoitContenirExactement4Chiffres
             return
         }

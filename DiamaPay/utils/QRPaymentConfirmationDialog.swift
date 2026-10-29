@@ -190,7 +190,7 @@ struct QRPaymentConfirmationDialog: View {
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.secondary)
 
-                            SecureField(AppStrings.entrerLeCodePin, text: $pin)
+                            WalletPINField(AppStrings.entrerLeCodePin, text: $pin)
                                 .keyboardType(.numberPad)
                                 .font(.system(size: 16, weight: .medium))
                                 .padding(.horizontal, 16)
@@ -257,9 +257,9 @@ struct QRPaymentConfirmationDialog: View {
                                 .frame(height: 50)
                         }
                     }
-                    .background(paymentData.isExpired || pin.count != 4 || isValidatingPin ? Color.gray : Color.greenH)
+                    .background(paymentData.isExpired || !pin.isValidWalletPIN || isValidatingPin ? Color.gray : Color.greenH)
                     .cornerRadius(8)
-                    .disabled(paymentData.isExpired || pin.count != 4 || isValidatingPin)
+                    .disabled(paymentData.isExpired || !pin.isValidWalletPIN || isValidatingPin)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -299,7 +299,7 @@ struct QRPaymentConfirmationDialog: View {
     }
 
     private func validateAndConfirm() {
-        guard pin.count == 4 else {
+        guard pin.isValidWalletPIN else {
             showPinError = true
             pinErrorMessage = AppStrings.leCodePinDoitContenir4Chiffres
             return

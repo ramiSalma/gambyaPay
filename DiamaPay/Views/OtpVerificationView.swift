@@ -39,7 +39,7 @@ struct OtpVerificationView: View {
                 .foregroundColor(.gray)
             
             // OTP input field
-            TextField("------", text: $otp)
+            TextField("------", text: $otp.digitsOnly(maxLength: 6))
                 .multilineTextAlignment(.center)
                 .keyboardType(.numberPad)
                 .font(.system(size: 24, weight: .medium, design: .monospaced))
