@@ -25,13 +25,13 @@ struct FoodRestaurantDetailsView: View {
                               if let url = URL(string: "tel:\(contact.filter { $0.isASCII && $0.isNumber })") {
                                 Link(destination: url) { FoodDetailsInfo(text: contact, icon: "phone.fill") }
                             }
-                        }
-                        if let minutes = profile.preparationTime ?? profile.defaultPreparationTimeMin, !minutes.isEmpty {
-                            FoodDetailsInfo(text: AppStrings.value("foodPrepTime", arguments: [minutes]), icon: "timer")
-                        }
-                        if let minimum = profile.minOrderAmount {
-                            FoodDetailsInfo(text:         AppStrings.value("foodMinimumOrder", arguments: [String(format: "%.2f", minimum)]), icon: "bag.fill")
-                        }
+                          }
+                           if let minutes = profile.preparationTime ?? profile.defaultPreparationTimeMin, !minutes.isEmpty {
+                               FoodDetailsInfo(text: AppStrings.value("foodPrepTime", arguments: [minutes]), icon: "timer")
+                           }
+                           if let minimum = profile.minOrderAmount {
+                               FoodDetailsInfo(text:         AppStrings.value("foodMinimumOrder", arguments: [String(format: "%.2f", minimum)]), icon: "bag.fill")
+                           }
                     }
                     if let hours = profile.weeklySchedule, !hours.isEmpty {
                         FoodDetailsSection(title: AppStrings.value("foodOpeningHours")) {
