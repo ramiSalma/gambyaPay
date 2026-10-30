@@ -129,8 +129,6 @@ struct CheckLimitView: View {
                     .font(.system(size: 12, weight: .bold))
                     .tracking(0.5)
                     .foregroundColor(.white.opacity(0.8))
-                // Match the existing client's summary-field mapping; never substitute
-                // the screenshot's sample amount when the API returns no summary.
                 Text(globalLimitAmount)
                     .font(.system(size: 30, weight: .bold))
                     .minimumScaleFactor(0.7)

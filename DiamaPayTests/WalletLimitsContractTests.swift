@@ -25,6 +25,15 @@ struct WalletLimitsContractTests {
         #expect(limit.niveauAlerte == "BANK_ALERT")
     }
 
+    @Test func missingConfigurationResponseHasNoLimitData() throws {
+        let data = Data(#"{"status":"NOK","respCode":"404","message":"Limit configuration not found","summary":null,"limits":null}"#.utf8)
+        let response = try JSONDecoder().decode(ResponseGetWalletLimits.self, from: data)
+        #expect(!response.isSuccessful)
+        #expect(response.message == "Limit configuration not found")
+        #expect(response.summary == nil)
+        #expect(response.limits == nil)
+    }
+
     @Test func missingValuesRemainDistinctFromZeroAndErrorsDecode() throws {
         let data = Data(#"{"respCode":"000","summary":{"totalConsommeJour":0,"soldeDisponible":null},"limits":[{"consommeAujourdhui":null,"restantAujourdhui":0}]}"#.utf8)
         let response = try JSONDecoder().decode(ResponseGetWalletLimits.self, from: data)

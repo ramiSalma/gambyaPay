@@ -12,6 +12,7 @@ struct RequestGetWalletLimits: Codable {
     var bank: String? = "00100"
 }
 
+// This endpoint returns summary and limits at the top level, without the standard wrapper.
 // MARK: - Response Models
 struct ResponseGetWalletLimits: Codable {
     var status: String?
@@ -42,7 +43,7 @@ struct LimitSummary: Codable {
     var debutPeriode: String?
     var finPeriode: String?
     var derniereTransaction: String?
-    var soldeDisponible: Double?           // Summary value used for the existing client’s global daily limit card.
+    var soldeDisponible: Double?
     var devise: String?
 }
 

@@ -716,10 +716,10 @@ class APIClient {
                    print(jsonString)
                }
            } catch {
-               print("Error encoding complaint request: \(error)")
-               completion(.failure(error))
-               return
-           }
+                   print("Error encoding complaint request: \(error)")
+                   completion(.failure(error))
+                   return
+               }
            
            session.dataTask(with: urlRequest) { data, response, error in
                DispatchQueue.main.async {
